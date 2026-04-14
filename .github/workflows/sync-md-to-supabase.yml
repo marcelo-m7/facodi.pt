@@ -9,6 +9,9 @@ on:
       - '.github/workflows/sync-md-to-supabase.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest

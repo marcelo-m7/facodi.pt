@@ -543,15 +543,22 @@
   /**
    * Get the Supabase client, waiting briefly if it hasn't been initialised yet.
    * Returns null when the client is unavailable (no credentials / library missing).
+   *
+   * Depends on `window.facodiSupabase` being set by `static/js/supabaseClient.js`,
+   * which in turn requires the Supabase JS UMD bundle to be loaded from CDN before
+   * this script runs (see layouts/_partials/footer/script-footer-custom.html).
+   *
    * @returns {Promise<import('@supabase/supabase-js').SupabaseClient|null>}
    */
+  const MAX_INIT_ATTEMPTS = 10;
+
   const getSupabaseClient = () => {
     if (window.facodiSupabase) return Promise.resolve(window.facodiSupabase);
     // Give supabaseClient.js a moment to finish initialising (it runs deferred).
     return new Promise((resolve) => {
       let attempts = 0;
       const check = setInterval(() => {
-        if (window.facodiSupabase !== undefined || attempts >= 10) {
+        if (window.facodiSupabase !== undefined || attempts >= MAX_INIT_ATTEMPTS) {
           clearInterval(check);
           resolve(window.facodiSupabase || null);
         }

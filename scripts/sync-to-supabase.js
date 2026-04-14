@@ -151,14 +151,10 @@ function walk(dir) {
 
 // ─── Upsert helpers ──────────────────────────────────────────────────────────
 
-async function upsert(schema, table, row) {
-  const { error } = await db.schema(schema).from(table).upsert(row, { onConflict: 'code' });
-  if (error) throw new Error(`upsert ${schema}.${table}: ${error.message}`);
-}
-
 async function upsertPk(schema, table, row, pk = 'code') {
   const { error } = await db.schema(schema).from(table).upsert(row, { onConflict: pk });
   if (error) throw new Error(`upsert ${schema}.${table}: ${error.message}`);
+}
 }
 
 // ─── Sync functions ───────────────────────────────────────────────────────────

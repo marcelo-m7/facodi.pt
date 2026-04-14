@@ -6,6 +6,12 @@
  *
  * The resulting client is exposed as `window.facodiSupabase` so that
  * `loaders.js` and other scripts can use it without tight coupling.
+ *
+ * Prerequisites (handled by layouts/_partials/footer/script-footer-custom.html):
+ *   1. The Supabase UMD bundle must be loaded from CDN before this script runs,
+ *      making `window.supabase.createClient` available globally.
+ *   2. A `<script id="facodi-config" type="application/json">` tag must contain
+ *      `{ "supabaseUrl": "...", "supabaseAnonKey": "..." }`.
  */
 (function () {
   'use strict';

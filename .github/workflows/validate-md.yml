@@ -11,6 +11,9 @@ on:
     paths:
       - 'content/**/*.md'
 
+permissions:
+  contents: read
+
 jobs:
   validate-front-matter:
     runs-on: ubuntu-latest
@@ -27,6 +30,10 @@ jobs:
           import re
           from pathlib import Path
 
+          # Expected content structure:
+          #   content/courses/<course-slug>/_index.md        → course
+          #   content/courses/<course-slug>/uc/<uc-slug>/_index.md → UC
+          #   content/courses/<course-slug>/uc/<uc-slug>/<topic>.md  → topic
           REQUIRED_KEYS_COURSE  = {"title", "code"}
           REQUIRED_KEYS_UC      = {"title", "code", "ects", "semester"}
           REQUIRED_KEYS_TOPIC   = {"title"}
