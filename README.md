@@ -22,21 +22,23 @@ Nosso objetivo é **democratizar o acesso ao ensino superior** por meio de trilh
 
 ## 🏗️ Arquitetura
 
-**Stack Atual** (Phase 2 - Completo):
+**Stack Atual** (Phase 3 - Supabase integrado):
 - **Frontend**: [Hugo](https://gohugo.io) v0.150.0+ com tema [Doks](https://getdoks.com)
 - **Styling**: SCSS customizado com tokens Monynha + Bootstrap 5.3.3
-- **Renderização**: Vanilla JS puro (Marked.js para Markdown) - **zero dependências externas**
+- **Renderização**: Vanilla JS puro (Marked.js para Markdown) + Supabase JS v2
 - **Conteúdo**: Markdown versionado em `content/` com TOML front matter
-- **Deploy**: Site estático gerado via `hugo --minify --gc` (Netlify, Vercel, GitHub Pages)
-- **CI/CD**: GitHub Actions com validação de conteúdo e auto-deploy
-- **Testing**: Vitest 2.1.8 com jsdom, 19+ testes de renderização, cobertura V8
+- **Base de Dados**: Supabase (PostgreSQL) com schemas `catalog`, `subjects`, `mapping`
+- **Deploy**: Site estático gerado via `hugo` (Netlify, Vercel, GitHub Pages)
+- **CI/CD**: GitHub Actions – validação de front matter, sync `.md → DB`, auto-deploy
+- **Testing**: Vitest com jsdom, 19+ testes de renderização, cobertura V8
 - **Acessibilidade**: WCAG 2.1 AA compliant com focus indicators, ARIA landmarks, skip links
 
-**Sem dependências externas**:
-- ✅ Supabase removido completamente
-- ✅ APIs externas não utilizadas
-- ✅ Front matter processado pelo Hugo em tempo de build
-- ✅ Renderização no cliente com Vanilla JS
+**Integração Supabase**:
+- ✅ `static/js/supabaseClient.js` — inicializa `createClient` com chave anon
+- ✅ `static/js/loaders.js` — `loadCoursePage`, `loadUCPage`, `loadTopicPage`
+- ✅ `supabase/migrations/` — schema SQL + RLS
+- ✅ `supabase/seed.sql` — dados iniciais (LESTI 2024/2025)
+- ✅ `scripts/sync-to-supabase.js` — sincroniza `.md → DB` via service key
 
 ## 📂 Estrutura do Repositório
 
@@ -56,22 +58,31 @@ facodi.pt/
 │           └─ uc/                 # 40+ Unidades Curriculares
 ├─ static/
 │   └─ js/
-│       ├─ supabaseClient.js        # Stub (Supabase removido)
-│       └─ loaders.js               # Renderização estática (600 linhas)
+│       ├─ supabaseClient.js        # Inicializa createClient Supabase
+│       └─ loaders.js               # loadCoursePage / loadUCPage / loadTopicPage
 ├─ assets/
 │   └─ css/
 │       └─ facodi.css               # Estilos + 280 linhas accessibility
+├─ scripts/
+│   └─ sync-to-supabase.js         # Sincroniza .md → Supabase DB
+├─ supabase/
+│   ├─ migrations/
+│   │   ├─ 001_initial_schema.sql  # Schemas catalog / subjects / mapping
+│   │   └─ 002_rls.sql             # Row-Level Security policies
+│   └─ seed.sql                    # Dados iniciais (LESTI 2024/2025)
 ├─ tests/                           # Suite de testes Vitest
 │   ├─ setup.js
 │   └─ loaders.test.js              # 19 testes unitários
 ├─ docs/
 │   ├─ FACODI.md, PLAN.md, SECURITY.md, VISUAL.md
-│   ├─ MIGRATION_STATIC.md          # Migração de Supabase
-│   ├─ DEVELOPER_GUIDE.md           # Guia para devs
-│   ├─ ACCESSIBILITY_IMPROVEMENTS.md # WCAG 2.1 AA
-│   └─ PHASE_2_SUMMARY.md           # Resumo Phase 2
+│   ├─ MIGRATION_STATIC.md
+│   ├─ DEVELOPER_GUIDE.md
+│   ├─ ACCESSIBILITY_IMPROVEMENTS.md
+│   └─ PHASE_2_SUMMARY.md
 └─ .github/workflows/
-    ├─ validate-content.yml         # Validação + build
+    ├─ validate-content.yml         # Validação + build Hugo
+    ├─ validate-md.yml              # Validação de front matter
+    ├─ sync-md-to-supabase.yml      # Sync .md → DB
     └─ deploy.yml                   # Deploy automático
 ```
 
@@ -103,7 +114,10 @@ npm install
 npm run dev                    # http://localhost:1313
 
 # Build para produção
-npm run build                  # 1,200+ páginas
+npm run build                  # gera /public
+
+# Sincronizar conteúdo Markdown → Supabase (requer service key)
+SUPABASE_URL=... SUPABASE_SERVICE_KEY=... node scripts/sync-to-supabase.js
 
 # Rodar testes
 npm test                       # Modo watch

@@ -10,10 +10,10 @@
   },
   "scripts": {
     "create": "hugo new",
-    "dev": "hugo server --disableFastRender --noHTTPCache",
+    "dev": "hugo server -D",
     "start": "hugo server --disableFastRender --noHTTPCache --port 3000",
     "format": "prettier **/** -w -c",
-    "build": "hugo --minify --gc",
+    "build": "hugo",
     "preview": "vite preview --outDir public",
     "test": "vitest",
     "test:ui": "vitest --ui",

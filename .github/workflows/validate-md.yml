@@ -1,0 +1,72 @@
+name: Validate Markdown Front Matter
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'content/**/*.md'
+      - '.github/workflows/validate-md.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'content/**/*.md'
+
+jobs:
+  validate-front-matter:
+    runs-on: ubuntu-latest
+    name: Validate Front Matter
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate front matter in markdown files
+        run: |
+          python3 - << 'EOF'
+          import os
+          import re
+          from pathlib import Path
+
+          REQUIRED_KEYS_COURSE  = {"title", "code"}
+          REQUIRED_KEYS_UC      = {"title", "code", "ects", "semester"}
+          REQUIRED_KEYS_TOPIC   = {"title"}
+
+          errors = []
+
+          for md_file in Path("content").rglob("*.md"):
+              with open(md_file, "r", encoding="utf-8") as f:
+                  content = f.read()
+
+              if not content.startswith("---"):
+                  errors.append(f"{md_file}: Missing front matter (must start with ---)")
+                  continue
+
+              match = re.match(r"^---\r?\n(.*?)\r?\n---", content, re.DOTALL)
+              if not match:
+                  errors.append(f"{md_file}: Invalid front matter block")
+                  continue
+
+              fm = match.group(1)
+              keys = set(re.findall(r"^(\w[\w-]*)\s*:", fm, re.MULTILINE))
+
+              # Determine which set of required keys applies
+              parts = md_file.parts
+              if "_index.md" in md_file.name and "uc" not in parts:
+                  required = REQUIRED_KEYS_COURSE if "courses" in parts else REQUIRED_KEYS_TOPIC
+              elif "_index.md" in md_file.name and "uc" in parts:
+                  required = REQUIRED_KEYS_UC
+              else:
+                  required = REQUIRED_KEYS_TOPIC
+
+              missing = required - keys
+              if missing:
+                  errors.append(f"{md_file}: Missing required front matter keys: {', '.join(sorted(missing))}")
+
+          if errors:
+              print("❌ Validation errors:\n")
+              for e in errors:
+                  print(f"  - {e}")
+              raise SystemExit(1)
+          else:
+              print(f"✓ All markdown files have valid front matter.")
+          EOF

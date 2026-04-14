@@ -5,3 +5,11 @@
   [pt.params]
     languageISO = "BR"
     languageTag = "pt-BR"
+
+[en]
+  languageName = "English"
+  contentDir = "content"
+  weight = 2
+  [en.params]
+    languageISO = "US"
+    languageTag = "en-US"

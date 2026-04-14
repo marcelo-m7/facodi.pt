@@ -537,6 +537,249 @@
   };
 
   // ============================================================================
+  // Supabase-powered Page Loaders
+  // ============================================================================
+
+  /**
+   * Get the Supabase client, waiting briefly if it hasn't been initialised yet.
+   * Returns null when the client is unavailable (no credentials / library missing).
+   * @returns {Promise<import('@supabase/supabase-js').SupabaseClient|null>}
+   */
+  const getSupabaseClient = () => {
+    if (window.facodiSupabase) return Promise.resolve(window.facodiSupabase);
+    // Give supabaseClient.js a moment to finish initialising (it runs deferred).
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const check = setInterval(() => {
+        if (window.facodiSupabase !== undefined || attempts >= 10) {
+          clearInterval(check);
+          resolve(window.facodiSupabase || null);
+        }
+        attempts++;
+      }, 50);
+    });
+  };
+
+  /**
+   * Load and render a course page using Supabase data.
+   *
+   * Fetches from `catalog.course`, `catalog.course_content`, and `catalog.uc`
+   * then updates the relevant DOM slots.
+   *
+   * @param {string} courseCode - Course code (e.g. "LESTI")
+   * @param {string} [planVersion] - Optional plan version filter
+   * @returns {Promise<void>}
+   */
+  const loadCoursePage = async (courseCode, planVersion) => {
+    if (!courseCode) return;
+    const db = await getSupabaseClient();
+    if (!db) return; // Supabase not available; static content already rendered
+
+    try {
+      // Fetch course details
+      let courseQuery = db
+        .schema('catalog')
+        .from('course')
+        .select('*')
+        .eq('code', courseCode)
+        .limit(1);
+      if (planVersion) courseQuery = courseQuery.eq('plan_version', planVersion);
+      const { data: courseRows, error: courseErr } = await courseQuery;
+      if (courseErr) throw courseErr;
+      const course = courseRows && courseRows[0];
+
+      if (course && course.summary) {
+        updateText('[data-facodi-course-summary]', course.summary);
+      }
+
+      // Fetch associated UCs
+      const { data: ucs, error: ucErr } = await db
+        .schema('catalog')
+        .from('uc')
+        .select('code, name, description, ects, semester, language')
+        .eq('course_code', courseCode);
+      if (ucErr) throw ucErr;
+
+      if (ucs && ucs.length) {
+        const container = document.querySelector('[data-facodi-slot="course-ucs"]');
+        if (container) {
+          container.innerHTML = renderCourseUcs(courseCode, ucs);
+        }
+        const count = document.getElementById('course-uc-count');
+        if (count) {
+          count.textContent = formatCount(ucs.length, 'common.unit', 'common.units');
+        }
+      }
+    } catch (err) {
+      console.error(`${logPrefix} loadCoursePage error.`, err);
+    }
+  };
+
+  /**
+   * Load and render a UC page using Supabase data.
+   *
+   * Fetches from `catalog.uc`, `catalog.uc_content`, `catalog.uc_learning_outcome`,
+   * `mapping.uc_playlist`, and `mapping.uc_topic` / `subjects.topic`.
+   *
+   * @param {string} ucCode - UC code (e.g. "19411011")
+   * @returns {Promise<void>}
+   */
+  const loadUCPage = async (ucCode) => {
+    if (!ucCode) return;
+    const db = await getSupabaseClient();
+    if (!db) return;
+
+    const courseCode = (document.body.dataset && document.body.dataset.course) || '';
+
+    try {
+      // UC details
+      const { data: ucRows, error: ucErr } = await db
+        .schema('catalog')
+        .from('uc')
+        .select('*')
+        .eq('code', ucCode)
+        .limit(1);
+      if (ucErr) throw ucErr;
+      const uc = ucRows && ucRows[0];
+
+      if (uc) {
+        if (uc.description) updateText('[data-facodi-uc-summary]', uc.description);
+        if (Array.isArray(uc.prerequisites) && uc.prerequisites.length) {
+          const elem = document.querySelector('[data-facodi-uc-prerequisites]');
+          if (elem) {
+            elem.textContent = uc.prerequisites.join(', ');
+            elem.classList.remove('text-muted');
+            elem.classList.add('notranslate');
+          }
+        }
+      }
+
+      // Learning outcomes
+      const { data: outcomes, error: outErr } = await db
+        .schema('catalog')
+        .from('uc_learning_outcome')
+        .select('outcome, order')
+        .eq('uc_code', ucCode)
+        .order('order', { ascending: true });
+      if (outErr) throw outErr;
+      if (outcomes && outcomes.length) {
+        updateHTML(
+          '#uc-learning-outcomes',
+          `<h2 class="h5">${escapeHtml(t('uc.learningOutcomes', FALLBACK_TRANSLATIONS['uc.learningOutcomes']))}</h2>${renderOutcomes(outcomes)}`
+        );
+      }
+
+      // Playlists
+      const { data: playlists, error: plErr } = await db
+        .schema('mapping')
+        .from('uc_playlist')
+        .select('playlist_id, priority')
+        .eq('uc_code', ucCode)
+        .order('priority', { ascending: true });
+      if (plErr) throw plErr;
+      if (playlists && playlists.length) {
+        updateHTML(
+          '#uc-playlists',
+          `<h2 class="h5">${escapeHtml(t('uc.playlists', FALLBACK_TRANSLATIONS['uc.playlists']))}</h2>${renderPlaylists(playlists, { emptyKey: 'uc.noPlaylists' })}`
+        );
+      }
+
+      // Topics
+      const { data: ucTopics, error: topErr } = await db
+        .schema('mapping')
+        .from('uc_topic')
+        .select('topic_slug')
+        .eq('uc_code', ucCode);
+      if (topErr) throw topErr;
+      if (ucTopics && ucTopics.length) {
+        const slugs = ucTopics.map((r) => r.topic_slug);
+        const { data: topics, error: tErr } = await db
+          .schema('subjects')
+          .from('topic')
+          .select('slug, name, summary')
+          .in('slug', slugs);
+        if (tErr) throw tErr;
+        const topicsContainer = document.getElementById('uc-topics');
+        if (topicsContainer && topics && topics.length) {
+          updateHTML(
+            topicsContainer,
+            `<div class="d-flex align-items-center justify-content-between mb-3">
+              <h2 class="h4 mb-0">${escapeHtml(t('uc.topics', FALLBACK_TRANSLATIONS['uc.topics']))}</h2>
+              <span class="text-muted small">${formatCountHtml(topics.length, 'common.topic', 'common.topics')}</span>
+            </div>
+            ${renderUcTopics(courseCode, ucCode, topics)}`
+          );
+        }
+      }
+    } catch (err) {
+      console.error(`${logPrefix} loadUCPage error.`, err);
+    }
+  };
+
+  /**
+   * Load and render a topic page using Supabase data.
+   *
+   * Fetches from `subjects.topic`, `subjects.topic_content`, `subjects.topic_tag`,
+   * and `mapping.topic_playlist`.
+   *
+   * @param {string} topicSlug - Topic slug (e.g. "estruturas-arvore")
+   * @returns {Promise<void>}
+   */
+  const loadTopicPage = async (topicSlug) => {
+    if (!topicSlug) return;
+    const db = await getSupabaseClient();
+    if (!db) return;
+
+    try {
+      // Topic details
+      const { data: topicRows, error: topErr } = await db
+        .schema('subjects')
+        .from('topic')
+        .select('*')
+        .eq('slug', topicSlug)
+        .limit(1);
+      if (topErr) throw topErr;
+      const topic = topicRows && topicRows[0];
+
+      if (topic && topic.summary) {
+        updateText('[data-facodi-topic-summary]', topic.summary);
+      }
+
+      // Tags
+      const { data: tagRows, error: tagErr } = await db
+        .schema('subjects')
+        .from('topic_tag')
+        .select('tag')
+        .eq('topic_slug', topicSlug);
+      if (tagErr) throw tagErr;
+      const container = document.querySelector('[data-facodi-slot="topic-tags"]');
+      if (container) {
+        const tags = tagRows ? tagRows.map((r) => r.tag) : [];
+        container.innerHTML = tags.length
+          ? renderTags(tags)
+          : `<span class="text-muted small">${escapeHtml(t('topic.noTags', FALLBACK_TRANSLATIONS['topic.noTags']))}</span>`;
+      }
+
+      // Playlists
+      const { data: playlists, error: plErr } = await db
+        .schema('mapping')
+        .from('topic_playlist')
+        .select('playlist_id, priority')
+        .eq('topic_slug', topicSlug)
+        .order('priority', { ascending: true });
+      if (plErr) throw plErr;
+      if (playlists !== null) {
+        updateHTML(
+          '#topic-playlists',
+          `<h2 class="h5">${escapeHtml(t('topic.relatedPlaylists', FALLBACK_TRANSLATIONS['topic.relatedPlaylists']))}</h2>${renderPlaylists(playlists, { emptyKey: 'topic.noPlaylists' })}`
+        );
+      }
+    } catch (err) {
+      console.error(`${logPrefix} loadTopicPage error.`, err);
+    }
+  };
+
+  // ============================================================================
   // Event Listeners & Initialization
   // ============================================================================
 
@@ -579,6 +822,25 @@
      * Manually refresh page content after language/theme change
      */
     refreshPage,
+
+    /**
+     * Load course page content from Supabase (falls back to static if unavailable)
+     * @param {string} courseCode
+     * @param {string} [planVersion]
+     */
+    loadCoursePage,
+
+    /**
+     * Load UC page content from Supabase (falls back to static if unavailable)
+     * @param {string} ucCode
+     */
+    loadUCPage,
+
+    /**
+     * Load topic page content from Supabase (falls back to static if unavailable)
+     * @param {string} topicSlug
+     */
+    loadTopicPage,
     
     /**
      * Internal utilities (for testing/debugging)
@@ -595,5 +857,5 @@
     }
   };
 
-  console.info(`${logPrefix} Loaders initialized (static-only, no database integration).`);
+  console.info(`${logPrefix} Loaders initialised.`);
 })();
