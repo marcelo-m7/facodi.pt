@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "description": "FACODI curriculum mapping for Odoo import",
+  "source": {
+    "repository": "Projects/facodi.pt",
+    "course_root": "content/courses/lesti"
+  },
+  "odoo_targets": {
+    "course_model": "slide.channel",
+    "uc_model": "slide.slide",
+    "topic_model": "slide.slide"
+  },
+  "id_rules": {
+    "course_external_id": "facodi.course_{course_slug}",
+    "uc_external_id": "facodi.uc_{uc_code}",
+    "topic_external_id": "facodi.topic_{uc_code}_{topic_slug}"
+  },
+  "notes": [
+    "Use dry-run first with import_curriculum_to_odoo.py",
+    "If slide.channel or slide.slide are missing, install eLearning module first"
+  ]
+}

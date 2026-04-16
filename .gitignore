@@ -1,0 +1,108 @@
+# Environment and configuration
+.env
+.env.local
+.env.*.local
+.env/
+.envrc
+.python-version
+
+# Sensitive files and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*credentials*.json
+*secret*
+*apikey*
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+/logs/**
+!/logs/.gitkeep
+
+# Data strategy: ignore all datasets by default
+/data/**
+!/data/
+!/data/raw/
+!/data/processed/
+!/data/output/
+!/data/tmp/
+!/data/**/*.md
+!/data/**/.gitkeep
+!/data/sample_data/**
+
+# Operator CLI generated artifacts
+/data/processed/fame_cli/**
+!/data/processed/fame_cli/.gitkeep
+/data/output/fame_cli/**
+!/data/output/fame_cli/.gitkeep
+
+# Documentation temporary builds
+docs/brute/*
+
+# Sub-repositories - ignore all contents except markdown documentation
+# These are independent git repositories that should maintain their own history
+/Corvanis/CoMapper/*
+!/Corvanis/CoMapper/.git/
+!/Corvanis/CoMapper/**/*.md
+
+/Corvanis/CoMapper_project/*
+!/Corvanis/CoMapper_project/.git/
+!/Corvanis/CoMapper_project/**/*.md
+
+/Corvanis/corvanis-website/*
+!/Corvanis/corvanis-website/.git/
+!/Corvanis/corvanis-website/**/*.md
+
+/Corvanis/odoo_documentation/*
+!/Corvanis/odoo_documentation/.git/
+!/Corvanis/odoo_documentation/**/*.md
+
+# Historical Projects directory - preserve sub-repo, ignore other contents
+/Projects/famebuilders/*
+!/Projects/famebuilders/.git/
+!/Projects/famebuilders/**/*.md
+
+/Projects/**
+!/Projects/**/*.md
+!/Projects/**/*.py
+!/Projects/**/*.txt
+!/Projects/**/*.yaml
+!/Projects/**/*.yml
+!/Projects/**/*.json
+!/Projects/**/.gitkeep
+
+# Shared tools and infrastructure
+# These directories track internal project files
+# (src/, apps/, config/, infra/ managed by individual .gitignore rules)
+
+# Generic generated artifacts
+*.tmp
+*.temp
+*.cache
+.cache/
+coverage/
+htmlcov/
+.pytest_cache/
+dist/
+build/

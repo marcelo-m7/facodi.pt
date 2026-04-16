@@ -1,0 +1,17 @@
+uc_code,topic_slug,topic_name,tags,playlists_count
+19411000,variaveis-e-tipos,Variáveis e Tipos de Dados,"fundamentais,tipos",1
+19411000,estruturas-controle,Estruturas de Controle,"controle,fundamentais",1
+19411000,funcoes-modularizacao,Funções e Modularização,"funções,boas-práticas",0
+19411000,estruturas-dados,Estruturas de Dados Básicas,"dados,avançado",0
+19411001,git-versionamento,Git e Versionamento,,0
+19411001,ambientes-dev,Ambientes de Desenvolvimento,,0
+19411001,scrum-agil,Scrum e Metodologias Ágeis,,0
+19411001,documentacao-codigo,Documentação de Código,,0
+19411006,classes-objetos,Classes e Objetos,,0
+19411006,heranca-polimorfismo,Herança e Polimorfismo,,0
+19411006,design-patterns,Design Patterns,,0
+19411006,uml-diagramas,Diagramas UML,,0
+19411011,analise-complexidade,Análise de Complexidade,,0
+19411011,estruturas-lineares,Estruturas Lineares,,0
+19411011,arvores-grafos,Árvores e Grafos,,0
+19411011,algoritmos-ordenacao,Algoritmos de Ordenação,,0
