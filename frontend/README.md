@@ -27,7 +27,18 @@ Nosso objetivo é **democratizar o acesso ao ensino superior** por meio de trilh
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Configure optional environment flags in `.env.local`:
+
+   - `VITE_DATA_SOURCE=mock` (default) or `VITE_DATA_SOURCE=odoo`
+   - `VITE_BACKEND_URL=http://localhost:8080` (backend FastAPI base URL)
+
+   Exemplo:
+
+   ```dotenv
+   VITE_DATA_SOURCE=odoo
+   VITE_BACKEND_URL=http://localhost:8080
+   ```
+
 3. Run the app:
    `npm run dev`
 

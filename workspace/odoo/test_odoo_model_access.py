@@ -8,7 +8,7 @@ from odoo_test_utils import OdooClient, get_odoo_credentials, load_env
 
 def main() -> int:
     workspace_root = Path(__file__).resolve().parents[2]
-    project_root = workspace_root / "Projects" / "facodi.pt"
+    project_root = workspace_root.parent
 
     try:
         env_used = load_env(workspace_root=workspace_root, project_root=project_root)

@@ -1,13 +1,14 @@
 import React from 'react';
-import { DEGREES } from '../data/degrees';
-import { COURSE_UNITS } from '../data/courses';
+import { Course, CurricularUnit } from '../types';
 
 interface CoursesProps {
   onSelectCourse: (courseId: string) => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
+  courses: Course[];
+  units: CurricularUnit[];
 }
 
-const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t }) => {
+const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units }) => {
   return (
     <div className="bg-white">
       <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
@@ -26,8 +27,8 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t }) => {
 
       <section className="py-16 lg:py-24 border-t border-black/10">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {DEGREES.map(course => {
-            const unitCount = COURSE_UNITS.filter(unit => unit.courseId === course.id).length;
+          {courses.map(course => {
+            const unitCount = units.filter(unit => unit.courseId === course.id).length;
             return (
               <article
                 key={course.id}
