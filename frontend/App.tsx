@@ -13,8 +13,9 @@ import Courses from './components/Courses';
 import { COURSE_UNITS } from './data/courses';
 import { PLAYLISTS } from './data/playlists';
 import { DEGREES } from './data/degrees';
-import { Category, Difficulty, FilterState } from './types';
+import { Category, Course, CurricularUnit, Difficulty, FilterState } from './types';
 import { createTranslator, Locale } from './data/i18n';
+import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
 type View = 'home' | 'courses' | 'repository' | 'paths' | 'roadmap' | 'contributors' | 'course-detail' | 'playlists' | 'dashboard';
 
@@ -24,6 +25,9 @@ const App: React.FC = () => {
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
+  const [courses, setCourses] = useState<Course[]>(DEGREES);
+  const [units, setUnits] = useState<CurricularUnit[]>(COURSE_UNITS);
+  const [catalogSource, setCatalogSource] = useState<CatalogSource>('mock');
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
     difficulty: 'All',
@@ -52,7 +56,7 @@ const App: React.FC = () => {
     const path = window.location.pathname;
     if (path.startsWith('/courses/units/')) {
       const unitId = path.replace('/courses/units/', '').split('/')[0];
-      const unitExists = COURSE_UNITS.some(unit => unit.id === unitId);
+      const unitExists = units.some(unit => unit.id === unitId);
       if (unitExists) {
         setSelectedUnitId(unitId);
         setCurrentView('course-detail');
@@ -87,11 +91,26 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    let active = true;
+
+    loadCatalogData().then((payload) => {
+      if (!active) return;
+      setCourses(payload.courses);
+      setUnits(payload.units);
+      setCatalogSource(payload.source);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     syncViewWithLocation();
     const handlePop = () => syncViewWithLocation();
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
-  }, []);
+  }, [units]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -136,11 +155,11 @@ const App: React.FC = () => {
   const years = ['All', 1, 2, 3];
   const semesters = ['All', 1, 2, 3, 4, 5, 6];
 
-  const selectedUnit = useMemo(() => COURSE_UNITS.find(u => u.id === selectedUnitId) || null, [selectedUnitId]);
-  const savedUnits = useMemo(() => COURSE_UNITS.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds]);
+  const selectedUnit = useMemo(() => units.find(u => u.id === selectedUnitId) || null, [selectedUnitId, units]);
+  const savedUnits = useMemo(() => units.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds, units]);
 
   const filteredUnits = useMemo(() => {
-    return COURSE_UNITS.filter(unit => {
+    return units.filter(unit => {
       const matchesSearch = unit.name.toLowerCase().includes(filters.search.toLowerCase()) ||
                           unit.tags.some(t => t.toLowerCase().includes(filters.search.toLowerCase()));
       const matchesCategory = filters.category === 'All' || unit.category === filters.category;
@@ -151,7 +170,7 @@ const App: React.FC = () => {
       const matchesSemester = filters.semester === 'All' || unit.semester === Number(filters.semester);
       return matchesSearch && matchesCategory && matchesDifficulty && matchesSaved && matchesCourse && matchesYear && matchesSemester;
     });
-  }, [filters, savedUnitIds]);
+  }, [filters, savedUnitIds, units]);
 
   const clearFilters = () => {
     setFilters({ category: 'All', difficulty: 'All', search: '', onlySaved: false, courseId: 'All', year: 'All', semester: 'All' });
@@ -208,6 +227,8 @@ const App: React.FC = () => {
               updateRoute('repository');
             }}
             t={t}
+            courses={courses}
+            units={units}
           />
         );
       case 'roadmap': return <Roadmap t={t} />;
@@ -230,7 +251,10 @@ const App: React.FC = () => {
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-24">
                   <div className="max-w-3xl">
                     <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.85] mb-8">Unidades</h1>
-                    <p className="text-xl lg:text-2xl text-gray-400 font-medium tracking-tight">Explore {COURSE_UNITS.length} unidades de conhecimento.</p>
+                    <p className="text-xl lg:text-2xl text-gray-400 font-medium tracking-tight">
+                      Explore {units.length} unidades de conhecimento.
+                      <span className="ml-2 text-xs uppercase tracking-widest text-gray-400">Fonte: {catalogSource}</span>
+                    </p>
                   </div>
                   <div className="w-full lg:w-[480px] relative group">
                     <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-black text-2xl group-focus-within:text-primary transition-colors">search</span>
@@ -254,7 +278,7 @@ const App: React.FC = () => {
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Curso</h3>
                       <div className="flex flex-wrap lg:flex-col gap-1">
                         <button onClick={() => setFilters(f => ({ ...f, courseId: 'All' }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === 'All' ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>Todos</button>
-                        {DEGREES.map(d => <button key={d.id} onClick={() => setFilters(f => ({ ...f, courseId: d.id }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === d.id ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{d.id}</button>)}
+                        {courses.map(d => <button key={d.id} onClick={() => setFilters(f => ({ ...f, courseId: d.id }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === d.id ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{d.id}</button>)}
                       </div>
                     </div>
                     <div>
