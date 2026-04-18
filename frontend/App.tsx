@@ -186,6 +186,7 @@ const App: React.FC = () => {
     if (currentView === 'course-detail' && selectedUnit) {
       return <CourseDetail 
                 unit={selectedUnit} 
+                allUnits={units}
                 onBack={() => {
                   setCurrentView('repository');
                   updateRoute('repository');

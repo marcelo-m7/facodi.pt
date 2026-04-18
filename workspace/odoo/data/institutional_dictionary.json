@@ -1,0 +1,59 @@
+{
+  "dictionary_version": "1.0.0",
+  "empresa": {
+    "nome": "Monynha Softwares",
+    "site": "https://monynha.com",
+    "tagline": "Criamos produtos digitais com impacto real.",
+    "manifesto": "Democratizar tecnologia, combater hipocrisia e dar voz a quem cria fora do padrao.",
+    "ecosistema": "Open ecosystem orientado a impacto social"
+  },
+  "projeto": {
+    "nome": "FACODI",
+    "slug": "facodi",
+    "site": "https://facodi.pt",
+    "descricao": "Faculdade Comunitaria Digital para organizacao de curriculos oficiais com materiais abertos.",
+    "proposta_valor": "Educacao aberta, gratuita, comunitaria e rastreavel"
+  },
+  "parceria": {
+    "modelo": "comunidade_aberta_moderada",
+    "atores": [
+      "estudantes",
+      "professores",
+      "voluntarios"
+    ],
+    "curadoria": "comunitaria",
+    "governanca": "editorial com revisao"
+  },
+  "licenca": {
+    "tipo": "licenca_aberta",
+    "nota": "Conteudo disponivel sob licenca aberta e curadoria comunitaria"
+  },
+  "idioma": {
+    "primario": "pt-PT",
+    "suportados": [
+      "pt-PT",
+      "en",
+      "es",
+      "fr"
+    ]
+  },
+  "fonte": {
+    "instituicao_base": "Universidade do Algarve (UAlg)",
+    "tipo": "curriculo_oficial_e_materiais_publicos",
+    "documentacao_api": "https://edu-facodi.odoo.com/doc"
+  },
+  "estado_editorial": {
+    "padrao": "publicado",
+    "opcoes": [
+      "rascunho",
+      "revisao",
+      "publicado",
+      "arquivado"
+    ]
+  },
+  "versao_curricular": {
+    "valor": "2025/2026",
+    "ciclo": "mvp_fase_1",
+    "observacao": "Base inicial para cursos comunitarios mapeados"
+  }
+}
