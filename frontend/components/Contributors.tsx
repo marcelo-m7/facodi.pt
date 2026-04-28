@@ -2,7 +2,7 @@
 import React from 'react';
 
 const CONTRIBUTORS = [
-  { name: "Monynha Softwares", role: "Founding Organization", location: "Portugal", impact: "Infrastructure & Vision" },
+  { name: "Open2 Technology", role: "Founding Organization", location: "Portugal", impact: "Infrastructure & Vision" },
   { name: "ISE UAlg", role: "Academic Partner", location: "Algarve", impact: "Scientific Validation" },
   { name: "FACODI Core Team", role: "Content Curation", location: "Remote", impact: "Curriculum Design" },
   { name: "Open Source Guild", role: "Development", location: "Global", impact: "Web Platform & UI" },

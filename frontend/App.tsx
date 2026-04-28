@@ -5,29 +5,31 @@ import Home from './components/Home';
 import Dashboard from './components/Dashboard';
 import CourseCard from './components/CourseCard';
 import CourseDetail from './components/CourseDetail';
-import Roadmap from './components/Roadmap';
 import Contributors from './components/Contributors';
 import PlaylistCard from './components/PlaylistCard';
 import AINavigator from './components/AINavigator';
 import Courses from './components/Courses';
-import { COURSE_UNITS } from './data/courses';
-import { PLAYLISTS } from './data/playlists';
-import { DEGREES } from './data/degrees';
-import { Category, Course, CurricularUnit, Difficulty, FilterState } from './types';
+import { Category, Course, CurricularUnit, FilterState, Playlist } from './types';
 import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'roadmap' | 'contributors' | 'course-detail' | 'playlists' | 'dashboard';
+import LessonDetail from './components/LessonDetail';
+
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
+    const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
-  const [courses, setCourses] = useState<Course[]>(DEGREES);
-  const [units, setUnits] = useState<CurricularUnit[]>(COURSE_UNITS);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [units, setUnits] = useState<CurricularUnit[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [catalogSource, setCatalogSource] = useState<CatalogSource>('mock');
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
     difficulty: 'All',
@@ -40,12 +42,12 @@ const App: React.FC = () => {
 
   const t = useMemo(() => createTranslator(locale), [locale]);
 
-  const updateRoute = (view: View, unitId?: string | null) => {
+  const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null) => {
     let path = '/';
     if (view === 'courses') path = '/courses';
     if (view === 'repository') path = '/courses/units';
     if (view === 'course-detail' && unitId) path = `/courses/units/${unitId}`;
-    if (view === 'roadmap') path = '/roadmap';
+    if (view === 'lesson-detail' && lessonId) path = `/lessons/${lessonId}`;
     if (view === 'dashboard') path = '/dashboard';
     if (view === 'playlists') path = '/playlists';
     if (view === 'contributors') path = '/contributors';
@@ -54,6 +56,15 @@ const App: React.FC = () => {
 
   const syncViewWithLocation = () => {
     const path = window.location.pathname;
+        if (path.startsWith('/lessons/')) {
+          const lessonId = path.replace('/lessons/', '').split('/')[0];
+          const lessonExists = units.some(unit => unit.id === lessonId);
+          if (lessonExists) {
+            setSelectedLessonId(lessonId);
+            setCurrentView('lesson-detail');
+            return;
+          }
+        }
     if (path.startsWith('/courses/units/')) {
       const unitId = path.replace('/courses/units/', '').split('/')[0];
       const unitExists = units.some(unit => unit.id === unitId);
@@ -69,10 +80,6 @@ const App: React.FC = () => {
     }
     if (path.startsWith('/courses')) {
       setCurrentView('courses');
-      return;
-    }
-    if (path.startsWith('/roadmap')) {
-      setCurrentView('roadmap');
       return;
     }
     if (path.startsWith('/dashboard')) {
@@ -92,13 +99,28 @@ const App: React.FC = () => {
 
   useEffect(() => {
     let active = true;
+    setIsCatalogLoading(true);
 
-    loadCatalogData().then((payload) => {
-      if (!active) return;
-      setCourses(payload.courses);
-      setUnits(payload.units);
-      setCatalogSource(payload.source);
-    });
+    loadCatalogData()
+      .then((payload) => {
+        if (!active) return;
+        setCourses(payload.courses);
+        setUnits(payload.units);
+        setPlaylists(payload.playlists);
+        setCatalogSource(payload.source);
+        setCatalogError(null);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setCatalogError(error instanceof Error ? error.message : 'Falha ao sincronizar conteudo do Odoo.');
+        setCourses([]);
+        setUnits([]);
+        setPlaylists([]);
+      })
+      .finally(() => {
+        if (!active) return;
+        setIsCatalogLoading(false);
+      });
 
     return () => {
       active = false;
@@ -157,6 +179,7 @@ const App: React.FC = () => {
 
   const selectedUnit = useMemo(() => units.find(u => u.id === selectedUnitId) || null, [selectedUnitId, units]);
   const savedUnits = useMemo(() => units.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds, units]);
+  const selectedLesson = useMemo(() => units.find(u => u.id === selectedLessonId) || null, [selectedLessonId, units]);
 
   const filteredUnits = useMemo(() => {
     return units.filter(unit => {
@@ -182,6 +205,12 @@ const App: React.FC = () => {
     updateRoute('course-detail', id);
   };
 
+  const handleLessonSelect = (id: string) => {
+    setSelectedLessonId(id);
+    setCurrentView('lesson-detail');
+    updateRoute('lesson-detail', undefined, id);
+  };
+
   const renderContent = () => {
     if (currentView === 'course-detail' && selectedUnit) {
       return <CourseDetail 
@@ -192,6 +221,19 @@ const App: React.FC = () => {
                   updateRoute('repository');
                 }} 
                 onNavigate={handleUnitSelect}
+                t={t}
+             />;
+    }
+
+    if (currentView === 'lesson-detail' && selectedLesson) {
+      return <LessonDetail 
+                unit={selectedLesson} 
+                allUnits={units}
+                onBack={() => {
+                  setCurrentView('repository');
+                  updateRoute('repository');
+                }} 
+                onNavigate={handleLessonSelect}
                 t={t}
              />;
     }
@@ -212,11 +254,9 @@ const App: React.FC = () => {
               setCurrentView('courses');
               updateRoute('courses');
             }}
-            onRoadmap={() => {
-              setCurrentView('roadmap');
-              updateRoute('roadmap');
-            }}
             t={t}
+            courses={courses}
+            units={units}
           />
         );
       case 'courses':
@@ -230,17 +270,23 @@ const App: React.FC = () => {
             t={t}
             courses={courses}
             units={units}
+            isLoading={isCatalogLoading}
           />
         );
-      case 'roadmap': return <Roadmap t={t} />;
       case 'contributors': return <Contributors />;
       case 'playlists':
         return (
           <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
             <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-8">Playlists</h1>
+            {catalogError && (
+              <p className="text-xs uppercase tracking-widest text-red-600 mb-8">{catalogError}</p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {PLAYLISTS.map(pl => <PlaylistCard key={pl.id} playlist={pl} onSelect={() => {}} />)}
+              {playlists.map(pl => <PlaylistCard key={pl.id} playlist={pl} onSelect={() => {}} />)}
             </div>
+            {!playlists.length && (
+              <p className="text-xs uppercase tracking-widest text-gray-500 mt-10">Sem playlists mapeadas no conteudo sincronizado.</p>
+            )}
           </div>
         );
       case 'repository':
@@ -315,7 +361,7 @@ const App: React.FC = () => {
                           >
                             <span className="material-symbols-outlined text-2xl">{savedUnitIds.includes(unit.id) ? 'bookmark' : 'bookmark_add'}</span>
                           </button>
-                          <CourseCard unit={unit} onClick={handleUnitSelect} />
+                          <CourseCard unit={unit} onClick={handleLessonSelect} />
                         </div>
                       ))}
                     </div>
@@ -348,7 +394,7 @@ const App: React.FC = () => {
       t={t}
     >
       {renderContent()}
-      <AINavigator />
+      <AINavigator units={units} />
     </Layout>
   );
 };

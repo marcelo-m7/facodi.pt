@@ -1,0 +1,249 @@
+---
+# Feature Spec: Audit Trail & Change Tracking
+# ID: FEAT-AUDIT-001
+# Priority: HIGH (MVP)
+# Target: All Studio Apps (esp. Finance, Compliance)
+# Estimated Effort: 4-5 days
+# SaaS Safe: YES (API-only)
+
+spec_id: FEAT-AUDIT-001
+spec_title: "Automatic Audit Trail & Change History"
+spec_type: "feature-pack"
+created_date: 2026-04-27
+
+description: |
+  Automatic change tracking for all fields in a Studio app.
+  Every create/write records the change with: who, when, what changed, why.
+  Full audit trail for compliance (SOX, LGPD, GDPR).
+  No manual logging needed - happens automatically via ir.actions.server.
+
+## =============================================================================
+## PHASE 1: PLAN
+## =============================================================================
+
+scope:
+  models_affected:
+    - Any Studio app (x_* model)
+    - audit.trail (new model to store changes)
+  
+  new_models:
+    audit.trail:
+      fields:
+        - id: Integer
+        - resource_type: Char (ir.model name, e.g. "x_project")
+        - resource_id: Integer (record ID)
+        - user_id: Many2One (res.partner)
+        - timestamp: Datetime
+        - operation: Selection(create, write, unlink)
+        - old_values: Text (JSON of before state)
+        - new_values: Text (JSON of after state)
+        - changed_fields: Char (comma-separated list)
+        - change_reason: Text (optional user-supplied reason)
+        - ip_address: Char (for security)
+        - session_id: Char (for correlation)
+      access: Read-only (no edit/delete except cleanup)
+      indexes: (resource_type, resource_id, timestamp) for quick lookup
+
+  workflow:
+    1. User creates/modifies record in Studio app
+    2. ir.actions.server.write trigger fires
+    3. Server action calls helper: create_audit_trail()
+    4. Helper stores old_values vs new_values diff
+    5. Creates audit.trail record (timestamped)
+    6. User sees "View History" button on record (new view)
+
+dependencies:
+  - Odoo 19.2+
+  - res.partner (for user tracking)
+  - ir.actions.server (for write trigger)
+
+assumptions:
+  - Every write operation triggers audit (can filter by field)
+  - Deletes are tracked (marked as "unlink" operation)
+  - Audit records are immutable (read-only after creation)
+  - Sensitive fields can be excluded (password, secret keys)
+
+constraints:
+  - Large apps: Audit table can grow quickly (1M+ records in 1 year)
+  - Performance: Trigger adds < 100ms to write operation
+  - Storage: Estimate 1KB per audit record (plan for retention policy)
+  - SaaS: Cannot use Python triggers, must use ir.actions.server
+
+security_notes:
+  - Audit records must be append-only (cannot be deleted by end users)
+  - Only admins can view full audit trail
+  - Users can see their own changes only (default)
+  - IP address logged for forensics (GDPR compliance)
+  - PII in audit trail: Carefully document in privacy policy
+
+## =============================================================================
+## PHASE 2: IMPLEMENT
+## =============================================================================
+
+implementation_plan:
+  
+  step_1_create_audit_trail_model:
+    description: "Create audit.trail model via API"
+    location: "src/codoo/odoo/audit.py"
+    action: |
+      Create ir.model record:
+      - name: "Audit Trail"
+      - model: "audit.trail"
+      - state: "manual"
+      - fields: As per scope above
+    evidence: "Model creation log"
+  
+  step_2_create_helper_functions:
+    description: "Create audit logging helpers"
+    location: "src/codoo/odoo/audit.py"
+    functions:
+      - create_audit_trail(model, resource_id, operation, old, new, reason)
+      - get_changed_fields(old, new) -> list
+      - should_audit_field(field_name, config) -> bool
+      - cleanup_old_audits(days=365) # Archive old records
+  
+  step_3_wire_server_actions:
+    description: "Create ir.actions.server to trigger audit on write"
+    location: "Studio (manual) + documented"
+    server_action:
+      name: "Log Audit Trail - Write"
+      model: x_app (for each app)
+      trigger: On write
+      code: |
+        # Call helper to create audit.trail record
+        # Pass old_values, new_values, changed_fields
+  
+  step_4_create_audit_view:
+    description: "Create read-only view to show audit trail"
+    location: "Studio (manual)"
+    view_fields:
+      - timestamp (sortable, desc default)
+      - user_id (who made change)
+      - operation (create/write/delete)
+      - changed_fields (which fields changed)
+      - change_reason (why)
+      - "View Diff" button (show old vs new)
+  
+  step_5_create_task:
+    description: "Task to add audit trail to any app"
+    location: "src/codoo/tasks/features/add_audit_trail.py"
+    modes:
+      - inspect: Check if audit already enabled, show audit counts
+      - dry-run: Plan what changes would be made
+      - apply: Create audit.trail model + server actions
+      - verify: Verify audit triggers work (test create/write)
+
+files_to_create:
+  - src/codoo/odoo/audit.py (core audit logic)
+  - src/codoo/tasks/features/add_audit_trail.py (deployment task)
+  - docs/guides/STUDIO-AUDIT-TRAIL.md (user guide)
+  - docs/plans/audit-retention-policy.md (archival strategy)
+
+## =============================================================================
+## PHASE 3: VALIDATE (Gates)
+## =============================================================================
+
+validation_gates:
+  
+  gate_1_install:
+    check: |
+      python -m py_compile src/codoo/odoo/audit.py
+      from codoo.odoo import audit
+      assert hasattr(audit, 'create_audit_trail')
+    evidence: "Import test log"
+  
+  gate_2_api_crud:
+    test: |
+      1. Create audit.trail model via task
+      2. Create test record in x_app
+      3. Verify audit.trail record created automatically
+      4. Verify old_values/new_values stored correctly
+    expected: "Audit records created for each operation"
+    evidence: "API response showing created audit records"
+  
+  gate_3_change_tracking:
+    test: |
+      1. Create record with name="Project A"
+      2. Modify to name="Project B"
+      3. Query audit trail
+      4. Verify: old_values.name="Project A", new_values.name="Project B"
+    expected: "Diff correctly captured"
+    evidence: "Query result JSON"
+  
+  gate_4_ui_test:
+    test: |
+      1. Open app in Odoo UI
+      2. Modify a record
+      3. Click "View History" button (new)
+      4. See timeline of all changes
+      5. Click "View Diff" to see old vs new
+    expected: "UI shows clean history + diffs"
+    evidence: "Screenshot of history view"
+  
+  gate_5_permissions:
+    test: |
+      1. Test with admin: Can see full audit trail
+      2. Test with user: Can see own changes only
+      3. Test with viewer: Cannot delete/edit audit records
+    expected: "Proper ACL enforcement"
+    evidence: "Test results from different user roles"
+  
+  gate_6_performance:
+    test: |
+      1. Time a write operation with audit enabled: Should be < 100ms
+      2. Create 1000 records, measure throughput
+      3. Query audit trail for 1000 records: Should be < 500ms
+    expected: "No significant performance impact"
+    evidence: "Benchmark results"
+  
+  gate_7_documentation:
+    docs:
+      - Retention policy (how long to keep audits)
+      - Privacy notice (inform users audits are logged)
+      - How to export audit trail for compliance
+    evidence: "Committed docs"
+  
+  gate_8_evidence_report:
+    evidence: "docs/features/FEAT-AUDIT-001-execution-report.md"
+
+## =============================================================================
+## PHASE 4: REPORT
+## =============================================================================
+
+success_criteria:
+  - Audit trail automatically created for all write operations
+  - Users can view history + diffs on any record
+  - Audit records immutable (append-only)
+  - Proper ACL (admin sees all, users see own)
+  - No performance impact (< 100ms per write)
+
+known_limitations:
+  - Bulk operations may not trigger audit (use task instead)
+  - Deleted records: Audit trail kept but resource deleted
+  - Storage: Audit table grows indefinitely (plan retention policy)
+  - PII: Sensitive fields logged in plaintext (consider encryption)
+
+rollback_strategy:
+  - Disable: Set server action to inactive
+  - Cleanup: Delete old audit records via cleanup task
+  - Complete rollback: Delete audit.trail model + records
+
+---
+
+## Examples
+
+### Example 1: Finance App
+**Use case**: Track all invoice changes for tax audit
+- Automatically audit: amount, vendor, date, status
+- Exclude: internal_notes (not audited)
+- Retention: 7 years (GDPR)
+
+### Example 2: HR App
+**Use case**: Track salary changes for compliance
+- Automatically audit: salary_amount, role, department
+- Sensitive: Mark as PII (limited access)
+- Compliance: Export for labor inspection
+
+---
+
+Estimated time: 4-5 days (full stack)

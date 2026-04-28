@@ -22,9 +22,9 @@ export interface CurricularUnit {
   id: string;
   name: string;
   description: string;
-  content?: string; 
-  contentUrl?: string; 
-  syllabusUrl?: string; 
+  content?: string;
+  contentUrl?: string;
+  syllabusUrl?: string;
   ects: number;
   semester: number;
   year: number;
@@ -34,7 +34,12 @@ export interface CurricularUnit {
   contributor: string;
   tags: string[];
   courseId: string;
-  prerequisites?: string[]; // IDs of required previous units
+  prerequisites?: string[];
+  // Odoo-enriched fields
+  unitCode?: string;        // x_facodi_unit_code e.g. '19411003'
+  sectionName?: string;     // category_id name e.g. '1o Ano - 1o Semestre'
+  websiteUrl?: string;      // website_absolute_url on Odoo
+  videoUrl?: string;        // video_url on Odoo
 }
 
 export interface Course {
@@ -48,6 +53,10 @@ export interface Course {
   degreeType: 'bachelor' | 'master' | 'other';
   language: string;
   longDescription: string;
+  // Odoo-enriched fields
+  websiteUrl?: string;         // website_absolute_url on Odoo
+  curriculumVersion?: string;  // x_facodi_curriculum_version
+  contentLicense?: string;     // x_facodi_content_license
 }
 
 export interface Playlist {

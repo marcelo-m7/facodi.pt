@@ -6,9 +6,10 @@ interface CoursesProps {
   t: (key: string, vars?: Record<string, string | number>) => string;
   courses: Course[];
   units: CurricularUnit[];
+  isLoading: boolean;
 }
 
-const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units }) => {
+const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, isLoading }) => {
   return (
     <div className="bg-white">
       <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
@@ -74,6 +75,16 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units }) 
               </article>
             );
           })}
+          {isLoading && (
+            <div className="stark-border p-12">
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-500">{t('courses.loading')}</p>
+            </div>
+          )}
+          {!isLoading && !courses.length && (
+            <div className="stark-border p-12">
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-500">Sem cursos sincronizados do Odoo neste momento.</p>
+            </div>
+          )}
         </div>
       </section>
     </div>

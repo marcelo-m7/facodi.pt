@@ -1,63 +1,156 @@
-# FACODI Monorepo
+# FACODI
 
-Monorepo oficial do projeto FACODI, com separacao clara entre plataforma publica, operacao interna e integracao com Odoo.
+FACODI (Faculdade Comunitaria Digital) e uma plataforma educacional open-source com foco em acesso gratuito e curadoria de trilhas academicas.
 
-## Estrutura
+Este repositorio junta dois blocos principais:
+- Runtime e automacao Codoo em Python (orquestracao e tarefas Odoo)
+- Aplicacao frontend em React + Vite para experiencia do catalogo
 
-- `frontend/`: aplicacao web publica do FACODI (React + Vite)
-- `backend/`: servicos, APIs e integracoes de suporte (em evolucao)
-- `workspace/`: ambiente operacional (Odoo, scraping, automacoes e utilitarios)
-- `docs/`: documentacao transversal, institucional e de arquitetura
+## Visao do Projeto
 
-## Estado arquitetural atual
+O projeto organiza cursos e unidades curriculares com foco em:
+- Estrutura curricular clara
+- Conteudo aberto e reutilizavel
+- Integracao com Odoo e-learning
+- Execucao rastreavel via evidencias em JSON
 
-- O monorepo e a arquitetura oficial do projeto.
-- Os cursos migrados para o Odoo fazem parte do estado atual, nao sao temporarios.
-- O `frontend/` representa a experiencia publica.
-- O `workspace/odoo/` concentra ingestao, normalizacao e sincronizacao operacional de curriculo.
+Contexto institucional:
+- [docs/FACODI.md](docs/FACODI.md)
 
-Veja tambem:
+## Status Atual e Proximos Passos
 
-- `docs/ARQUITETURA_MONOREPO_ODOO.md`
-- `workspace/odoo/README.md`
+Status em 28/04/2026:
+- Frontend funcional com fallback resiliente para mock data.
+- Estado de carregamento no catalogo aplicado para evitar falso vazio.
+- Integracao Odoo mantida como fonte de verdade para dados live.
 
-## Quick Start
+Execucao prioritaria de hoje:
+1. Atualizar documentacao de status e roadmap curto.
+2. Enriquecer a UC LESTI "Analise Matematica II" (19411008) com videos curados.
+3. Persistir `video_url` no Odoo via fluxo auditavel.
+4. Consolidar evidencias em `docs/logs/` e relatorio diario.
 
-### Frontend
+Referencias de acompanhamento:
+- [docs/plans/2026-04-28-implementation-status.md](docs/plans/2026-04-28-implementation-status.md)
+- [docs/plans/EXECUTIVE_SUMMARY.md](docs/plans/EXECUTIVE_SUMMARY.md)
 
-1. Entrar em `frontend/`
-2. Instalar dependencias
-3. Iniciar em desenvolvimento
+## Arquitetura Atual
 
+Separacao principal de responsabilidades:
+- `frontend/`: SPA React + Vite (UI, navegacao, experiencia do catalogo)
+- `src/codoo/`: CLI Python, core runtime, tasks operacionais e cliente Odoo
+- `docs/`: guias, metodologia, planos e logs de evidencia
+- `.agents/` e `.github/`: skills, prompts, agentes e instrucoes operacionais
+
+Documentos de referencia:
+- [AGENTS.md](AGENTS.md)
+- [docs/guides/ARCHITECTURE.md](docs/guides/ARCHITECTURE.md)
+- [docs/guides/CODOO.md](docs/guides/CODOO.md)
+- [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md)
+
+## Setup Rapido
+
+### 1) Runtime Python (raiz)
+
+Linux/macOS:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+cp .env.example .env
+python -m codoo --help
+python -m codoo task list
+```
+
+Windows PowerShell:
 ```powershell
+python -m venv .venv
+& .venv\Scripts\Activate.ps1
+pip install -e .
+Copy-Item .env.example .env
+python -m codoo --help
+python -m codoo task list
+```
+
+### 2) Frontend
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Workspace operacional (Python)
-
-1. Entrar em `workspace/`
-2. Criar/ativar ambiente virtual
-3. Instalar dependencias
-
-```powershell
-cd workspace
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+Comandos adicionais:
+```bash
+npm run build
+npm run preview
+npm run test:e2e
 ```
 
-## Fluxo de dados (resumo)
+## Configuracao de Ambiente
 
-1. Fontes curriculares e materiais sao extraidos e normalizados no `workspace/`.
-2. Entidades curriculares e relacoes sao sincronizadas com Odoo em `workspace/odoo/`.
-3. O site em `frontend/` consome os dados e metadados necessarios para apresentacao publica.
+Variaveis essenciais em `.env` (raiz):
+- `ODOO_HOST`
+- `ODOO_DB`
+- `ODOO_USERNAME`
+- `ODOO_PASSWORD`
 
-## Onboarding recomendado
+Variaveis comuns em `frontend/.env.local`:
+- `VITE_DATA_SOURCE` (`mock` ou `odoo`)
+- `VITE_BACKEND_URL`
 
-1. Ler `docs/ARQUITETURA_MONOREPO_ODOO.md`.
-2. Executar o frontend localmente.
-3. Validar pipeline operacional em `workspace/odoo/README.md`.
-4. Consultar documentos em `docs/` para contexto institucional.
+Nao commitar `.env` nem `.env.local`.
 
+## Execucao de Tasks (Codoo)
+
+Modo recomendado para tasks mutaveis:
+1. `inspect`
+2. `dry-run`
+3. `apply`
+4. `verify`
+
+Exemplo:
+```bash
+python -m codoo task run --name <task-name> --mode inspect
+python -m codoo task run --name <task-name> --mode dry-run
+python -m codoo task run --name <task-name> --mode apply
+python -m codoo task run --name <task-name> --mode verify
+```
+
+Evidencias devem ficar em `docs/logs/`.
+
+## Integracao Frontend + Odoo
+
+Regras de integracao e mapeamento:
+- [.github/instructions/odoo-elearning-frontend.instructions.md](.github/instructions/odoo-elearning-frontend.instructions.md)
+- [.github/instructions/odoo-elearning.instructions.md](.github/instructions/odoo-elearning.instructions.md)
+
+## Estrutura do Repositorio
+
+```text
+.
+├─ frontend/
+├─ src/codoo/
+├─ tests/
+├─ docs/
+├─ .agents/
+└─ .github/
+```
+
+## Onboarding Rápido para Novos Colaboradores
+
+1. Ler [AGENTS.md](AGENTS.md)
+2. Rodar setup Python e frontend
+3. Confirmar acesso Odoo com `authenticate()`
+4. Ler [docs/guides/CODOO.md](docs/guides/CODOO.md)
+5. Seguir [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md)
+
+## Observacoes Importantes
+
+- `docs/odoo/**` e `docs/documentation/**` sao espelhos de referencia (nao editar sem pedido explicito).
+- Em validacoes UI, sempre verificar erros no console do browser.
+- Depois de alteracoes Python significativas, executar `python -m py_compile <arquivo>`.
+
+## Licenca
+
+Ver arquivos de licenca do repositorio.

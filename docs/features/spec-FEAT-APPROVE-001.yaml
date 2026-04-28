@@ -1,0 +1,351 @@
+---
+# Feature Spec: Workflow & Approval Routing
+# ID: FEAT-APPROVE-001
+# Priority: CRITICAL (Highest ROI)
+# Target: Finance, Projects, HR, Procurement apps
+# Estimated Effort: 5-7 days
+# SaaS Safe: YES (API-only)
+
+spec_id: FEAT-APPROVE-001
+spec_title: "Workflow Management & Multi-Step Approvals"
+spec_type: "feature-pack"
+created_date: 2026-04-27
+
+description: |
+  Multi-step approval workflow for Studio apps.
+  Define allowed state transitions (draft → review → approved → published).
+  Route to approvers based on rules (amount, category, department).
+  Auto-notify, track SLA, handle rejections, full audit trail.
+  No code - pure ir.actions.server + data configuration.
+
+## =============================================================================
+## PHASE 1: PLAN
+## =============================================================================
+
+scope:
+  models_affected:
+    - Any Studio app (x_* model with status field)
+    - workflow.config (new: define workflow rules)
+    - approval.queue (new: track pending approvals)
+    - approval.history (new: audit of all approvals)
+  
+  new_models:
+    workflow.config:
+      fields:
+        - id: Integer
+        - name: Char (e.g., "Project Approval - Finance")
+        - app_model: Char (x_project, x_invoice, etc)
+        - stages: Text (JSON array: ["draft", "review", "approved", "published"])
+        - transitions: Text (JSON: {"draft": ["review"], "review": ["approved", "draft"]})
+        - approvers_rule: Selection(fixed_user, department_lead, amount_based, custom_code)
+        - approvers_fixed: Many2Many (res.partner - who approves)
+        - approval_required_fields: Char (fields that must be filled before approval)
+        - sla_days: Integer (alert if pending > X days)
+        - auto_approve_threshold: Monetary (auto-approve if amount < X)
+        - reject_allows_edit: Boolean (can rejector edit and resubmit?)
+    
+    approval.queue:
+      fields:
+        - id: Integer
+        - workflow_id: Many2One (workflow.config)
+        - resource_type: Char (ir.model name)
+        - resource_id: Integer (record being approved)
+        - current_stage: Char (current status)
+        - target_stage: Char (trying to move to)
+        - assigned_to: Many2One (res.partner - current approver)
+        - created_date: Datetime
+        - due_date: Datetime (calculated from SLA)
+        - status: Selection(pending, approved, rejected, escalated)
+        - comment: Text (approver feedback)
+        - approved_by: Many2One (who approved)
+        - approved_date: Datetime
+      access: Users can see own queue, admins see all
+    
+    approval.history:
+      fields:
+        - id: Integer
+        - workflow_id: Many2One
+        - resource_type, resource_id, resource_name: Info
+        - action: Selection(submitted, approved, rejected, reassigned, escalated)
+        - actor: Many2One (who took action)
+        - from_stage, to_stage: Char
+        - timestamp: Datetime
+        - comment: Text
+        - sla_met: Boolean (was it on time?)
+  
+  workflow_example:
+    name: "Invoice Approval - Finance"
+    stages: ["draft", "review", "approved", "paid"]
+    transitions:
+      draft: [review]
+      review: [approved, draft]  # Can reject back to draft
+      approved: [paid]
+    approvers_rule: "amount_based"
+    rules:
+      - if amount <= 1000: auto-approve
+      - if 1000 < amount <= 50000: require 1 manager approval
+      - if 50000 < amount <= 500000: require 2 manager approvals
+      - if amount > 500000: require CFO approval
+    sla: 5 days (notify if pending > 5 days)
+    escalation: After 10 days, escalate to director
+
+dependencies:
+  - Odoo 19.2+
+  - res.partner (users + department)
+  - ir.actions.server (for state change triggers)
+  - email templates (for notifications)
+
+assumptions:
+  - Each app has a "status" field (Char or Selection)
+  - Approvers assigned via department or fixed user list
+  - Email templates available for notifications
+  - No Python code modifications needed
+
+constraints:
+  - State transitions must be linear (no jumping stages)
+  - Cannot do complex rule logic (use fixed rules only)
+  - SaaS: No custom Python code, pure configuration
+  - Performance: Should handle 1000s of concurrent approvals
+
+security_notes:
+  - Only assigned approver can approve (check via ACL)
+  - Rejection must include comment (traceability)
+  - Escalation only to higher-level managers
+  - Audit trail of all approvals (cannot be deleted)
+
+## =============================================================================
+## PHASE 2: IMPLEMENT
+## =============================================================================
+
+implementation_plan:
+  
+  step_1_create_workflow_models:
+    description: "Create workflow.config, approval.queue, approval.history models"
+    location: "src/codoo/odoo/workflow.py"
+    action: |
+      Create 3 models via API with fields as per scope
+    evidence: "Model creation logs"
+  
+  step_2_create_approval_helpers:
+    description: "Create functions for workflow logic"
+    location: "src/codoo/odoo/workflow.py"
+    functions:
+      - get_approvers(workflow, resource, amount) -> list[res.partner]
+      - can_transition(from_stage, to_stage, workflow) -> bool
+      - create_approval_queue(workflow, resource, to_stage) -> approval.queue
+      - approve_request(approval_id, comment) -> bool
+      - reject_request(approval_id, comment) -> bool
+      - check_sla(approval_id) -> bool (is overdue?)
+      - escalate_approval(approval_id, to_user) -> approval.queue
+  
+  step_3_create_state_change_triggers:
+    description: "Wire ir.actions.server to trigger approvals on status change"
+    location: "Studio (manual) + documented"
+    server_action:
+      name: "Trigger Approval Workflow"
+      model: x_app (for each app)
+      trigger: On status field change
+      code: |
+        # When user tries to change status:
+        # 1. Check if transition allowed (via workflow rules)
+        # 2. If requires approval: Create approval.queue (block change)
+        # 3. If auto-approve threshold: Auto-approve immediately
+        # 4. Notify approver(s) via email
+  
+  step_4_create_approval_views:
+    description: "Create Odoo views for approvals"
+    location: "Studio + ir.ui.view"
+    views:
+      - approval_queue_list (kanban: pending → approved → rejected)
+      - approval_queue_detail (show record + approval form)
+      - approval_history_timeline (audit trail of all approvals)
+      - workflow_config_form (admin: define workflows)
+  
+  step_5_create_notification_system:
+    description: "Create email templates for notifications"
+    location: "email.template"
+    templates:
+      - approval_request (notify approver)
+      - approval_approved (notify requester)
+      - approval_rejected (notify requester with comment)
+      - approval_overdue_sla (notify approver: overdue!)
+      - approval_escalated (notify higher approver)
+  
+  step_6_create_deployment_task:
+    description: "Task to add workflow to any app"
+    location: "src/codoo/tasks/features/add_workflow.py"
+    modes:
+      - inspect: Check if workflow enabled, show pending approvals
+      - dry-run: Plan workflow configuration
+      - apply: Create workflow.config + server actions
+      - verify: Test state transitions work, SLA tracking, notifications
+
+files_to_create:
+  - src/codoo/odoo/workflow.py (core workflow logic)
+  - src/codoo/tasks/features/add_workflow.py (deployment task)
+  - docs/guides/STUDIO-WORKFLOWS.md (user guide)
+  - docs/plans/workflow-examples.md (real-world templates)
+  - docs/plans/approval-sla-policy.md (SLA defaults)
+
+## =============================================================================
+## PHASE 3: VALIDATE (Gates)
+## =============================================================================
+
+validation_gates:
+  
+  gate_1_install:
+    check: |
+      python -m py_compile src/codoo/odoo/workflow.py
+      from codoo.odoo import workflow
+      assert hasattr(workflow, 'create_approval_queue')
+    evidence: "Import test"
+  
+  gate_2_workflow_creation:
+    test: |
+      1. Create workflow.config via task
+      2. Define stages: draft → review → approved
+      3. Define rule: amount < 1000 auto-approve
+      4. Verify rules stored in JSON
+    expected: "Workflow configuration saved"
+    evidence: "API response with workflow ID"
+  
+  gate_3_approval_queue:
+    test: |
+      1. Create test record (x_project) with status=draft
+      2. Try to change status to approved (requires $10k approval)
+      3. Verify approval.queue created (BLOCKED)
+      4. Approve the queue entry
+      5. Verify status changed to approved
+    expected: "Workflow prevents direct transition, creates queue, allows after approval"
+    evidence: "API responses showing workflow enforcement"
+  
+  gate_4_amount_based_approval:
+    test: |
+      1. Test 3 scenarios:
+         - amount=500 (< 1000): Should auto-approve
+         - amount=25000: Should require 1 manager
+         - amount=600000: Should require CFO approval
+      2. Verify correct approvers routed
+    expected: "Amount-based routing works correctly"
+    evidence: "Test results for each amount tier"
+  
+  gate_5_rejection_flow:
+    test: |
+      1. Submit record for approval
+      2. Approver rejects with comment: "Needs more detail"
+      3. Record returns to draft
+      4. Original creator can edit and resubmit
+      5. Verify history shows rejection
+    expected: "Rejection → edit → resubmit flow works"
+    evidence: "API logs of state changes + history record"
+  
+  gate_6_sla_tracking:
+    test: |
+      1. Create approval with SLA = 5 days
+      2. Wait 4 days: No alert
+      3. Wait 6 days: Alert sent to approver
+      4. Mark as escalated to director
+      5. Verify audit shows escalation
+    expected: "SLA alerts work, escalation tracked"
+    evidence: "Email logs + approval.history records"
+  
+  gate_7_ui_test:
+    test: |
+      1. Open approval queue in Odoo (new view)
+      2. See kanban: Pending (10 cards) → Approved (5) → Rejected (2)
+      3. Click pending card → See record + approval form
+      4. Approve with comment
+      5. See record status changed in main app
+    expected: "Approval UI smooth and intuitive"
+    evidence: "Screenshot of kanban + approval detail"
+  
+  gate_8_permissions:
+    test: |
+      1. Test with approver: Can see pending, approve/reject
+      2. Test with requester: Can see own submissions
+      3. Test with viewer: Cannot approve
+      4. Test with admin: Can see all + override
+    expected: "Proper ACL enforcement"
+    evidence: "Test results from different roles"
+  
+  gate_9_documentation:
+    docs:
+      - How to create a workflow
+      - Templates for common workflows (finance, HR, projects)
+      - SLA policy + escalation strategy
+    evidence: "Committed docs with examples"
+  
+  gate_10_evidence_report:
+    evidence: "docs/features/FEAT-APPROVE-001-execution-report.md"
+
+## =============================================================================
+## PHASE 4: REPORT
+## =============================================================================
+
+success_criteria:
+  - Multi-stage workflows work (draft → review → approved → published)
+  - Amount-based routing works (different approvers by amount)
+  - Auto-approval for low amounts
+  - Rejection allows edit + resubmit
+  - SLA tracking + escalation
+  - Full audit trail of all approvals
+  - Email notifications for all events
+  - No performance impact (< 500ms for state change)
+
+known_limitations:
+  - Cannot do complex conditional logic (e.g., "if category=A AND amount>X")
+  - No parallel approvals (sequential only)
+  - No time-based approvals (e.g., auto-approve after 7 days)
+  - Cannot delegate approval (approver must approve directly)
+
+rollback_strategy:
+  - Disable: Set workflow to inactive
+  - Revert: Change status back manually via admin override
+  - Cleanup: Delete workflow.config (preserves history)
+
+roadmap_future:
+  - Parallel approvals (multiple approvers at same stage)
+  - Time-based auto-approval
+  - Approval delegation
+  - Mobile notifications (push vs email)
+  - SMS for urgent escalations
+
+---
+
+## Real-World Templates
+
+### Template 1: Finance - Invoice Approval
+Stages: draft → review → approved → paid
+Rules:
+- < R$ 1,000: Auto-approve
+- R$ 1,000 - R$ 50,000: Manager approval (1)
+- R$ 50,000 - R$ 500,000: Director approval (2)
+- > R$ 500,000: CFO approval (3)
+SLA: 5 days per stage, escalate to director after 10 days
+
+### Template 2: HR - Leave Request
+Stages: draft → submitted → approved → scheduled
+Rules:
+- <= 2 days: Department lead approval
+- > 2 days: Manager + HR approval
+SLA: 3 days, notify if pending
+Auto-approve if only 1 approver (delegation to HR)
+
+### Template 3: Projects - Milestone Approval
+Stages: planning → review → approved → execution
+Rules:
+- All projects: Project manager approval
+- Budget change: Finance approval too
+SLA: 7 days, escalate to director
+Auto-reject if deadline passed
+
+---
+
+Estimated time: 5-7 days (full stack)
+
+## ROI Analysis
+
+**Cost**: 5-7 days dev + 2 days testing = ~60 person-hours
+**Revenue per app**: Eliminates manual approval tracking, saves 5-10 hours/week per team
+**Payback**: In 3-6 deployments (finance, HR, procurement, projects)
+**Strategic value**: Core workflow capability enables SaaS/product positioning

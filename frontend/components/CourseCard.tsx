@@ -11,6 +11,7 @@ const CourseCard: React.FC<Props> = ({ unit, onClick }) => {
   return (
     <div 
       onClick={() => onClick?.(unit.id)}
+      data-testid="unit-card"
       className="group stark-border p-8 bg-white hover:bg-brand-muted transition-all duration-300 flex flex-col h-full cursor-pointer"
     >
       <div className="flex justify-between items-start mb-8">

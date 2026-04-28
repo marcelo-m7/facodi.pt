@@ -1,13 +1,15 @@
 import { COURSE_UNITS } from '../data/courses';
 import { DEGREES } from '../data/degrees';
-import { Category, Course, CurricularUnit, Difficulty } from '../types';
+import { PLAYLISTS } from '../data/playlists';
+import { Category, Course, CurricularUnit, Difficulty, Playlist } from '../types';
 
 type OdooRecord = Record<string, unknown>;
 
-type SearchReadResponse = {
-  model: string;
-  count: number;
-  records: OdooRecord[];
+type OdooJsonRpcResponse = {
+  jsonrpc: string;
+  id: null;
+  result: OdooRecord[];
+  error?: { message: string; data?: { message: string } };
 };
 
 export type CatalogSource = 'mock' | 'odoo';
@@ -16,10 +18,93 @@ export type CatalogPayload = {
   source: CatalogSource;
   courses: Course[];
   units: CurricularUnit[];
+  playlists: Playlist[];
 };
 
 const DATA_SOURCE = (import.meta.env.VITE_DATA_SOURCE || 'mock').toLowerCase();
-const BACKEND_BASE_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '');
+
+// In dev the Vite proxy rewrites /odoo → https://edu-facodi.odoo.com (avoids CORS).
+// In production, VITE_BACKEND_URL should be a real backend proxy URL.
+const ODOO_BASE =
+  import.meta.env.DEV
+    ? '/odoo'
+    : (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
+
+let _sessionCookie: string | null = null;
+
+/**
+ * Authenticate once and cache the session.
+ * Uses credentials from environment variables (VITE_ODOO_DB, VITE_ODOO_USERNAME, VITE_ODOO_PASSWORD).
+ * This allows credentials to rotate without code changes.
+ *
+ * For Odoo public data (enroll=public), we authenticate with real credentials
+ * to ensure session persistence across multiple API calls.
+ */
+async function ensureSession(): Promise<void> {
+  if (_sessionCookie) return;
+  
+  const db = import.meta.env.VITE_ODOO_DB || 'edu-facodi';
+  const login = import.meta.env.VITE_ODOO_USERNAME || '';
+  const password = import.meta.env.VITE_ODOO_PASSWORD || '';
+  
+  try {
+    const response = await fetch(`${ODOO_BASE}/web/session/authenticate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'call',
+        params: { db, login, password },
+      }),
+    });
+    
+    // Set session cookie if available (even on error, some session state may be set)
+    const cookie = response.headers.get('set-cookie');
+    if (cookie) _sessionCookie = cookie;
+  } catch (error) {
+    console.warn('[catalogSource] ensureSession failed:', error);
+    // Don't throw; allow continuation for public data access
+  }
+}
+
+async function callKw(
+  model: string,
+  method: string,
+  args: unknown[],
+  kwargs: Record<string, unknown>,
+): Promise<OdooRecord[]> {
+  await ensureSession();
+  
+  try {
+    const response = await fetch(`${ODOO_BASE}/web/dataset/call_kw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'call',
+        params: { model, method, args, kwargs },
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Odoo HTTP error ${response.status}: ${text}`);
+    }
+
+    const json: OdooJsonRpcResponse = await response.json();
+    if (json.error) {
+      const msg = json.error.data?.message ?? json.error.message;
+      throw new Error(`Odoo RPC error: ${msg}`);
+    }
+
+    return json.result;
+  } catch (error) {
+    console.error(`[catalogSource] callKw(${model}.${method}) failed:`, error);
+    throw error;
+  }
+}
 
 const stripHtml = (input: string): string => input.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -36,128 +121,227 @@ const normalizeCourseId = (channelId: number, channelName: string): string => {
 
 const pickCategoryFromCourse = (courseTitle: string): Category => {
   const title = courseTitle.toLowerCase();
-  if (title.includes('design')) {
-    return Category.DESIGN;
-  }
-  if (title.includes('engenharia') || title.includes('tecnologias da informação') || title.includes('informação')) {
-    return Category.COMPUTER_SCIENCE;
-  }
+  if (title.includes('design')) return Category.DESIGN;
+  if (title.includes('engenharia') || title.includes('tecnologias da informação') || title.includes('informação')) return Category.COMPUTER_SCIENCE;
   return Category.HUMANITIES;
+};
+
+/**
+ * Parse year and semester from a section name like "1o Ano - 1o Semestre".
+ * Returns { year: 1, semester: 1 } or defaults to { year: 1, semester: 1 }.
+ */
+const parseSectionYearSemester = (sectionName: string): { year: number; semester: number } => {
+  const yearMatch = sectionName.match(/(\d+)[oº°]\s+[Aa]no/i);
+  const semMatch = sectionName.match(/(\d+)[oº°]\s+[Ss]emestre/i);
+  return {
+    year: yearMatch ? parseInt(yearMatch[1], 10) : 1,
+    semester: semMatch ? parseInt(semMatch[1], 10) : 1,
+  };
+};
+
+const PLAYLIST_ID_REGEX = /(?:[?&]list=)([A-Za-z0-9_-]+)/g;
+
+const extractPlaylistIds = (text: string): string[] => {
+  const seen = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = PLAYLIST_ID_REGEX.exec(text)) !== null) {
+    seen.add(match[1]);
+  }
+  return [...seen];
+};
+
+const buildPlaylistsFromUnits = (slideRecords: OdooRecord[], units: CurricularUnit[]): Playlist[] => {
+  const unitById = new Map<string, CurricularUnit>();
+  units.forEach((unit) => unitById.set(unit.id, unit));
+
+  const byPlaylist = new Map<string, Playlist>();
+
+  for (const record of slideRecords) {
+    const slideId = String(record.id || '');
+    if (!slideId || !unitById.has(slideId)) continue;
+
+    const description = String(record.description || '');
+    const htmlContent = String(record.html_content || '');
+    const bucket = `${description}\n${htmlContent}`;
+    const playlistIds = extractPlaylistIds(bucket);
+    if (!playlistIds.length) continue;
+
+    const contributor = String(record.x_facodi_source_institution || 'FACODI Community').trim();
+    const unitId = unitById.get(slideId)?.id;
+    if (!unitId) continue;
+
+    for (const playlistId of playlistIds) {
+      const existing = byPlaylist.get(playlistId);
+      if (!existing) {
+        byPlaylist.set(playlistId, {
+          id: playlistId,
+          title: `Playlist ${playlistId}`,
+          description: 'Playlist descoberta no conteudo sincronizado do Odoo.',
+          units: [unitId],
+          estimatedHours: 0,
+          creator: contributor,
+        });
+        continue;
+      }
+
+      if (!existing.units.includes(unitId)) {
+        existing.units.push(unitId);
+      }
+    }
+  }
+
+  return [...byPlaylist.values()];
 };
 
 const mapChannelToCourse = (record: OdooRecord): Course | null => {
   const id = Number(record.id);
   const title = String(record.name || '').trim();
-  if (!id || !title) {
-    return null;
-  }
+  if (!id || !title) return null;
 
-  const description = stripHtml(String(record.description || ''));
   const courseId = normalizeCourseId(id, title);
-  const totalSlides = Number(record.total_slides || 0);
-  const totalTime = Number(record.total_time || 0);
-  const enroll = String(record.enroll || '').trim();
+  const description = stripHtml(String(record.description || record.description_short || ''));
+  const workloadHours = Number(record.x_facodi_workload_hours || 0);
+
+  // Real institution from custom field, fall back to generic
+  const institution = String(record.x_facodi_source_institution || 'Odoo eLearning').trim();
+  const curriculumVersion = String(record.x_facodi_curriculum_version || '').trim();
+  const contentLicense = String(record.x_facodi_content_license || '').trim();
+  const language = String(record.x_facodi_primary_language || 'pt').split('-')[0];
+  const websiteUrl = String(record.website_absolute_url || '').trim() || undefined;
+
+  // Degree type: LESTI / LDCOM are bachelor degrees
+  const degreeType: Course['degreeType'] =
+    courseId === 'LESTI' || courseId === 'LDCOM' ? 'bachelor' : 'other';
+
+  const longDescription = description ||
+    (curriculumVersion ? `Currículo ${curriculumVersion}` : 'Curso sincronizado do Odoo.');
 
   return {
     id: courseId,
     title,
     description: description || 'Curso sincronizado do Odoo.',
-    ects: 0,
-    semesters: 0,
-    institution: 'Odoo eLearning',
-    school: 'slide.channel',
-    degreeType: 'other',
-    language: 'pt',
-    longDescription:
-      description ||
-      `Curso sincronizado de slide.channel (slides: ${Number.isFinite(totalSlides) ? totalSlides : 0}, horas: ${
-        Number.isFinite(totalTime) ? totalTime : 0
-      }, enrollment: ${enroll || 'n/a'}).`,
+    ects: workloadHours > 0 ? Math.round(workloadHours / 25) : 0,
+    semesters: 6,
+    institution,
+    school: String(record.x_facodi_project_name || 'FACODI').trim(),
+    degreeType,
+    language,
+    longDescription,
+    websiteUrl,
+    curriculumVersion: curriculumVersion || undefined,
+    contentLicense: contentLicense || undefined,
   };
 };
 
 const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): CurricularUnit | null => {
   const id = Number(record.id);
   const name = String(record.name || '').trim();
-  const description = String(record.description || '').trim();
   const channelTuple = Array.isArray(record.channel_id) ? record.channel_id : [];
   const channelId = Number(channelTuple[0]);
   const channel = channelMap.get(channelId);
 
-  if (!id || !name || !channel) {
-    return null;
-  }
+  // Skip category slides (section headers) and records without required fields
+  if (!id || !name || !channel || Boolean(record.is_category)) return null;
 
-  const cleanDescription = stripHtml(description);
+  const description = stripHtml(String(record.description || ''));
+
+  // Parse year/semester from category section name e.g. "1o Ano - 1o Semestre"
+  const categoryTuple = Array.isArray(record.category_id) ? record.category_id : [];
+  const sectionName = String(categoryTuple[1] || '').trim();
+  const { year, semester } = parseSectionYearSemester(sectionName);
+
+  const completionMinutes = Number(record.x_facodi_duration_minutes || 0);
   const completionHours = Number(record.completion_time || 0);
-  const slideCategory = String(record.slide_category || '').trim();
+  const durationLabel =
+    completionMinutes > 0
+      ? `${completionMinutes} min`
+      : completionHours > 0
+        ? `${completionHours}h`
+        : 'N/A';
+
+  const unitCode = String(record.x_facodi_unit_code || '').trim() || undefined;
+  const websiteUrl = String(record.website_absolute_url || '').trim() || undefined;
+  const institution = String(record.x_facodi_source_institution || channel.institution).trim();
+  const slideCategory = String(record.slide_category || 'document').trim();
   const isPreview = Boolean(record.is_preview);
+  const videoUrl = String(record.video_url || '').trim() || undefined;
+
+  // Tags: unit code, slide category, preview flag
+  const tags: string[] = [slideCategory];
+  if (unitCode) tags.push(unitCode);
+  if (isPreview) tags.push('preview');
+  if (videoUrl) tags.push('video');
 
   return {
     id: String(id),
     name,
-    description: cleanDescription || 'Conteudo sincronizado do Odoo.',
-    content: cleanDescription || undefined,
+    description: description || 'Unidade curricular sincronizada do Odoo.',
+    content: description || undefined,
     ects: 0,
-    semester: 1,
-    year: 1,
+    semester,
+    year,
     category: pickCategoryFromCourse(channel.title),
     difficulty: Difficulty.FOUNDATIONAL,
-    duration: completionHours > 0 ? `${completionHours} Horas` : 'N/A',
-    contributor: 'Odoo eLearning',
-    tags: [slideCategory || 'document', isPreview ? 'preview' : 'published'].filter(Boolean),
+    duration: durationLabel,
+    contributor: institution,
+    tags,
     courseId: channel.id,
+    unitCode,
+    sectionName: sectionName || undefined,
+    websiteUrl,
+    videoUrl,
   };
 };
 
-async function postSearchRead(model: string, body: Record<string, unknown>): Promise<SearchReadResponse> {
-  const response = await fetch(`${BACKEND_BASE_URL}/models/${model}/search_read`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Backend error ${response.status}: ${errorBody}`);
-  }
-
-  return response.json();
-}
-
 export async function loadCatalogData(): Promise<CatalogPayload> {
-  if (DATA_SOURCE !== 'odoo') {
-    return {
-      source: 'mock',
-      courses: DEGREES,
-      units: COURSE_UNITS,
-    };
-  }
-
   try {
-    const channels = await postSearchRead('slide.channel', {
-      domain: [['enroll', '=', 'public']],
-      fields: ['id', 'name', 'description', 'enroll', 'total_slides', 'total_time', 'website_url'],
-      limit: 200,
-      offset: 0,
-    });
-
-    const courses = channels.records
-      .map(mapChannelToCourse)
-      .filter((course): course is Course => Boolean(course));
-
-    if (!courses.length) {
+    // Check if we should use mock data
+    if (DATA_SOURCE !== 'odoo') {
       return {
         source: 'mock',
         courses: DEGREES,
         units: COURSE_UNITS,
+        playlists: PLAYLISTS,
       };
     }
 
+
+    // Fetch courses
+    const channelRecords = await callKw(
+      'slide.channel',
+      'search_read',
+      [[['enroll', '=', 'public']]],
+      {
+        fields: [
+          'id', 'name', 'description', 'description_short', 'enroll',
+          'website_absolute_url', 'total_time',
+          'x_facodi_source_institution', 'x_facodi_curriculum_version',
+          'x_facodi_workload_hours', 'x_facodi_primary_language',
+          'x_facodi_content_license', 'x_facodi_project_name',
+        ],
+        limit: 200,
+        offset: 0,
+      },
+    );
+
+    if (!channelRecords || channelRecords.length === 0) {
+      console.warn('[catalogSource] No courses found in Odoo, falling back to mock');
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
+
+
+    // Map courses
+    const courses = channelRecords
+      .map(mapChannelToCourse)
+      .filter((course): course is Course => Boolean(course));
+
     const channelMap = new Map<number, Course>();
-    channels.records.forEach((record) => {
+    channelRecords.forEach((record) => {
       const channelId = Number(record.id);
       const mapped = mapChannelToCourse(record);
       if (channelId && mapped) {
@@ -167,29 +351,68 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
 
     const channelIds = [...channelMap.keys()];
 
-    const slides = await postSearchRead('slide.slide', {
-      domain: [['channel_id', 'in', channelIds]],
-      fields: ['id', 'name', 'description', 'channel_id', 'sequence', 'completion_time', 'tag_ids', 'is_preview', 'slide_category'],
-      limit: 2000,
-      offset: 0,
-      order: 'channel_id asc, sequence asc, id asc',
-    });
+    if (channelIds.length === 0) {
+      console.warn('[catalogSource] No valid courses after mapping, falling back to mock');
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
 
-    const units = slides.records
+    // Fetch lessons
+    const slideRecords = await callKw(
+      'slide.slide',
+      'search_read',
+      [[['channel_id', 'in', channelIds]]],
+      {
+        fields: [
+          'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
+          'sequence', 'completion_time', 'is_preview', 'slide_category',
+          'is_category', 'website_absolute_url', 'video_url',
+          'x_facodi_unit_code', 'x_facodi_duration_minutes',
+          'x_facodi_source_institution', 'x_facodi_editorial_state',
+        ],
+        limit: 2000,
+        offset: 0,
+        order: 'channel_id asc, sequence asc, id asc',
+      },
+    );
+
+    if (!slideRecords || slideRecords.length === 0) {
+      console.warn('[catalogSource] No lessons found, falling back to mock');
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
+
+
+    // Map lessons
+    const units = slideRecords
       .map((record) => mapSlideToUnit(record, channelMap))
       .filter((unit): unit is CurricularUnit => Boolean(unit));
+
+    const playlists = buildPlaylistsFromUnits(slideRecords, units);
+
 
     return {
       source: 'odoo',
       courses,
-      units: units.length ? units : COURSE_UNITS,
+      units,
+      playlists,
     };
   } catch (error) {
-    console.warn('Falling back to mock data source:', error);
+    console.error('[catalogSource] Odoo fetch failed, falling back to mock data:', error);
+    // Graceful fallback: return mock data instead of failing completely
     return {
       source: 'mock',
       courses: DEGREES,
       units: COURSE_UNITS,
+      playlists: PLAYLISTS,
     };
   }
 }
