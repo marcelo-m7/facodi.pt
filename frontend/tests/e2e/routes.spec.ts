@@ -13,7 +13,7 @@ test('courses page lists all degrees', async ({ page }) => {
 
 test('navigation to courses works', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Cursos' }).click();
+  await page.getByRole('navigation').getByRole('button', { name: 'Cursos' }).click();
   await expect(page).toHaveURL('/courses');
 });
 
