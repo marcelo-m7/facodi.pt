@@ -6,6 +6,38 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ---
 
+## [1.0.2] - 28 de Abril de 2026
+
+### Mudado (Frontend + Planejamento Operacional)
+
+#### Frontend Catalog UX
+- Corrigido estado de carregamento do catalogo para evitar falso vazio na tela de cursos.
+- Fluxo atualizado para exibir mensagem de carregamento antes do estado sem cursos.
+- Build frontend validada sem regressao apos ajuste de loading state.
+
+#### Integracao Odoo e Fallback
+- Consolidado comportamento de fallback para dados mock quando Odoo SaaS retorna erro de sessao.
+- Mantida fonte de verdade em Odoo para dados live; fallback continua ativo para resiliencia da UI.
+
+#### Planejamento de Entrega do Dia
+- Definido plano completo por fases para execucao hoje:
+  - atualizacao documental
+  - planejamento de features
+  - execucao UC 19411008
+  - consolidacao com evidencias
+- Estrategia de enriquecimento da UC "Analise Matematica II" (19411008) com videos de playlist curada da Monynha Fun documentada para publicacao no Odoo.
+
+#### Decisao Tecnica Supabase x Odoo
+- Registrado que `mcp_supabase_apply_migration` nao grava no Odoo.
+- Fluxo aprovado: Supabase/Monynha Fun como origem de leitura, publicacao final no Odoo via script Python (XML-RPC) com evidencias em `docs/logs/`.
+
+### Resultado
+- Documentacao alinhada com estado real da implementacao.
+- Roadmap de hoje definido com tarefas executaveis e criterios de pronto.
+- Trilha tecnica da UC 19411008 pronta para execucao auditavel.
+
+---
+
 ## [1.0.1] - 27 de Abril de 2026
 
 ### Mudado (Documentation Refactoring)

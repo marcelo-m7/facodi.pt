@@ -17,6 +17,23 @@ O projeto organiza cursos e unidades curriculares com foco em:
 Contexto institucional:
 - [docs/FACODI.md](docs/FACODI.md)
 
+## Status Atual e Proximos Passos
+
+Status em 28/04/2026:
+- Frontend funcional com fallback resiliente para mock data.
+- Estado de carregamento no catalogo aplicado para evitar falso vazio.
+- Integracao Odoo mantida como fonte de verdade para dados live.
+
+Execucao prioritaria de hoje:
+1. Atualizar documentacao de status e roadmap curto.
+2. Enriquecer a UC LESTI "Analise Matematica II" (19411008) com videos curados.
+3. Persistir `video_url` no Odoo via fluxo auditavel.
+4. Consolidar evidencias em `docs/logs/` e relatorio diario.
+
+Referencias de acompanhamento:
+- [docs/plans/2026-04-28-implementation-status.md](docs/plans/2026-04-28-implementation-status.md)
+- [docs/plans/EXECUTIVE_SUMMARY.md](docs/plans/EXECUTIVE_SUMMARY.md)
+
 ## Arquitetura Atual
 
 Separacao principal de responsabilidades:

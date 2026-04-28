@@ -24,6 +24,8 @@ from typing import Dict, List, Tuple
 
 
 SAMPLE_VIDEOS: Dict[str, str] = {
+    "19411008": "https://www.youtube.com/embed/videoseries?list=PLqwusuKj4Z8M0uW7zPcB6FTCqfN9eCRpQ",
+    "ANALISE MATEMATICA II": "https://www.youtube.com/embed/videoseries?list=PLqwusuKj4Z8M0uW7zPcB6FTCqfN9eCRpQ",
     "ALGEBRA LINEAR": "https://www.youtube.com/embed/videoseries?list=PLIb_io8a5NtPDq8aw-mC6QpG8NQZQY9Ap",
     "ANALISE MATEMATICA": "https://www.youtube.com/embed/videoseries?list=PLqwusuKj4Z8M0uW7zPcB6FTCqfN9eCRpQ",
     "DESIGN": "https://www.youtube.com/embed/videoseries?list=PLMu59V03eW-LO4Vy8qJhqb2DxXLR9xC5v",
@@ -67,8 +69,9 @@ def build_models_proxy(config: OdooConfig) -> xmlrpc.client.ServerProxy:
     return xmlrpc.client.ServerProxy(f"{base}/xmlrpc/2/object")
 
 
-def pick_video_url(slide_name: str) -> str:
+def pick_video_url(slide_name: str, unit_code: str = "") -> str:
     upper_name = slide_name.upper()
+    upper_code = unit_code.upper().strip()
     # Accent-insensitive fallback for common Portuguese terms.
     upper_name = (
         upper_name.replace("Á", "A")
@@ -84,6 +87,24 @@ def pick_video_url(slide_name: str) -> str:
         .replace("Ú", "U")
         .replace("Ç", "C")
     )
+    upper_code = (
+        upper_code.replace("Á", "A")
+        .replace("À", "A")
+        .replace("Â", "A")
+        .replace("Ã", "A")
+        .replace("É", "E")
+        .replace("Ê", "E")
+        .replace("Í", "I")
+        .replace("Ó", "O")
+        .replace("Ô", "O")
+        .replace("Õ", "O")
+        .replace("Ú", "U")
+        .replace("Ç", "C")
+    )
+
+    # Prioritize exact curricular unit code mapping when available.
+    if upper_code and upper_code in SAMPLE_VIDEOS:
+        return SAMPLE_VIDEOS[upper_code]
 
     for keyword, url in SAMPLE_VIDEOS.items():
         if keyword == "DEFAULT":
@@ -98,12 +119,15 @@ def fetch_target_slides(
     config: OdooConfig,
     channel_ids: List[int],
     limit: int,
+    unit_codes: List[str],
 ) -> List[dict]:
     domain = [
         ["channel_id", "in", channel_ids],
         ["is_category", "=", False],
         ["video_url", "=", False],
     ]
+    if unit_codes:
+        domain.append(["x_facodi_unit_code", "in", unit_codes])
     return models.execute_kw(
         config.db,
         config.uid,
@@ -112,7 +136,7 @@ def fetch_target_slides(
         "search_read",
         [domain],
         {
-            "fields": ["id", "name", "channel_id", "video_url"],
+            "fields": ["id", "name", "channel_id", "video_url", "x_facodi_unit_code"],
             "limit": limit,
             "order": "channel_id asc, sequence asc, id asc",
         },
@@ -158,6 +182,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Seed sample Odoo lesson videos for MVP")
     parser.add_argument("--limit", type=int, default=15, help="Maximum number of slides to seed")
     parser.add_argument("--channel-ids", type=int, nargs="+", default=[9, 10], help="Odoo channel IDs to target")
+    parser.add_argument(
+        "--unit-codes",
+        nargs="+",
+        default=[],
+        help="Optional unit code filter (e.g. 19411008)",
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--apply", action="store_true", help="Persist updates to Odoo")
     mode.add_argument("--dry-run", action="store_true", help="Preview updates only (default)")
@@ -177,9 +207,10 @@ def main() -> None:
     print(f"UID: {config.uid}")
     print(f"Mode: {'DRY-RUN' if dry_run else 'APPLY'}")
     print(f"Channels: {args.channel_ids}")
+    print(f"Unit codes: {args.unit_codes if args.unit_codes else 'ALL'}")
     print(f"Limit: {args.limit}\n")
 
-    slides = fetch_target_slides(models, config, args.channel_ids, args.limit)
+    slides = fetch_target_slides(models, config, args.channel_ids, args.limit, args.unit_codes)
     if not slides:
         print("No target slides found (all have video_url or no matching records).")
         return
@@ -188,7 +219,8 @@ def main() -> None:
     for slide in slides:
         slide_id = int(slide["id"])
         slide_name = str(slide["name"])
-        video_url = pick_video_url(slide_name)
+        unit_code = str(slide.get("x_facodi_unit_code") or "").strip()
+        video_url = pick_video_url(slide_name, unit_code)
         updates.append((slide_id, slide_name, video_url))
 
     print(f"Proposed updates: {len(updates)}")
