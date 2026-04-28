@@ -74,6 +74,11 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units }) 
               </article>
             );
           })}
+          {!courses.length && (
+            <div className="stark-border p-12">
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-500">Sem cursos sincronizados do Odoo neste momento.</p>
+            </div>
+          )}
         </div>
       </section>
     </div>

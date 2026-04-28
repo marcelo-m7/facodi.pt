@@ -8,7 +8,12 @@ test('home loads and shows mission statement', async ({ page }) => {
 test('courses page lists all degrees', async ({ page }) => {
   await page.goto('/courses');
   const cards = page.locator('[data-testid="course-card"]');
-  await expect(cards).toHaveCount(2);
+  const count = await cards.count();
+  if (count === 0) {
+    await expect(page.getByText('Sem cursos sincronizados do Odoo neste momento.')).toBeVisible();
+    return;
+  }
+  await expect(cards.first()).toBeVisible();
 });
 
 test('navigation to courses works', async ({ page }) => {

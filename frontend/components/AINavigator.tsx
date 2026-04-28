@@ -1,9 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import { COURSE_UNITS } from '../data/courses';
+import { CurricularUnit } from '../types';
 
-const AINavigator: React.FC = () => {
+interface AINavigatorProps {
+  units: CurricularUnit[];
+}
+
+const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<{role: 'user' | 'ai', text: string}[]>([]);
@@ -26,8 +30,14 @@ const AINavigator: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const context = JSON.stringify(COURSE_UNITS.map(u => ({
+      const geminiApiKey = import.meta.env.GEMINI_API_KEY || '';
+      if (!geminiApiKey) {
+        setMessages(prev => [...prev, { role: 'ai', text: 'Gemini API key ausente. Configure GEMINI_API_KEY no frontend/.env.local.' }]);
+        return;
+      }
+
+      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+      const context = JSON.stringify(units.map(u => ({
         id: u.id,
         name: u.name,
         category: u.category,

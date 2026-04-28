@@ -1,6 +1,7 @@
 import { COURSE_UNITS } from '../data/courses';
 import { DEGREES } from '../data/degrees';
-import { Category, Course, CurricularUnit, Difficulty } from '../types';
+import { PLAYLISTS } from '../data/playlists';
+import { Category, Course, CurricularUnit, Difficulty, Playlist } from '../types';
 
 type OdooRecord = Record<string, unknown>;
 
@@ -17,6 +18,7 @@ export type CatalogPayload = {
   source: CatalogSource;
   courses: Course[];
   units: CurricularUnit[];
+  playlists: Playlist[];
 };
 
 const DATA_SOURCE = (import.meta.env.VITE_DATA_SOURCE || 'mock').toLowerCase();
@@ -118,6 +120,60 @@ const parseSectionYearSemester = (sectionName: string): { year: number; semester
     year: yearMatch ? parseInt(yearMatch[1], 10) : 1,
     semester: semMatch ? parseInt(semMatch[1], 10) : 1,
   };
+};
+
+const PLAYLIST_ID_REGEX = /(?:[?&]list=)([A-Za-z0-9_-]+)/g;
+
+const extractPlaylistIds = (text: string): string[] => {
+  const seen = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = PLAYLIST_ID_REGEX.exec(text)) !== null) {
+    seen.add(match[1]);
+  }
+  return [...seen];
+};
+
+const buildPlaylistsFromUnits = (slideRecords: OdooRecord[], units: CurricularUnit[]): Playlist[] => {
+  const unitById = new Map<string, CurricularUnit>();
+  units.forEach((unit) => unitById.set(unit.id, unit));
+
+  const byPlaylist = new Map<string, Playlist>();
+
+  for (const record of slideRecords) {
+    const slideId = String(record.id || '');
+    if (!slideId || !unitById.has(slideId)) continue;
+
+    const description = String(record.description || '');
+    const htmlContent = String(record.html_content || '');
+    const bucket = `${description}\n${htmlContent}`;
+    const playlistIds = extractPlaylistIds(bucket);
+    if (!playlistIds.length) continue;
+
+    const contributor = String(record.x_facodi_source_institution || 'FACODI Community').trim();
+    const unitId = unitById.get(slideId)?.id;
+    if (!unitId) continue;
+
+    for (const playlistId of playlistIds) {
+      const existing = byPlaylist.get(playlistId);
+      if (!existing) {
+        byPlaylist.set(playlistId, {
+          id: playlistId,
+          title: `Playlist ${playlistId}`,
+          description: 'Playlist descoberta no conteudo sincronizado do Odoo.',
+          units: [unitId],
+          estimatedHours: 0,
+          creator: contributor,
+        });
+        continue;
+      }
+
+      if (!existing.units.includes(unitId)) {
+        existing.units.push(unitId);
+      }
+    }
+  }
+
+  return [...byPlaylist.values()];
 };
 
 const mapChannelToCourse = (record: OdooRecord): Course | null => {
@@ -223,83 +279,70 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       source: 'mock',
       courses: DEGREES,
       units: COURSE_UNITS,
+      playlists: PLAYLISTS,
     };
   }
 
-  try {
-    const channelRecords = await callKw(
-      'slide.channel',
-      'search_read',
-      [[['enroll', '=', 'public']]],
-      {
-        fields: [
-          'id', 'name', 'description', 'description_short', 'enroll',
-          'website_absolute_url', 'total_time',
-          'x_facodi_source_institution', 'x_facodi_curriculum_version',
-          'x_facodi_workload_hours', 'x_facodi_primary_language',
-          'x_facodi_content_license', 'x_facodi_project_name',
-        ],
-        limit: 200,
-        offset: 0,
-      },
-    );
+  const channelRecords = await callKw(
+    'slide.channel',
+    'search_read',
+    [[['enroll', '=', 'public']]],
+    {
+      fields: [
+        'id', 'name', 'description', 'description_short', 'enroll',
+        'website_absolute_url', 'total_time',
+        'x_facodi_source_institution', 'x_facodi_curriculum_version',
+        'x_facodi_workload_hours', 'x_facodi_primary_language',
+        'x_facodi_content_license', 'x_facodi_project_name',
+      ],
+      limit: 200,
+      offset: 0,
+    },
+  );
 
-    const courses = channelRecords
-      .map(mapChannelToCourse)
-      .filter((course): course is Course => Boolean(course));
+  const courses = channelRecords
+    .map(mapChannelToCourse)
+    .filter((course): course is Course => Boolean(course));
 
-    if (!courses.length) {
-      return {
-        source: 'mock',
-        courses: DEGREES,
-        units: COURSE_UNITS,
-      };
+  const channelMap = new Map<number, Course>();
+  channelRecords.forEach((record) => {
+    const channelId = Number(record.id);
+    const mapped = mapChannelToCourse(record);
+    if (channelId && mapped) {
+      channelMap.set(channelId, mapped);
     }
+  });
 
-    const channelMap = new Map<number, Course>();
-    channelRecords.forEach((record) => {
-      const channelId = Number(record.id);
-      const mapped = mapChannelToCourse(record);
-      if (channelId && mapped) {
-        channelMap.set(channelId, mapped);
-      }
-    });
+  const channelIds = [...channelMap.keys()];
 
-    const channelIds = [...channelMap.keys()];
+  const slideRecords = await callKw(
+    'slide.slide',
+    'search_read',
+    [[['channel_id', 'in', channelIds]]],
+    {
+      fields: [
+        'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
+        'sequence', 'completion_time', 'is_preview', 'slide_category',
+        'is_category', 'website_absolute_url',
+        'x_facodi_unit_code', 'x_facodi_duration_minutes',
+        'x_facodi_source_institution', 'x_facodi_editorial_state',
+      ],
+      limit: 2000,
+      offset: 0,
+      order: 'channel_id asc, sequence asc, id asc',
+    },
+  );
 
-    const slideRecords = await callKw(
-      'slide.slide',
-      'search_read',
-      [[['channel_id', 'in', channelIds]]],
-      {
-        fields: [
-          'id', 'name', 'description', 'channel_id', 'category_id',
-          'sequence', 'completion_time', 'is_preview', 'slide_category',
-          'is_category', 'website_absolute_url',
-          'x_facodi_unit_code', 'x_facodi_duration_minutes',
-          'x_facodi_source_institution', 'x_facodi_editorial_state',
-        ],
-        limit: 2000,
-        offset: 0,
-        order: 'channel_id asc, sequence asc, id asc',
-      },
-    );
+  const units = slideRecords
+    .map((record) => mapSlideToUnit(record, channelMap))
+    .filter((unit): unit is CurricularUnit => Boolean(unit));
 
-    const units = slideRecords
-      .map((record) => mapSlideToUnit(record, channelMap))
-      .filter((unit): unit is CurricularUnit => Boolean(unit));
+  const playlists = buildPlaylistsFromUnits(slideRecords, units);
 
-    return {
-      source: 'odoo',
-      courses,
-      units: units.length ? units : COURSE_UNITS,
-    };
-  } catch (error) {
-    console.warn('Falling back to mock data source:', error);
-    return {
-      source: 'mock',
-      courses: DEGREES,
-      units: COURSE_UNITS,
-    };
-  }
+  return {
+    source: 'odoo',
+    courses,
+    units,
+    playlists,
+  };
 }

@@ -10,10 +10,7 @@ import Contributors from './components/Contributors';
 import PlaylistCard from './components/PlaylistCard';
 import AINavigator from './components/AINavigator';
 import Courses from './components/Courses';
-import { COURSE_UNITS } from './data/courses';
-import { PLAYLISTS } from './data/playlists';
-import { DEGREES } from './data/degrees';
-import { Category, Course, CurricularUnit, Difficulty, FilterState } from './types';
+import { Category, Course, CurricularUnit, FilterState, Playlist } from './types';
 import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
@@ -25,9 +22,11 @@ const App: React.FC = () => {
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
-  const [courses, setCourses] = useState<Course[]>(DEGREES);
-  const [units, setUnits] = useState<CurricularUnit[]>(COURSE_UNITS);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [units, setUnits] = useState<CurricularUnit[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [catalogSource, setCatalogSource] = useState<CatalogSource>('mock');
+  const [catalogError, setCatalogError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
     difficulty: 'All',
@@ -93,12 +92,22 @@ const App: React.FC = () => {
   useEffect(() => {
     let active = true;
 
-    loadCatalogData().then((payload) => {
-      if (!active) return;
-      setCourses(payload.courses);
-      setUnits(payload.units);
-      setCatalogSource(payload.source);
-    });
+    loadCatalogData()
+      .then((payload) => {
+        if (!active) return;
+        setCourses(payload.courses);
+        setUnits(payload.units);
+        setPlaylists(payload.playlists);
+        setCatalogSource(payload.source);
+        setCatalogError(null);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setCatalogError(error instanceof Error ? error.message : 'Falha ao sincronizar conteudo do Odoo.');
+        setCourses([]);
+        setUnits([]);
+        setPlaylists([]);
+      });
 
     return () => {
       active = false;
@@ -240,9 +249,15 @@ const App: React.FC = () => {
         return (
           <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
             <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-8">Playlists</h1>
+            {catalogError && (
+              <p className="text-xs uppercase tracking-widest text-red-600 mb-8">{catalogError}</p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {PLAYLISTS.map(pl => <PlaylistCard key={pl.id} playlist={pl} onSelect={() => {}} />)}
+              {playlists.map(pl => <PlaylistCard key={pl.id} playlist={pl} onSelect={() => {}} />)}
             </div>
+            {!playlists.length && (
+              <p className="text-xs uppercase tracking-widest text-gray-500 mt-10">Sem playlists mapeadas no conteudo sincronizado.</p>
+            )}
           </div>
         );
       case 'repository':
@@ -350,7 +365,7 @@ const App: React.FC = () => {
       t={t}
     >
       {renderContent()}
-      <AINavigator />
+      <AINavigator units={units} />
     </Layout>
   );
 };
