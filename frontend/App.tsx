@@ -14,12 +14,15 @@ import { Category, Course, CurricularUnit, FilterState, Playlist } from './types
 import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'roadmap' | 'contributors' | 'course-detail' | 'playlists' | 'dashboard';
+import LessonDetail from './components/LessonDetail';
+
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'roadmap' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
+    const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -39,11 +42,12 @@ const App: React.FC = () => {
 
   const t = useMemo(() => createTranslator(locale), [locale]);
 
-  const updateRoute = (view: View, unitId?: string | null) => {
+  const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null) => {
     let path = '/';
     if (view === 'courses') path = '/courses';
     if (view === 'repository') path = '/courses/units';
     if (view === 'course-detail' && unitId) path = `/courses/units/${unitId}`;
+    if (view === 'lesson-detail' && lessonId) path = `/lessons/${lessonId}`;
     if (view === 'roadmap') path = '/roadmap';
     if (view === 'dashboard') path = '/dashboard';
     if (view === 'playlists') path = '/playlists';
@@ -53,6 +57,15 @@ const App: React.FC = () => {
 
   const syncViewWithLocation = () => {
     const path = window.location.pathname;
+        if (path.startsWith('/lessons/')) {
+          const lessonId = path.replace('/lessons/', '').split('/')[0];
+          const lessonExists = units.some(unit => unit.id === lessonId);
+          if (lessonExists) {
+            setSelectedLessonId(lessonId);
+            setCurrentView('lesson-detail');
+            return;
+          }
+        }
     if (path.startsWith('/courses/units/')) {
       const unitId = path.replace('/courses/units/', '').split('/')[0];
       const unitExists = units.some(unit => unit.id === unitId);
@@ -166,6 +179,7 @@ const App: React.FC = () => {
 
   const selectedUnit = useMemo(() => units.find(u => u.id === selectedUnitId) || null, [selectedUnitId, units]);
   const savedUnits = useMemo(() => units.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds, units]);
+  const selectedLesson = useMemo(() => units.find(u => u.id === selectedLessonId) || null, [selectedLessonId, units]);
 
   const filteredUnits = useMemo(() => {
     return units.filter(unit => {
@@ -191,6 +205,12 @@ const App: React.FC = () => {
     updateRoute('course-detail', id);
   };
 
+  const handleLessonSelect = (id: string) => {
+    setSelectedLessonId(id);
+    setCurrentView('lesson-detail');
+    updateRoute('lesson-detail', undefined, id);
+  };
+
   const renderContent = () => {
     if (currentView === 'course-detail' && selectedUnit) {
       return <CourseDetail 
@@ -201,6 +221,19 @@ const App: React.FC = () => {
                   updateRoute('repository');
                 }} 
                 onNavigate={handleUnitSelect}
+                t={t}
+             />;
+    }
+
+    if (currentView === 'lesson-detail' && selectedLesson) {
+      return <LessonDetail 
+                unit={selectedLesson} 
+                allUnits={units}
+                onBack={() => {
+                  setCurrentView('repository');
+                  updateRoute('repository');
+                }} 
+                onNavigate={handleLessonSelect}
                 t={t}
              />;
     }
@@ -332,7 +365,7 @@ const App: React.FC = () => {
                           >
                             <span className="material-symbols-outlined text-2xl">{savedUnitIds.includes(unit.id) ? 'bookmark' : 'bookmark_add'}</span>
                           </button>
-                          <CourseCard unit={unit} onClick={handleUnitSelect} />
+                          <CourseCard unit={unit} onClick={handleLessonSelect} />
                         </div>
                       ))}
                     </div>
