@@ -49,7 +49,7 @@ async function ensureSession(): Promise<void> {
     body: JSON.stringify({
       jsonrpc: '2.0',
       method: 'call',
-      params: { db: 'edu-facodi', login: '', password: '' },
+      params: { db: 'edu-facodi', login: 'marcelo@monynha.com', password: 'cd4b7f7d88aa8537c8a9ce91c2cd1c5fecb88088' },
     }),
   });
   // Even a failed auth response sets the session cookie for public access
