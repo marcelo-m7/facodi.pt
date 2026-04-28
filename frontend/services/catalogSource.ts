@@ -4,10 +4,11 @@ import { Category, Course, CurricularUnit, Difficulty } from '../types';
 
 type OdooRecord = Record<string, unknown>;
 
-type SearchReadResponse = {
-  model: string;
-  count: number;
-  records: OdooRecord[];
+type OdooJsonRpcResponse = {
+  jsonrpc: string;
+  id: null;
+  result: OdooRecord[];
+  error?: { message: string; data?: { message: string } };
 };
 
 export type CatalogSource = 'mock' | 'odoo';
@@ -19,7 +20,72 @@ export type CatalogPayload = {
 };
 
 const DATA_SOURCE = (import.meta.env.VITE_DATA_SOURCE || 'mock').toLowerCase();
-const BACKEND_BASE_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '');
+
+// In dev the Vite proxy rewrites /odoo → https://edu-facodi.odoo.com (avoids CORS).
+// In production, VITE_BACKEND_URL should be a real backend proxy URL.
+const ODOO_BASE =
+  import.meta.env.DEV
+    ? '/odoo'
+    : (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
+
+let _sessionCookie: string | null = null;
+
+/**
+ * Authenticate once and cache the session. Uses credentials baked into the
+ * Vite dev proxy target; the password is never sent from the browser —
+ * authentication happens server-side in the proxy target.
+ *
+ * For Odoo public data (enroll=public), a guest session is sufficient.
+ * We call authenticate with empty credentials to get a public session.
+ */
+async function ensureSession(): Promise<void> {
+  if (_sessionCookie) return;
+  const response = await fetch(`${ODOO_BASE}/web/session/authenticate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'call',
+      params: { db: 'edu-facodi', login: '', password: '' },
+    }),
+  });
+  // Even a failed auth response sets the session cookie for public access
+  const cookie = response.headers.get('set-cookie');
+  if (cookie) _sessionCookie = cookie;
+}
+
+async function callKw(
+  model: string,
+  method: string,
+  args: unknown[],
+  kwargs: Record<string, unknown>,
+): Promise<OdooRecord[]> {
+  await ensureSession();
+  const response = await fetch(`${ODOO_BASE}/web/dataset/call_kw`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'call',
+      params: { model, method, args, kwargs },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Odoo HTTP error ${response.status}: ${text}`);
+  }
+
+  const json: OdooJsonRpcResponse = await response.json();
+  if (json.error) {
+    const msg = json.error.data?.message ?? json.error.message;
+    throw new Error(`Odoo RPC error: ${msg}`);
+  }
+
+  return json.result;
+}
 
 const stripHtml = (input: string): string => input.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -110,23 +176,6 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
   };
 };
 
-async function postSearchRead(model: string, body: Record<string, unknown>): Promise<SearchReadResponse> {
-  const response = await fetch(`${BACKEND_BASE_URL}/models/${model}/search_read`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Backend error ${response.status}: ${errorBody}`);
-  }
-
-  return response.json();
-}
-
 export async function loadCatalogData(): Promise<CatalogPayload> {
   if (DATA_SOURCE !== 'odoo') {
     return {
@@ -137,14 +186,18 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
   }
 
   try {
-    const channels = await postSearchRead('slide.channel', {
-      domain: [['enroll', '=', 'public']],
-      fields: ['id', 'name', 'description', 'enroll', 'total_slides', 'total_time', 'website_url'],
-      limit: 200,
-      offset: 0,
-    });
+    const channelRecords = await callKw(
+      'slide.channel',
+      'search_read',
+      [[['enroll', '=', 'public']]],
+      {
+        fields: ['id', 'name', 'description', 'enroll', 'total_slides', 'total_time', 'website_url'],
+        limit: 200,
+        offset: 0,
+      },
+    );
 
-    const courses = channels.records
+    const courses = channelRecords
       .map(mapChannelToCourse)
       .filter((course): course is Course => Boolean(course));
 
@@ -157,7 +210,7 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
     }
 
     const channelMap = new Map<number, Course>();
-    channels.records.forEach((record) => {
+    channelRecords.forEach((record) => {
       const channelId = Number(record.id);
       const mapped = mapChannelToCourse(record);
       if (channelId && mapped) {
@@ -167,15 +220,19 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
 
     const channelIds = [...channelMap.keys()];
 
-    const slides = await postSearchRead('slide.slide', {
-      domain: [['channel_id', 'in', channelIds]],
-      fields: ['id', 'name', 'description', 'channel_id', 'sequence', 'completion_time', 'tag_ids', 'is_preview', 'slide_category'],
-      limit: 2000,
-      offset: 0,
-      order: 'channel_id asc, sequence asc, id asc',
-    });
+    const slideRecords = await callKw(
+      'slide.slide',
+      'search_read',
+      [[['channel_id', 'in', channelIds]]],
+      {
+        fields: ['id', 'name', 'description', 'channel_id', 'sequence', 'completion_time', 'tag_ids', 'is_preview', 'slide_category'],
+        limit: 2000,
+        offset: 0,
+        order: 'channel_id asc, sequence asc, id asc',
+      },
+    );
 
-    const units = slides.records
+    const units = slideRecords
       .map((record) => mapSlideToUnit(record, channelMap))
       .filter((unit): unit is CurricularUnit => Boolean(unit));
 

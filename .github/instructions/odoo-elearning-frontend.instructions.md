@@ -18,9 +18,9 @@ description: >
 | Item | Status |
 |---|---|
 | `VITE_DATA_SOURCE` in `.env.local` | `edu-facodi` — activates **mock** path, not `'odoo'` |
-| REST proxy backend | **Does not exist** in this repo — no `/backend` or `/server` directory |
+| Vite proxy to Odoo | **Not configured** — `vite.config.ts` has no `server.proxy` |
 | `postSearchRead()` in `catalogSource.ts` | Calls `${BACKEND_BASE_URL}/models/{model}/search_read` — custom format, **not** Odoo native |
-| Live data | Unreachable until proxy or direct Odoo API integration is in place |
+| Live data | Unreachable until proxy + JSON-RPC refactor are in place |
 
 To enable live Odoo data, change `.env.local`:
 ```

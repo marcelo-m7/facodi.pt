@@ -8,6 +8,17 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          // Proxy /odoo/* → Odoo SaaS to bypass CORS in development.
+          // The browser calls /odoo/web/dataset/call_kw; Vite rewrites to
+          // https://edu-facodi.odoo.com/web/dataset/call_kw
+          '/odoo': {
+            target: 'https://edu-facodi.odoo.com',
+            changeOrigin: true,
+            secure: true,
+            rewrite: (path) => path.replace(/^\/odoo/, ''),
+          },
+        },
       },
       plugins: [react()],
       define: {
