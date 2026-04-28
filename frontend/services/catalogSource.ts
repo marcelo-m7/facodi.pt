@@ -33,28 +33,39 @@ const ODOO_BASE =
 let _sessionCookie: string | null = null;
 
 /**
- * Authenticate once and cache the session. Uses credentials baked into the
- * Vite dev proxy target; the password is never sent from the browser —
- * authentication happens server-side in the proxy target.
+ * Authenticate once and cache the session.
+ * Uses credentials from environment variables (VITE_ODOO_DB, VITE_ODOO_USERNAME, VITE_ODOO_PASSWORD).
+ * This allows credentials to rotate without code changes.
  *
- * For Odoo public data (enroll=public), a guest session is sufficient.
- * We call authenticate with empty credentials to get a public session.
+ * For Odoo public data (enroll=public), we authenticate with real credentials
+ * to ensure session persistence across multiple API calls.
  */
 async function ensureSession(): Promise<void> {
   if (_sessionCookie) return;
-  const response = await fetch(`${ODOO_BASE}/web/session/authenticate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      method: 'call',
-      params: { db: 'edu-facodi', login: 'marcelo@monynha.com', password: 'cd4b7f7d88aa8537c8a9ce91c2cd1c5fecb88088' },
-    }),
-  });
-  // Even a failed auth response sets the session cookie for public access
-  const cookie = response.headers.get('set-cookie');
-  if (cookie) _sessionCookie = cookie;
+  
+  const db = import.meta.env.VITE_ODOO_DB || 'edu-facodi';
+  const login = import.meta.env.VITE_ODOO_USERNAME || '';
+  const password = import.meta.env.VITE_ODOO_PASSWORD || '';
+  
+  try {
+    const response = await fetch(`${ODOO_BASE}/web/session/authenticate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'call',
+        params: { db, login, password },
+      }),
+    });
+    
+    // Set session cookie if available (even on error, some session state may be set)
+    const cookie = response.headers.get('set-cookie');
+    if (cookie) _sessionCookie = cookie;
+  } catch (error) {
+    console.warn('[catalogSource] ensureSession failed:', error);
+    // Don't throw; allow continuation for public data access
+  }
 }
 
 async function callKw(
@@ -64,29 +75,35 @@ async function callKw(
   kwargs: Record<string, unknown>,
 ): Promise<OdooRecord[]> {
   await ensureSession();
-  const response = await fetch(`${ODOO_BASE}/web/dataset/call_kw`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      method: 'call',
-      params: { model, method, args, kwargs },
-    }),
-  });
+  
+  try {
+    const response = await fetch(`${ODOO_BASE}/web/dataset/call_kw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'call',
+        params: { model, method, args, kwargs },
+      }),
+    });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Odoo HTTP error ${response.status}: ${text}`);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Odoo HTTP error ${response.status}: ${text}`);
+    }
+
+    const json: OdooJsonRpcResponse = await response.json();
+    if (json.error) {
+      const msg = json.error.data?.message ?? json.error.message;
+      throw new Error(`Odoo RPC error: ${msg}`);
+    }
+
+    return json.result;
+  } catch (error) {
+    console.error(`[catalogSource] callKw(${model}.${method}) failed:`, error);
+    throw error;
   }
-
-  const json: OdooJsonRpcResponse = await response.json();
-  if (json.error) {
-    const msg = json.error.data?.message ?? json.error.message;
-    throw new Error(`Odoo RPC error: ${msg}`);
-  }
-
-  return json.result;
 }
 
 const stripHtml = (input: string): string => input.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -277,7 +294,120 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
 };
 
 export async function loadCatalogData(): Promise<CatalogPayload> {
-  if (DATA_SOURCE !== 'odoo') {
+  try {
+    // Check if we should use mock data
+    if (DATA_SOURCE !== 'odoo') {
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
+
+
+    // Fetch courses
+    const channelRecords = await callKw(
+      'slide.channel',
+      'search_read',
+      [[['enroll', '=', 'public']]],
+      {
+        fields: [
+          'id', 'name', 'description', 'description_short', 'enroll',
+          'website_absolute_url', 'total_time',
+          'x_facodi_source_institution', 'x_facodi_curriculum_version',
+          'x_facodi_workload_hours', 'x_facodi_primary_language',
+          'x_facodi_content_license', 'x_facodi_project_name',
+        ],
+        limit: 200,
+        offset: 0,
+      },
+    );
+
+    if (!channelRecords || channelRecords.length === 0) {
+      console.warn('[catalogSource] No courses found in Odoo, falling back to mock');
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
+
+
+    // Map courses
+    const courses = channelRecords
+      .map(mapChannelToCourse)
+      .filter((course): course is Course => Boolean(course));
+
+    const channelMap = new Map<number, Course>();
+    channelRecords.forEach((record) => {
+      const channelId = Number(record.id);
+      const mapped = mapChannelToCourse(record);
+      if (channelId && mapped) {
+        channelMap.set(channelId, mapped);
+      }
+    });
+
+    const channelIds = [...channelMap.keys()];
+
+    if (channelIds.length === 0) {
+      console.warn('[catalogSource] No valid courses after mapping, falling back to mock');
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
+
+    // Fetch lessons
+    const slideRecords = await callKw(
+      'slide.slide',
+      'search_read',
+      [[['channel_id', 'in', channelIds]]],
+      {
+        fields: [
+          'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
+          'sequence', 'completion_time', 'is_preview', 'slide_category',
+          'is_category', 'website_absolute_url', 'video_url',
+          'x_facodi_unit_code', 'x_facodi_duration_minutes',
+          'x_facodi_source_institution', 'x_facodi_editorial_state',
+        ],
+        limit: 2000,
+        offset: 0,
+        order: 'channel_id asc, sequence asc, id asc',
+      },
+    );
+
+    if (!slideRecords || slideRecords.length === 0) {
+      console.warn('[catalogSource] No lessons found, falling back to mock');
+      return {
+        source: 'mock',
+        courses: DEGREES,
+        units: COURSE_UNITS,
+        playlists: PLAYLISTS,
+      };
+    }
+
+
+    // Map lessons
+    const units = slideRecords
+      .map((record) => mapSlideToUnit(record, channelMap))
+      .filter((unit): unit is CurricularUnit => Boolean(unit));
+
+    const playlists = buildPlaylistsFromUnits(slideRecords, units);
+
+
+    return {
+      source: 'odoo',
+      courses,
+      units,
+      playlists,
+    };
+  } catch (error) {
+    console.error('[catalogSource] Odoo fetch failed, falling back to mock data:', error);
+    // Graceful fallback: return mock data instead of failing completely
     return {
       source: 'mock',
       courses: DEGREES,
@@ -285,67 +415,4 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       playlists: PLAYLISTS,
     };
   }
-
-  const channelRecords = await callKw(
-    'slide.channel',
-    'search_read',
-    [[['enroll', '=', 'public']]],
-    {
-      fields: [
-        'id', 'name', 'description', 'description_short', 'enroll',
-        'website_absolute_url', 'total_time',
-        'x_facodi_source_institution', 'x_facodi_curriculum_version',
-        'x_facodi_workload_hours', 'x_facodi_primary_language',
-        'x_facodi_content_license', 'x_facodi_project_name',
-      ],
-      limit: 200,
-      offset: 0,
-    },
-  );
-
-  const courses = channelRecords
-    .map(mapChannelToCourse)
-    .filter((course): course is Course => Boolean(course));
-
-  const channelMap = new Map<number, Course>();
-  channelRecords.forEach((record) => {
-    const channelId = Number(record.id);
-    const mapped = mapChannelToCourse(record);
-    if (channelId && mapped) {
-      channelMap.set(channelId, mapped);
-    }
-  });
-
-  const channelIds = [...channelMap.keys()];
-
-  const slideRecords = await callKw(
-    'slide.slide',
-    'search_read',
-    [[['channel_id', 'in', channelIds]]],
-    {
-      fields: [
-        'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
-        'sequence', 'completion_time', 'is_preview', 'slide_category',
-        'is_category', 'website_absolute_url', 'video_url',
-        'x_facodi_unit_code', 'x_facodi_duration_minutes',
-        'x_facodi_source_institution', 'x_facodi_editorial_state',
-      ],
-      limit: 2000,
-      offset: 0,
-      order: 'channel_id asc, sequence asc, id asc',
-    },
-  );
-
-  const units = slideRecords
-    .map((record) => mapSlideToUnit(record, channelMap))
-    .filter((unit): unit is CurricularUnit => Boolean(unit));
-
-  const playlists = buildPlaylistsFromUnits(slideRecords, units);
-
-  return {
-    source: 'odoo',
-    courses,
-    units,
-    playlists,
-  };
 }

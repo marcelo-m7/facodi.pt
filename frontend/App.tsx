@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [catalogSource, setCatalogSource] = useState<CatalogSource>('mock');
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
     difficulty: 'All',
@@ -98,6 +99,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     let active = true;
+    setIsCatalogLoading(true);
 
     loadCatalogData()
       .then((payload) => {
@@ -114,6 +116,10 @@ const App: React.FC = () => {
         setCourses([]);
         setUnits([]);
         setPlaylists([]);
+      })
+      .finally(() => {
+        if (!active) return;
+        setIsCatalogLoading(false);
       });
 
     return () => {
@@ -264,6 +270,7 @@ const App: React.FC = () => {
             t={t}
             courses={courses}
             units={units}
+            isLoading={isCatalogLoading}
           />
         );
       case 'contributors': return <Contributors />;
