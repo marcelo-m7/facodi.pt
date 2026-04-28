@@ -399,8 +399,8 @@ def _build_cover(pdf: ExecutivePDF, today: str) -> None:
     pdf.set_xy(20, 132)
     meta = [
         ("Data:",    today),
-        ("Autor:",   "Marcelo Santos  (marcelo@corvanis.com)"),
-        ("Empresa:", "Corvanis"),
+        ("Autor:",   "Marcelo Santos  (marcelo@open2.tech)"),
+        ("Empresa:", "Open2 Technology"),
         ("Projeto:", "FAME Builders - Configuracao Odoo 19"),
     ]
     for label, value in meta:

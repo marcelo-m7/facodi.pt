@@ -22,11 +22,6 @@ test('navigation to courses works', async ({ page }) => {
   await expect(page).toHaveURL('/courses');
 });
 
-test('roadmap page renders', async ({ page }) => {
-  await page.goto('/roadmap');
-  await expect(page.getByRole('heading', { name: /Roadmap/i })).toBeVisible();
-});
-
 test('dark mode toggle updates theme', async ({ page }) => {
   await page.goto('/');
   const toggle = page.getByRole('button', { name: 'Alternar tema' });

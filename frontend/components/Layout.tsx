@@ -2,7 +2,7 @@
 import React from 'react';
 import { Locale } from '../data/i18n';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'roadmap' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail';
 
 interface Props {
   children: React.ReactNode;
@@ -56,12 +56,6 @@ const Layout: React.FC<Props> = ({
                 className={`transition-all ${['repository', 'course-detail'].includes(currentView) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
               >
                 {t('nav.units')}
-              </button>
-              <button 
-                onClick={() => onViewChange('roadmap')}
-                className={`transition-all ${currentView === 'roadmap' ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
-              >
-                {t('nav.roadmap')}
               </button>
               <button 
                 onClick={() => onViewChange('dashboard')}
@@ -134,7 +128,6 @@ const Layout: React.FC<Props> = ({
               <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest">
                 <li><button onClick={() => onViewChange('home')} className="hover:text-primary">Início</button></li>
                 <li><button onClick={() => onViewChange('repository')} className="hover:text-primary">Cursos</button></li>
-                <li><button onClick={() => onViewChange('roadmap')} className="hover:text-primary">Roadmap</button></li>
               </ul>
             </div>
 

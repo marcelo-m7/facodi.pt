@@ -5,7 +5,6 @@ import Home from './components/Home';
 import Dashboard from './components/Dashboard';
 import CourseCard from './components/CourseCard';
 import CourseDetail from './components/CourseDetail';
-import Roadmap from './components/Roadmap';
 import Contributors from './components/Contributors';
 import PlaylistCard from './components/PlaylistCard';
 import AINavigator from './components/AINavigator';
@@ -16,7 +15,7 @@ import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
 import LessonDetail from './components/LessonDetail';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'roadmap' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -48,7 +47,6 @@ const App: React.FC = () => {
     if (view === 'repository') path = '/courses/units';
     if (view === 'course-detail' && unitId) path = `/courses/units/${unitId}`;
     if (view === 'lesson-detail' && lessonId) path = `/lessons/${lessonId}`;
-    if (view === 'roadmap') path = '/roadmap';
     if (view === 'dashboard') path = '/dashboard';
     if (view === 'playlists') path = '/playlists';
     if (view === 'contributors') path = '/contributors';
@@ -81,10 +79,6 @@ const App: React.FC = () => {
     }
     if (path.startsWith('/courses')) {
       setCurrentView('courses');
-      return;
-    }
-    if (path.startsWith('/roadmap')) {
-      setCurrentView('roadmap');
       return;
     }
     if (path.startsWith('/dashboard')) {
@@ -254,10 +248,6 @@ const App: React.FC = () => {
               setCurrentView('courses');
               updateRoute('courses');
             }}
-            onRoadmap={() => {
-              setCurrentView('roadmap');
-              updateRoute('roadmap');
-            }}
             t={t}
             courses={courses}
             units={units}
@@ -276,7 +266,6 @@ const App: React.FC = () => {
             units={units}
           />
         );
-      case 'roadmap': return <Roadmap t={t} />;
       case 'contributors': return <Contributors />;
       case 'playlists':
         return (

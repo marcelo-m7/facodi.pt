@@ -4,13 +4,12 @@ import { Course, CurricularUnit } from '../types';
 
 interface HomeProps {
   onExplore: () => void;
-  onRoadmap: () => void;
   t: (key: string) => string;
   courses: Course[];
   units: CurricularUnit[];
 }
 
-const Home: React.FC<HomeProps> = ({ onExplore, onRoadmap, t, courses, units }) => {
+const Home: React.FC<HomeProps> = ({ onExplore, t, courses, units }) => {
   const totalUnits = units.length;
   const totalCourses = courses.length;
   return (

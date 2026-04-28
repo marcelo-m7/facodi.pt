@@ -9,7 +9,7 @@ description = "Deterministic, AI-assisted Odoo development with full traceabilit
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    { name = "Corvanis", email = "dev@corvanis.com" }
+    { name = "Open2 Technology", email = "hello@open2.tech" }
 ]
 keywords = ["odoo", "automation", "ai-agents", "deterministic"]
 classifiers = [
@@ -44,9 +44,9 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/Corvanis/Codoo"
-Documentation = "https://corvanis.github.io/Codoo"
-Issues = "https://github.com/Corvanis/Codoo/issues"
+Repository = "https://github.com/marcelo-m7/facodi"
+Documentation = "https://open2.tech"
+Issues = "https://github.com/marcelo-m7/facodi/issues"
 
 [project.scripts]
 codoo = "codoo.__main__:cli"
