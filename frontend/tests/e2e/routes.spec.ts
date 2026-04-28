@@ -33,3 +33,28 @@ test('dark mode toggle updates theme', async ({ page }) => {
   await toggle.click();
   await expect(page.locator('html')).toHaveClass(/dark/);
 });
+
+test('lesson detail renders a video block state', async ({ page }) => {
+  await page.goto('/courses/units');
+
+  const cards = page.getByTestId('unit-card');
+  const count = await cards.count();
+  if (count === 0) {
+    await expect(page.getByText('Nenhum resultado nos nós de dados.')).toBeVisible();
+    return;
+  }
+
+  await cards.first().click();
+  await expect(page).toHaveURL(/\/lessons\//);
+
+  const player = page.getByTestId('lesson-video-player');
+  const fallback = page.getByTestId('lesson-video-link-fallback');
+  const placeholder = page.getByTestId('lesson-video-placeholder');
+
+  const visibleCount =
+    (await player.count()) +
+    (await fallback.count()) +
+    (await placeholder.count());
+
+  expect(visibleCount).toBeGreaterThan(0);
+});
