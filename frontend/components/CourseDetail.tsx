@@ -1,17 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { CurricularUnit } from '../types';
-import { COURSE_UNITS } from '../data/courses';
 import MarkdownView from './MarkdownView';
 
 interface Props {
   unit: CurricularUnit;
+  allUnits: CurricularUnit[];
   onBack: () => void;
   onNavigate?: (id: string) => void;
   t: (key: string) => string;
 }
 
-const CourseDetail: React.FC<Props> = ({ unit, onBack, onNavigate, t }) => {
+const CourseDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }) => {
   const [fetchedContent, setFetchedContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +41,7 @@ const CourseDetail: React.FC<Props> = ({ unit, onBack, onNavigate, t }) => {
 
   const displayContent = unit.content || fetchedContent;
   const prerequisiteUnits = unit.prerequisites 
-    ? COURSE_UNITS.filter(u => unit.prerequisites?.includes(u.id))
+    ? allUnits.filter(u => unit.prerequisites?.includes(u.id))
     : [];
 
   return (

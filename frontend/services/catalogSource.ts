@@ -54,18 +54,25 @@ const mapChannelToCourse = (record: OdooRecord): Course | null => {
 
   const description = stripHtml(String(record.description || ''));
   const courseId = normalizeCourseId(id, title);
+  const totalSlides = Number(record.total_slides || 0);
+  const totalTime = Number(record.total_time || 0);
+  const enroll = String(record.enroll || '').trim();
 
   return {
     id: courseId,
     title,
     description: description || 'Curso sincronizado do Odoo.',
-    ects: 180,
-    semesters: 6,
-    institution: 'Universidade do Algarve',
-    school: 'FACODI',
-    degreeType: 'bachelor',
+    ects: 0,
+    semesters: 0,
+    institution: 'Odoo eLearning',
+    school: 'slide.channel',
+    degreeType: 'other',
     language: 'pt',
-    longDescription: description || 'Curso sincronizado do Odoo para consumo no frontend FACODI.',
+    longDescription:
+      description ||
+      `Curso sincronizado de slide.channel (slides: ${Number.isFinite(totalSlides) ? totalSlides : 0}, horas: ${
+        Number.isFinite(totalTime) ? totalTime : 0
+      }, enrollment: ${enroll || 'n/a'}).`,
   };
 };
 
@@ -82,6 +89,9 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
   }
 
   const cleanDescription = stripHtml(description);
+  const completionHours = Number(record.completion_time || 0);
+  const slideCategory = String(record.slide_category || '').trim();
+  const isPreview = Boolean(record.is_preview);
 
   return {
     id: String(id),
@@ -93,9 +103,9 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
     year: 1,
     category: pickCategoryFromCourse(channel.title),
     difficulty: Difficulty.FOUNDATIONAL,
-    duration: 'N/A',
-    contributor: 'Odoo Sync',
-    tags: [],
+    duration: completionHours > 0 ? `${completionHours} Horas` : 'N/A',
+    contributor: 'Odoo eLearning',
+    tags: [slideCategory || 'document', isPreview ? 'preview' : 'published'].filter(Boolean),
     courseId: channel.id,
   };
 };
@@ -129,7 +139,7 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
   try {
     const channels = await postSearchRead('slide.channel', {
       domain: [['enroll', '=', 'public']],
-      fields: ['id', 'name', 'description'],
+      fields: ['id', 'name', 'description', 'enroll', 'total_slides', 'total_time', 'website_url'],
       limit: 200,
       offset: 0,
     });
@@ -159,9 +169,10 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
 
     const slides = await postSearchRead('slide.slide', {
       domain: [['channel_id', 'in', channelIds]],
-      fields: ['id', 'name', 'description', 'channel_id'],
+      fields: ['id', 'name', 'description', 'channel_id', 'sequence', 'completion_time', 'tag_ids', 'is_preview', 'slide_category'],
       limit: 2000,
       offset: 0,
+      order: 'channel_id asc, sequence asc, id asc',
     });
 
     const units = slides.records
