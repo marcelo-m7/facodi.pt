@@ -34,9 +34,16 @@ npm run test:e2e     # Playwright E2E tests
 
 **Target instance:** `https://edu-facodi.odoo.com`
 
-**Pattern:** Frontend → REST proxy at `VITE_BACKEND_URL` → Odoo XML-RPC internally.
-- The frontend does NOT call Odoo XML-RPC directly.
-- All Odoo calls are `POST /models/{model}/search_read` via `postSearchRead()` in `catalogSource.ts`.
+> **Refactoring in progress** — see [odoo-elearning-frontend.instructions.md](../.github/instructions/odoo-elearning-frontend.instructions.md) for the complete plan, correct API format, and CORS proxy setup.
+
+**Current pattern (broken):** Frontend → `POST ${VITE_BACKEND_URL}/models/{model}/search_read`
+- This custom REST format **is not** Odoo's native API.
+- No proxy backend exists in this repo yet.
+- `VITE_DATA_SOURCE=edu-facodi` (not `'odoo'`) → mock data loads by default.
+
+**Target pattern:** Frontend → Vite dev proxy `/odoo` → Odoo JSON-RPC `/web/dataset/call_kw`
+- All Odoo calls become `callKw(model, 'search_read', args, kwargs)` in `catalogSource.ts`.
+- Auth via `/web/session/authenticate` before `call_kw`.
 
 **Odoo e-learning model mapping:**
 
@@ -57,11 +64,11 @@ npm run test:e2e     # Playwright E2E tests
 | Variable | Values | Effect |
 |---|---|---|
 | `VITE_DATA_SOURCE` | `odoo` / anything else | `odoo` enables live Odoo path; all other values use mock |
-| `VITE_BACKEND_URL` | e.g. `https://edu-facodi.odoo.com` | Base URL for the REST proxy |
+| `VITE_BACKEND_URL` | e.g. `https://edu-facodi.odoo.com` | Base URL — will become the Vite proxy target |
 | `VITE_SUPABASE_URL` | Supabase project URL | Planned integration (SDK not yet installed) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key | Planned integration |
 
-**To enable live Odoo data locally:**
+**To enable live Odoo data locally** (requires proxy setup first — see instructions):
 ```
 VITE_DATA_SOURCE=odoo
 VITE_BACKEND_URL=https://edu-facodi.odoo.com
