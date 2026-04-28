@@ -14,9 +14,7 @@ Execute feature work with deterministic stages:
 4. Produce evidence and a PR-ready summary.
 
 ## Hard rules
-- Respect dual-repo ownership:
-  - `addon/` changes belong to marcor.
-  - root changes (for example `src/codoo/`, `docs/`, `workspace/`, root configs) belong to Codoo.
+- Respect single-repo ownership and keep diffs scoped and deterministic.
 - If target is Odoo SaaS API-only, do not rely on custom Python addon deployment.
 - Prefer native model operations and API orchestration flows.
 - Never expose secrets.

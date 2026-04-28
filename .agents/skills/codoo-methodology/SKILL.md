@@ -32,7 +32,7 @@ Codoo uses a specs-before-code contract with deterministic execution:
 ## Execution Loop (Operator View)
 
 1. Load feature context from `docs/features/spec-FEAT-[ID].yaml`.
-2. Identify impacted zones: `addon/`, `src/codoo/tasks/`, `workspace/data/`, `docs/logs/`, docs.
+2. Identify impacted zones: `src/codoo/tasks/`, `workspace/data/`, `docs/logs/`, `frontend/`, docs.
 3. Implement in small increments with immediate validation per change.
 4. Run mandatory gates and collect evidence artifacts.
 5. Report outcome with explicit pass/fail per gate and unresolved risks.
@@ -64,11 +64,11 @@ If Odoo SaaS blocks custom Python behavior:
 
 Use the report format in `references/saas-limitation-report-template.md`.
 
-## Dual-Repo Guardrail
+## Repository Guardrail
 
-- Changes in `addon/` belong to marcor and must be committed in submodule context.
-- Root repository changes belong to Codoo and must be committed from root.
-- Keep root and submodule references synchronized when both are modified.
+- This workflow assumes a single repository model.
+- Keep changes scoped to the impacted project area (`src/codoo/`, `frontend/`, `docs/`).
+- Prefer small, reviewable commits with explicit evidence references.
 
 ## Anti-Patterns to Avoid
 

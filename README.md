@@ -1,137 +1,139 @@
-# Codoo
+# FACODI
 
-Codoo is Corvanis' deterministic workflow for Odoo delivery with AI assistance.
+FACODI (Faculdade Comunitaria Digital) e uma plataforma educacional open-source com foco em acesso gratuito e curadoria de trilhas academicas.
 
-The project standardizes feature execution with:
-- specs-before-code contracts
-- validation gates (install, API, UI, permissions)
-- evidence logs in JSON
-- dual-repo workflow (root + addon submodule)
+Este repositorio junta dois blocos principais:
+- Runtime e automacao Codoo em Python (orquestracao e tarefas Odoo)
+- Aplicacao frontend em React + Vite para experiencia do catalogo
 
-## Repository Role
+## Visao do Projeto
 
-This repository is the orchestration layer:
-- methodology and guides in docs/guides/
-- evidence artifacts in docs/logs/
-- CLI and task runtime in src/codoo/
-- Odoo addon implementation in addon/ (git submodule)
+O projeto organiza cursos e unidades curriculares com foco em:
+- Estrutura curricular clara
+- Conteudo aberto e reutilizavel
+- Integracao com Odoo e-learning
+- Execucao rastreavel via evidencias em JSON
 
-Read these first:
-- AGENTS.md
-- docs/guides/CODOO.md
-- docs/guides/ARCHITECTURE.md
-- docs/guides/CONTRIBUTING.md
+Contexto institucional:
+- [docs/FACODI.md](docs/FACODI.md)
 
-## Quick Start
+## Arquitetura Atual
 
-### Linux/macOS
+Separacao principal de responsabilidades:
+- `frontend/`: SPA React + Vite (UI, navegacao, experiencia do catalogo)
+- `src/codoo/`: CLI Python, core runtime, tasks operacionais e cliente Odoo
+- `docs/`: guias, metodologia, planos e logs de evidencia
+- `.agents/` e `.github/`: skills, prompts, agentes e instrucoes operacionais
 
+Documentos de referencia:
+- [AGENTS.md](AGENTS.md)
+- [docs/guides/ARCHITECTURE.md](docs/guides/ARCHITECTURE.md)
+- [docs/guides/CODOO.md](docs/guides/CODOO.md)
+- [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md)
+
+## Setup Rapido
+
+### 1) Runtime Python (raiz)
+
+Linux/macOS:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 cp .env.example .env
-# edit .env: ODOO_HOST, ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD
 python -m codoo --help
 python -m codoo task list
 ```
 
-### Windows PowerShell
-
+Windows PowerShell:
 ```powershell
 python -m venv .venv
 & .venv\Scripts\Activate.ps1
 pip install -e .
 Copy-Item .env.example .env
-# edit .env: ODOO_HOST, ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD
 python -m codoo --help
 python -m codoo task list
 ```
 
-## Preflight Checks
+### 2) Frontend
 
 ```bash
-python --version
-git --version
-test -f .venv/bin/activate || test -f .venv/Scripts/Activate.ps1
-python -c "import xmlrpc.client; print('xmlrpc: OK')"
-test -f .env
+cd frontend
+npm install
+npm run dev
 ```
 
-Connectivity check:
-
+Comandos adicionais:
 ```bash
-python - <<'PY'
-import os
-import xmlrpc.client
-from dotenv import load_dotenv
-
-load_dotenv()
-host = os.getenv("ODOO_HOST")
-db = os.getenv("ODOO_DB")
-user = os.getenv("ODOO_USERNAME")
-pwd = os.getenv("ODOO_PASSWORD")
-
-assert all([host, db, user, pwd]), "Missing required ODOO_* variables in .env"
-uid = xmlrpc.client.ServerProxy(f"{host}/xmlrpc/2/common").authenticate(db, user, pwd, {})
-print("authenticate:", "OK" if uid else "FAILED")
-PY
+npm run build
+npm run preview
+npm run test:e2e
 ```
 
-## Task Runtime
+## Configuracao de Ambiente
 
-Operational automation is task-based under src/codoo/tasks/.
+Variaveis essenciais em `.env` (raiz):
+- `ODOO_HOST`
+- `ODOO_DB`
+- `ODOO_USERNAME`
+- `ODOO_PASSWORD`
 
-Use deterministic modes:
-- inspect
-- dry-run
-- apply
-- verify
+Variaveis comuns em `frontend/.env.local`:
+- `VITE_DATA_SOURCE` (`mock` ou `odoo`)
+- `VITE_BACKEND_URL`
 
-Examples:
+Nao commitar `.env` nem `.env.local`.
 
+## Execucao de Tasks (Codoo)
+
+Modo recomendado para tasks mutaveis:
+1. `inspect`
+2. `dry-run`
+3. `apply`
+4. `verify`
+
+Exemplo:
 ```bash
-python -m codoo task list
 python -m codoo task run --name <task-name> --mode inspect
 python -m codoo task run --name <task-name> --mode dry-run
 python -m codoo task run --name <task-name> --mode apply
 python -m codoo task run --name <task-name> --mode verify
 ```
 
-Evidence logs must be written to docs/logs/.
+Evidencias devem ficar em `docs/logs/`.
 
-## Dual-Repo Workflow
+## Integracao Frontend + Odoo
 
-Important boundary:
-- addon/ changes belong to Corvanis/marcor and must be committed from addon/
-- root changes belong to Corvanis/Codoo and must be committed from repository root
+Regras de integracao e mapeamento:
+- [.github/instructions/odoo-elearning-frontend.instructions.md](.github/instructions/odoo-elearning-frontend.instructions.md)
+- [.github/instructions/odoo-elearning.instructions.md](.github/instructions/odoo-elearning.instructions.md)
 
-If addon/ is empty after clone:
+## Estrutura do Repositorio
 
-```bash
-git submodule update --init --recursive
+```text
+.
+├─ frontend/
+├─ src/codoo/
+├─ tests/
+├─ docs/
+├─ .agents/
+└─ .github/
 ```
 
-## Documentation Map
+## Onboarding Rápido para Novos Colaboradores
 
-- docs/guides/INDEX.md
-- docs/guides/CODOO.md
-- docs/guides/ARCHITECTURE.md
-- docs/guides/CONTRIBUTING.md
-- docs/guides/SECURITY.md
-- docs/guides/FAQ.md
-- docs/guides/ODOO-SAAS-LIMITATIONS.md
+1. Ler [AGENTS.md](AGENTS.md)
+2. Rodar setup Python e frontend
+3. Confirmar acesso Odoo com `authenticate()`
+4. Ler [docs/guides/CODOO.md](docs/guides/CODOO.md)
+5. Seguir [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md)
 
-## Development Notes
+## Observacoes Importantes
 
-- Do not commit .env or credentials
-- Treat docs/odoo/ and docs/documentation/ as read-only mirrors unless explicitly requested
-- Validate Python syntax after non-trivial edits:
+- `docs/odoo/**` e `docs/documentation/**` sao espelhos de referencia (nao editar sem pedido explicito).
+- Em validacoes UI, sempre verificar erros no console do browser.
+- Depois de alteracoes Python significativas, executar `python -m py_compile <arquivo>`.
 
-```bash
-python -m py_compile src/codoo/odoo/studio.py
-```
+## Licenca
 
-## License
-
-See the repository license files for applicable terms.
+Ver arquivos de licenca do repositorio.

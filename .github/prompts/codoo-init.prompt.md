@@ -239,7 +239,7 @@ Se NÃO foi fornecido spec → perguntar ao utilizador qual é a tarefa e se exi
 Antes de implementar alterações, confirmar os limites de edição:
 
 - `docs/odoo/**` e `docs/documentation/**` são espelhos/documentação externa; evitar alterações salvo pedido explícito
-- Alterações de implementação Odoo vivem em `addon/` (subrepo marcor)
+- Alterações de implementação Odoo vivem no próprio repositório (single-repo), principalmente em `src/codoo/` e áreas de frontend/docs conforme o escopo.
 - Automações operacionais vivem em `src/codoo/tasks/`; evidências em `docs/logs/`
 
 Reportar explicitamente se a tarefa atual parece exigir edição fora destes limites.
