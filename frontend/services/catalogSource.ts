@@ -102,77 +102,118 @@ const normalizeCourseId = (channelId: number, channelName: string): string => {
 
 const pickCategoryFromCourse = (courseTitle: string): Category => {
   const title = courseTitle.toLowerCase();
-  if (title.includes('design')) {
-    return Category.DESIGN;
-  }
-  if (title.includes('engenharia') || title.includes('tecnologias da informação') || title.includes('informação')) {
-    return Category.COMPUTER_SCIENCE;
-  }
+  if (title.includes('design')) return Category.DESIGN;
+  if (title.includes('engenharia') || title.includes('tecnologias da informação') || title.includes('informação')) return Category.COMPUTER_SCIENCE;
   return Category.HUMANITIES;
+};
+
+/**
+ * Parse year and semester from a section name like "1o Ano - 1o Semestre".
+ * Returns { year: 1, semester: 1 } or defaults to { year: 1, semester: 1 }.
+ */
+const parseSectionYearSemester = (sectionName: string): { year: number; semester: number } => {
+  const yearMatch = sectionName.match(/(\d+)[oº°]\s+[Aa]no/i);
+  const semMatch = sectionName.match(/(\d+)[oº°]\s+[Ss]emestre/i);
+  return {
+    year: yearMatch ? parseInt(yearMatch[1], 10) : 1,
+    semester: semMatch ? parseInt(semMatch[1], 10) : 1,
+  };
 };
 
 const mapChannelToCourse = (record: OdooRecord): Course | null => {
   const id = Number(record.id);
   const title = String(record.name || '').trim();
-  if (!id || !title) {
-    return null;
-  }
+  if (!id || !title) return null;
 
-  const description = stripHtml(String(record.description || ''));
   const courseId = normalizeCourseId(id, title);
-  const totalSlides = Number(record.total_slides || 0);
-  const totalTime = Number(record.total_time || 0);
-  const enroll = String(record.enroll || '').trim();
+  const description = stripHtml(String(record.description || record.description_short || ''));
+  const workloadHours = Number(record.x_facodi_workload_hours || 0);
+
+  // Real institution from custom field, fall back to generic
+  const institution = String(record.x_facodi_source_institution || 'Odoo eLearning').trim();
+  const curriculumVersion = String(record.x_facodi_curriculum_version || '').trim();
+  const contentLicense = String(record.x_facodi_content_license || '').trim();
+  const language = String(record.x_facodi_primary_language || 'pt').split('-')[0];
+  const websiteUrl = String(record.website_absolute_url || '').trim() || undefined;
+
+  // Degree type: LESTI / LDCOM are bachelor degrees
+  const degreeType: Course['degreeType'] =
+    courseId === 'LESTI' || courseId === 'LDCOM' ? 'bachelor' : 'other';
+
+  const longDescription = description ||
+    (curriculumVersion ? `Currículo ${curriculumVersion}` : 'Curso sincronizado do Odoo.');
 
   return {
     id: courseId,
     title,
     description: description || 'Curso sincronizado do Odoo.',
-    ects: 0,
-    semesters: 0,
-    institution: 'Odoo eLearning',
-    school: 'slide.channel',
-    degreeType: 'other',
-    language: 'pt',
-    longDescription:
-      description ||
-      `Curso sincronizado de slide.channel (slides: ${Number.isFinite(totalSlides) ? totalSlides : 0}, horas: ${
-        Number.isFinite(totalTime) ? totalTime : 0
-      }, enrollment: ${enroll || 'n/a'}).`,
+    ects: workloadHours > 0 ? Math.round(workloadHours / 25) : 0,
+    semesters: 6,
+    institution,
+    school: String(record.x_facodi_project_name || 'FACODI').trim(),
+    degreeType,
+    language,
+    longDescription,
+    websiteUrl,
+    curriculumVersion: curriculumVersion || undefined,
+    contentLicense: contentLicense || undefined,
   };
 };
 
 const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): CurricularUnit | null => {
   const id = Number(record.id);
   const name = String(record.name || '').trim();
-  const description = String(record.description || '').trim();
   const channelTuple = Array.isArray(record.channel_id) ? record.channel_id : [];
   const channelId = Number(channelTuple[0]);
   const channel = channelMap.get(channelId);
 
-  if (!id || !name || !channel) {
-    return null;
-  }
+  // Skip category slides (section headers) and records without required fields
+  if (!id || !name || !channel || Boolean(record.is_category)) return null;
 
-  const cleanDescription = stripHtml(description);
+  const description = stripHtml(String(record.description || ''));
+
+  // Parse year/semester from category section name e.g. "1o Ano - 1o Semestre"
+  const categoryTuple = Array.isArray(record.category_id) ? record.category_id : [];
+  const sectionName = String(categoryTuple[1] || '').trim();
+  const { year, semester } = parseSectionYearSemester(sectionName);
+
+  const completionMinutes = Number(record.x_facodi_duration_minutes || 0);
   const completionHours = Number(record.completion_time || 0);
-  const slideCategory = String(record.slide_category || '').trim();
+  const durationLabel =
+    completionMinutes > 0
+      ? `${completionMinutes} min`
+      : completionHours > 0
+        ? `${completionHours}h`
+        : 'N/A';
+
+  const unitCode = String(record.x_facodi_unit_code || '').trim() || undefined;
+  const websiteUrl = String(record.website_absolute_url || '').trim() || undefined;
+  const institution = String(record.x_facodi_source_institution || channel.institution).trim();
+  const slideCategory = String(record.slide_category || 'document').trim();
   const isPreview = Boolean(record.is_preview);
+
+  // Tags: unit code, slide category, preview flag
+  const tags: string[] = [slideCategory];
+  if (unitCode) tags.push(unitCode);
+  if (isPreview) tags.push('preview');
 
   return {
     id: String(id),
     name,
-    description: cleanDescription || 'Conteudo sincronizado do Odoo.',
-    content: cleanDescription || undefined,
+    description: description || 'Unidade curricular sincronizada do Odoo.',
+    content: description || undefined,
     ects: 0,
-    semester: 1,
-    year: 1,
+    semester,
+    year,
     category: pickCategoryFromCourse(channel.title),
     difficulty: Difficulty.FOUNDATIONAL,
-    duration: completionHours > 0 ? `${completionHours} Horas` : 'N/A',
-    contributor: 'Odoo eLearning',
-    tags: [slideCategory || 'document', isPreview ? 'preview' : 'published'].filter(Boolean),
+    duration: durationLabel,
+    contributor: institution,
+    tags,
     courseId: channel.id,
+    unitCode,
+    sectionName: sectionName || undefined,
+    websiteUrl,
   };
 };
 
@@ -191,7 +232,13 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       'search_read',
       [[['enroll', '=', 'public']]],
       {
-        fields: ['id', 'name', 'description', 'enroll', 'total_slides', 'total_time', 'website_url'],
+        fields: [
+          'id', 'name', 'description', 'description_short', 'enroll',
+          'website_absolute_url', 'total_time',
+          'x_facodi_source_institution', 'x_facodi_curriculum_version',
+          'x_facodi_workload_hours', 'x_facodi_primary_language',
+          'x_facodi_content_license', 'x_facodi_project_name',
+        ],
         limit: 200,
         offset: 0,
       },
@@ -225,7 +272,13 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       'search_read',
       [[['channel_id', 'in', channelIds]]],
       {
-        fields: ['id', 'name', 'description', 'channel_id', 'sequence', 'completion_time', 'tag_ids', 'is_preview', 'slide_category'],
+        fields: [
+          'id', 'name', 'description', 'channel_id', 'category_id',
+          'sequence', 'completion_time', 'is_preview', 'slide_category',
+          'is_category', 'website_absolute_url',
+          'x_facodi_unit_code', 'x_facodi_duration_minutes',
+          'x_facodi_source_institution', 'x_facodi_editorial_state',
+        ],
         limit: 2000,
         offset: 0,
         order: 'channel_id asc, sequence asc, id asc',

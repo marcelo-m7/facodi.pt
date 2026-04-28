@@ -1,17 +1,18 @@
 
 import React from 'react';
-import { DEGREES } from '../data/degrees';
-import { COURSE_UNITS } from '../data/courses';
+import { Course, CurricularUnit } from '../types';
 
 interface HomeProps {
   onExplore: () => void;
   onRoadmap: () => void;
   t: (key: string) => string;
+  courses: Course[];
+  units: CurricularUnit[];
 }
 
-const Home: React.FC<HomeProps> = ({ onExplore, onRoadmap, t }) => {
-  const totalUnits = COURSE_UNITS.length;
-  const totalCourses = DEGREES.length;
+const Home: React.FC<HomeProps> = ({ onExplore, onRoadmap, t, courses, units }) => {
+  const totalUnits = units.length;
+  const totalCourses = courses.length;
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -148,7 +149,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onRoadmap, t }) => {
           </button>
         </div>
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {DEGREES.map((course, i) => (
+          {courses.map((course, i) => (
             <div key={i} className="bg-white stark-border p-12 group hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer">
               <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 border border-black/10 px-2 py-1 mb-8 inline-block">PLANO 2025/2026</span>
               <h3 className="text-3xl font-black uppercase tracking-tighter mb-8 group-hover:text-primary transition-colors">{course.title}</h3>
@@ -168,7 +169,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onRoadmap, t }) => {
                   <div className="bg-primary stark-border px-3 py-1 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">grid_view</span>
                     <span className="text-[10px] font-black">
-                      {COURSE_UNITS.filter(unit => unit.courseId === course.id).length} {t('home.courseCardFootSuffix')}
+                      {units.filter(unit => unit.courseId === course.id).length} {t('home.courseCardFootSuffix')}
                     </span>
                   </div>
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>

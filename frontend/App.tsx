@@ -217,6 +217,8 @@ const App: React.FC = () => {
               updateRoute('roadmap');
             }}
             t={t}
+            courses={courses}
+            units={units}
           />
         );
       case 'courses':
