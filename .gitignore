@@ -122,6 +122,9 @@ pnpm-debug.log*
 # TypeScript
 *.tsbuildinfo
 
+# Vite local cache/artifacts
+frontend/.vite/
+
 # OS
 .DS_Store
 Thumbs.db

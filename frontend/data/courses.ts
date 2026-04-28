@@ -1797,8 +1797,9 @@ Analisa limites e continuidade em múltiplas variáveis, introduz derivadas dire
     difficulty: Difficulty.FOUNDATIONAL,
     duration: "210 Horas",
     contributor: "FACODI Core",
-    tags: [],
+    tags: ["video"],
     courseId: "LESTI",
+    videoUrl: "https://www.youtube.com/embed/videoseries?list=PLqwusuKj4Z8M0uW7zPcB6FTCqfN9eCRpQ",
   },
   {
     id: "19411009",

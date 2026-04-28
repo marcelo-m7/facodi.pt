@@ -103,6 +103,15 @@ VITE_DATA_SOURCE=mock
 VITE_BACKEND_URL=http://localhost:8080
 ```
 
+Recommended local modes:
+- `VITE_DATA_SOURCE=mock` for stable local UI/E2E validation.
+- `VITE_DATA_SOURCE=odoo` only when explicitly testing live Odoo fetch.
+
+Known limitation (Odoo SaaS):
+- Browser-side JSON-RPC sessions can expire in dev proxy mode, causing fallback behavior.
+- If you need deterministic local testing of lesson routes and video rendering, use `mock` mode.
+- Persisting video URLs in Odoo should be done server-side via Python/XML-RPC scripts (inspect/dry-run/apply/verify).
+
 ## 6) Deterministic Task Modes
 
 For mutable operations, keep this order:
