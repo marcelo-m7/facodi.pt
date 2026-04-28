@@ -116,7 +116,7 @@ const Layout: React.FC<Props> = ({
             <div className="md:col-span-5">
               <h3 className="text-xl font-black tracking-tighter uppercase mb-8">FACODI — FACULDADE COMUNITÁRIA DIGITAL</h3>
               <p className="text-[11px] text-gray-500 font-medium leading-loose uppercase tracking-[0.1em] max-w-sm mb-8">
-                Currículos oficiais com playlists abertas, progresso comunitário e orgulho Monynha Softwares.
+                Currículos oficiais com playlists abertas, progresso comunitário e orgulho Open2 Technology.
               </p>
               <p className="text-[10px] text-gray-400 font-bold uppercase">Conteúdo disponível sob licença aberta e amor comunitário.</p>
               <div className="flex gap-4 mt-8">
@@ -142,7 +142,7 @@ const Layout: React.FC<Props> = ({
               <h5 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-8">COMUNIDADE</h5>
               <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest">
                 <li><a href="#" className="hover:text-primary">GitHub</a></li>
-                <li><a href="#" className="hover:text-primary">Monynha Softwares</a></li>
+                <li><a href="https://open2.tech" className="hover:text-primary">Open2 Technology</a></li>
               </ul>
             </div>
 
@@ -150,17 +150,17 @@ const Layout: React.FC<Props> = ({
               <div className="bg-brand-muted p-8 stark-border flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                    <span className="material-symbols-outlined text-2xl">monitoring</span>
-                   <p className="text-[10px] font-black uppercase">Monynha Softwares</p>
+                   <p className="text-[10px] font-black uppercase">Open2 Technology</p>
                 </div>
                 <p className="text-[10px] font-medium leading-relaxed uppercase tracking-wider text-gray-500">
-                   FACODI IS PART OF THE MONYNHA SOFTWARES OPEN ECOSYSTEM, PROMOTING ACCESSIBLE TECH FOR THE GLOBAL SOUTH.
+                   FACODI IS PART OF THE OPEN2 TECHNOLOGY OPEN ECOSYSTEM, PROMOTING ACCESSIBLE TECH FOR THE GLOBAL SOUTH.
                 </p>
               </div>
             </div>
           </div>
           
           <div className="pt-10 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 MONYNHA SOFTWARES. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
             <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
               <a href="#" className="hover:text-primary">PRIVACIDADE</a>
               <a href="#" className="hover:text-primary">TERMOS</a>

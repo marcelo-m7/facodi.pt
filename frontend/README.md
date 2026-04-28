@@ -3,7 +3,7 @@
 **FACODI** é uma plataforma EAD gratuita e open-source inspirada nos planos curriculares da Universidade do Algarve (UALG).
 Nosso objetivo é **democratizar o acesso ao ensino superior** por meio de trilhas de estudo organizadas em cursos, unidades curriculares e playlists do YouTube.
 
-🚀 Projeto mantido pela [Monynha Softwares](https://monynha.com).
+🚀 Projeto mantido pela [Open2 Technology](https://open2.tech).
 
 ---
 
@@ -67,7 +67,7 @@ Consulte [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 ## 👩‍💻 Autores & Créditos
 
 - [Marcelo Santos](https://github.com/marcelo-m7) — fundador
-- Comunidade Monynha Softwares
+- Comunidade Open2 Technology
 - Base acadêmica: [UALG](https://www.ualg.pt)
 
 ---

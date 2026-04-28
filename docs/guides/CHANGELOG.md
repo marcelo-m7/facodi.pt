@@ -196,7 +196,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Versão 1.0.0 Summary
 
-Primeira versão estável do workspace Corvanis/Codoo com:
+Primeira versão estável do workspace marcelo-m7/facodi com:
 
 ✅ **Documentação Completa:**
 - Guia para agentes (AGENTS.md)
@@ -345,6 +345,6 @@ Tags em changelog:
 
 ---
 
-For old versions, see [RELEASES](https://github.com/Corvanis/Codoo/releases).
+For old versions, see [RELEASES](https://github.com/marcelo-m7/facodi/releases).
 
 

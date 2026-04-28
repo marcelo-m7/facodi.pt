@@ -247,11 +247,13 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
   const institution = String(record.x_facodi_source_institution || channel.institution).trim();
   const slideCategory = String(record.slide_category || 'document').trim();
   const isPreview = Boolean(record.is_preview);
+  const videoUrl = String(record.video_url || '').trim() || undefined;
 
   // Tags: unit code, slide category, preview flag
   const tags: string[] = [slideCategory];
   if (unitCode) tags.push(unitCode);
   if (isPreview) tags.push('preview');
+  if (videoUrl) tags.push('video');
 
   return {
     id: String(id),
@@ -270,6 +272,7 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
     unitCode,
     sectionName: sectionName || undefined,
     websiteUrl,
+    videoUrl,
   };
 };
 
@@ -323,7 +326,7 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       fields: [
         'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
         'sequence', 'completion_time', 'is_preview', 'slide_category',
-        'is_category', 'website_absolute_url',
+        'is_category', 'website_absolute_url', 'video_url',
         'x_facodi_unit_code', 'x_facodi_duration_minutes',
         'x_facodi_source_institution', 'x_facodi_editorial_state',
       ],

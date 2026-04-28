@@ -39,6 +39,7 @@ export interface CurricularUnit {
   unitCode?: string;        // x_facodi_unit_code e.g. '19411003'
   sectionName?: string;     // category_id name e.g. '1o Ano - 1o Semestre'
   websiteUrl?: string;      // website_absolute_url on Odoo
+  videoUrl?: string;        // video_url on Odoo
 }
 
 export interface Course {

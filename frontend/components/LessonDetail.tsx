@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CurricularUnit } from '../types';
 import MarkdownView from './MarkdownView';
 
@@ -11,28 +11,59 @@ interface Props {
 }
 
 const LessonDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const getYouTubeEmbedUrl = (url: string): string | null => {
+    const trimmed = url.trim();
+    if (!trimmed) return null;
 
-  // Helper to render video player
+    if (trimmed.includes('youtube.com/embed/')) return trimmed;
+
+    const watchMatch = trimmed.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+    if (watchMatch?.[1]) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+
+    const shortMatch = trimmed.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+    if (shortMatch?.[1]) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+
+    return null;
+  };
+
   const renderVideoPlayer = () => {
-    // Try to extract YouTube video ID from websiteUrl or other sources
-    // For now, render placeholder until video_url is populated in Odoo
-    
-    if (unit.tags.includes('video')) {
+    if (unit.videoUrl) {
+      const embedUrl = getYouTubeEmbedUrl(unit.videoUrl);
+
+      if (embedUrl) {
+        return (
+          <div className="aspect-video bg-black stark-border mb-16 overflow-hidden" data-testid="lesson-video-player">
+            <iframe
+              title={`Video: ${unit.name}`}
+              src={embedUrl}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        );
+      }
+
       return (
-        <div className="aspect-video bg-black stark-border mb-16 flex items-center justify-center">
+        <div className="aspect-video bg-black stark-border mb-16 flex items-center justify-center" data-testid="lesson-video-link-fallback">
           <div className="text-center">
-            <span className="material-symbols-outlined text-6xl text-gray-600 mb-4">play_circle</span>
-            <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Vídeo em breve</p>
-            <p className="text-xs text-gray-500 mt-2">Será adicionado à medida que o conteúdo for sincronizado</p>
+            <span className="material-symbols-outlined text-6xl text-gray-600 mb-4">open_in_new</span>
+            <p className="text-sm text-gray-300 uppercase tracking-widest font-bold mb-3">Vídeo Externo</p>
+            <a
+              href={unit.videoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block px-4 py-2 bg-primary text-black text-xs font-black uppercase tracking-wider"
+            >
+              Abrir vídeo
+            </a>
           </div>
         </div>
       );
     }
 
-    // Placeholder for non-video lessons
     return (
-      <div className="aspect-video bg-gradient-to-b from-gray-100 to-white stark-border mb-16 flex items-center justify-center">
+      <div className="aspect-video bg-gradient-to-b from-gray-100 to-white stark-border mb-16 flex items-center justify-center" data-testid="lesson-video-placeholder">
         <div className="text-center">
           <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">description</span>
           <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Conteúdo em texto</p>

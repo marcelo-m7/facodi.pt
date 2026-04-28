@@ -57,7 +57,7 @@ Sua missão é **organizar os currículos oficiais de cursos de licenciatura e a
 
 * Interface minimalista, clara e inclusiva, em **Português** como idioma principal.
 * **Design responsivo**, com acessibilidade seguindo padrões WCAG 2.1.
-* Identidade visual alinhada às diretrizes da **Monynha Softwares**: cores vibrantes (violeta, azul, detalhes Pride), tipografia Inter/Space Grotesk/JetBrains Mono, estilo moderno e acolhedor.
+* Identidade visual alinhada às diretrizes da **Open2 Technology**: cores vibrantes (violeta, azul, detalhes Pride), tipografia Inter/Space Grotesk/JetBrains Mono, estilo moderno e acolhedor.
 * **Tom de voz:** didático, amigável e próximo (“fala tu, mona!”), valorizando a cultura popular e a diversidade.
 
 ---
@@ -71,10 +71,10 @@ Sua missão é **organizar os currículos oficiais de cursos de licenciatura e a
 
 ---
 
-## 8. Alinhamento com Monynha Softwares
+## 8. Alinhamento com Open2 Technology
 
-O FACODI nasce dentro do ecossistema da **Monynha Softwares**, que une **tecnologia de ponta** e **manifesto político-social inclusivo**.
-Assim como projetos como Boteco Pro e Monynha Tech, o FACODI reflete a visão da empresa:
+O FACODI nasce dentro do ecossistema da **Open2 Technology**, que une **tecnologia de ponta** e **manifesto político-social inclusivo**.
+Assim como outros projetos de impacto social e educacional, o FACODI reflete a visão da empresa:
 
 > **“Democratizar tecnologia, combater hipocrisia e dar voz a quem cria fora do padrão.”**
 
@@ -96,7 +96,7 @@ Assim como projetos como Boteco Pro e Monynha Tech, o FACODI reflete a visão da
 3. **Fase 3:**
 
    * Funções avançadas (conteúdos e comentários da comunidade, gamificação, estatísticas).
-   * Possível integração com identidade central (monynha.com/monynha.online).
+   * Possível integração com identidade central (https://open2.tech).
 
 ---
 
@@ -109,4 +109,4 @@ Assim como projetos como Boteco Pro e Monynha Tech, o FACODI reflete a visão da
 ---
 
 📌 **Resumo Final:**
-O **FACODI** é mais do que uma plataforma de vídeos — é uma **faculdade comunitária digital**, construída sobre a filosofia de **democratização tecnológica e cultural da Monynha Softwares**, oferecendo **acesso livre e organizado ao conhecimento**, sempre com **orgulho, diversidade e acessibilidade** no centro da experiência.
+O **FACODI** é mais do que uma plataforma de vídeos — é uma **faculdade comunitária digital**, construída sobre a filosofia de **democratização tecnológica e cultural da Open2 Technology**, oferecendo **acesso livre e organizado ao conhecimento**, sempre com **orgulho, diversidade e acessibilidade** no centro da experiência.
