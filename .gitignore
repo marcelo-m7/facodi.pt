@@ -1,3 +1,5 @@
+docs/documentation/
+docs/odoo/
 # Environment and configuration
 .env
 .env.local
