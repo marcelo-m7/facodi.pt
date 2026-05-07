@@ -1,3 +1,4 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { COURSE_UNITS } from '../data/courses';
 import { DEGREES } from '../data/degrees';
 import { PLAYLISTS } from '../data/playlists';
@@ -12,7 +13,7 @@ type OdooJsonRpcResponse = {
   error?: { message: string; data?: { message: string } };
 };
 
-export type CatalogSource = 'mock' | 'odoo';
+export type CatalogSource = 'mock' | 'odoo' | 'supabase';
 
 export type CatalogPayload = {
   source: CatalogSource;
@@ -22,6 +23,153 @@ export type CatalogPayload = {
 };
 
 const DATA_SOURCE = (import.meta.env.VITE_DATA_SOURCE || 'mock').toLowerCase();
+
+// Supabase client (lazy-initialized only when VITE_DATA_SOURCE=supabase)
+let _supabase: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient {
+  if (_supabase) return _supabase;
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) {
+    throw new Error('[catalogSource:supabase] VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are required');
+  }
+  _supabase = createClient(url, key);
+  return _supabase;
+}
+
+const CATEGORY_MAP: Record<string, Category> = {
+  communication: Category.COMMUNICATION,
+  computer_science: Category.COMPUTER_SCIENCE,
+  design: Category.DESIGN,
+  engineering: Category.ENGINEERING,
+  humanities: Category.HUMANITIES,
+  management: Category.MANAGEMENT,
+  mathematics: Category.MATHEMATICS,
+  arts_ui: Category.ARTS_UI,
+  ethics: Category.ETHICS,
+};
+
+const DIFFICULTY_MAP: Record<string, Difficulty> = {
+  foundational: Difficulty.FOUNDATIONAL,
+  intermediate: Difficulty.INTERMEDIATE,
+  advanced: Difficulty.ADVANCED,
+  expert: Difficulty.EXPERT,
+};
+
+async function loadSupabaseData(): Promise<CatalogPayload> {
+  const sb = getSupabaseClient();
+
+  // 1. Load courses (facodi.courses joined with institutions via curriculum_versions)
+  const { data: coursesRaw, error: coursesErr } = await sb
+    .schema('facodi')
+    .from('courses')
+    .select('code, name, slug, degree_level, language_code, ects_total, duration_semesters, metadata, institutions(name, website_url)')
+    .eq('is_active', true)
+    .order('code');
+
+  if (coursesErr) throw new Error(`[catalogSource:supabase] courses: ${coursesErr.message}`);
+  if (!coursesRaw?.length) throw new Error('[catalogSource:supabase] No courses returned');
+
+  const courses: Course[] = coursesRaw.map((row) => {
+    const inst = Array.isArray(row.institutions) ? row.institutions[0] : row.institutions;
+    const meta = (row.metadata as Record<string, unknown>) ?? {};
+    return {
+      id: row.code,
+      title: row.name,
+      description: (meta.description as string) || row.name,
+      ects: Number(row.ects_total) || 0,
+      semesters: Number(row.duration_semesters) || 6,
+      institution: inst?.name ?? 'UALG',
+      school: 'FACODI',
+      degreeType: row.degree_level === 'bachelor' ? 'bachelor' : 'other',
+      language: row.language_code ?? 'pt',
+      longDescription: (meta.long_description as string) || row.name,
+      websiteUrl: inst?.website_url ?? undefined,
+      curriculumVersion: undefined,
+      contentLicense: (meta.content_license as string) ?? undefined,
+    };
+  });
+
+  // 2. Load units (facodi.units → curriculum_versions → courses)
+  const { data: unitsRaw, error: unitsErr } = await sb
+    .schema('facodi')
+    .from('units')
+    .select('code, name, summary, description, ects, language_code, is_elective, position, workload_hours, source_url, metadata, curriculum_versions(course_id, courses(code))')
+    .order('position');
+
+  if (unitsErr) throw new Error(`[catalogSource:supabase] units: ${unitsErr.message}`);
+
+  const units: CurricularUnit[] = (unitsRaw ?? []).map((row) => {
+    const meta = (row.metadata as Record<string, unknown>) ?? {};
+    const cvRow = Array.isArray(row.curriculum_versions) ? row.curriculum_versions[0] : row.curriculum_versions;
+    const courseRow = cvRow ? (Array.isArray(cvRow.courses) ? cvRow.courses[0] : cvRow.courses) : null;
+    const courseId: string = courseRow?.code ?? (meta.courseId as string) ?? 'UNKNOWN';
+    const category = CATEGORY_MAP[(meta.category as string) ?? ''] ?? Category.COMPUTER_SCIENCE;
+    const difficulty = DIFFICULTY_MAP[(meta.difficulty as string) ?? ''] ?? Difficulty.FOUNDATIONAL;
+    const semester = Number(meta.semester) || 1;
+    const year = Number(meta.year) || 1;
+    const workload = Number(row.workload_hours) || 0;
+    const durationLabel = workload > 0 ? `${workload}h` : 'N/A';
+
+    return {
+      id: row.code,
+      name: row.name,
+      description: row.summary || row.description || '',
+      content: row.description ?? undefined,
+      ects: Number(row.ects) || 0,
+      semester,
+      year,
+      category,
+      difficulty,
+      duration: durationLabel,
+      contributor: 'FACODI',
+      tags: [],
+      courseId,
+      unitCode: row.code,
+      sectionName: undefined,
+      websiteUrl: row.source_url ?? undefined,
+      videoUrl: undefined,
+    };
+  });
+
+  // 3. Load playlists from public.playlists (learning path collections on tube.open2.tech)
+  // These are curated video collections mapped per unit via course_code + unit_code
+  const { data: playlistsRaw, error: playlistsErr } = await sb
+    .schema('public')
+    .from('playlists')
+    .select('id, name, slug, description, course_code, unit_code, video_count, total_duration_seconds, is_public')
+    .eq('is_public', true)
+    .not('course_code', 'is', null)
+    .order('course_code')
+    .order('unit_code');
+
+  if (playlistsErr) throw new Error(`[catalogSource:supabase] playlists: ${playlistsErr.message}`);
+
+  // Build a set of valid unit codes for filtering
+  const unitCodeSet = new Set(units.map((u) => u.id));
+
+  const playlists: Playlist[] = (playlistsRaw ?? [])
+    .filter((row) => row.unit_code && unitCodeSet.has(row.unit_code))
+    .map((row) => {
+      const estimatedHours = row.total_duration_seconds
+        ? Math.round(row.total_duration_seconds / 3600 * 10) / 10
+        : 0;
+
+      return {
+          id: row.id,
+        title: row.name,
+        description: row.description || `Caminho de aprendizado da unidade ${row.unit_code}.`,
+        units: [row.unit_code!],
+        estimatedHours,
+        creator: 'FACODI Community',
+        course_code: row.course_code ?? undefined,
+        unit_code: row.unit_code ?? undefined,
+      };
+    });
+
+  return { source: 'supabase', courses, units, playlists };
+}
 
 // In dev the Vite proxy rewrites /odoo → https://edu-facodi.odoo.com (avoids CORS).
 // In production, VITE_BACKEND_URL should be a real backend proxy URL.
@@ -295,7 +443,17 @@ const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): Cu
 
 export async function loadCatalogData(): Promise<CatalogPayload> {
   try {
-    // Check if we should use mock data
+    // Supabase path
+    if (DATA_SOURCE === 'supabase') {
+      try {
+        return await loadSupabaseData();
+      } catch (supabaseError) {
+        console.error('[catalogSource:supabase] Failed, falling back to mock:', supabaseError);
+        return { source: 'mock', courses: DEGREES, units: COURSE_UNITS, playlists: PLAYLISTS };
+      }
+    }
+
+    // Mock path
     if (DATA_SOURCE !== 'odoo') {
       return {
         source: 'mock',
@@ -415,4 +573,14 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       playlists: PLAYLISTS,
     };
   }
+}
+
+/**
+ * Find playlist for a given curricular unit by matching courseId + unitId
+ * to playlist course_code + unit_code fields
+ */
+export function findPlaylistForUnit(unit: CurricularUnit, playlists: Playlist[]): Playlist | null {
+  return playlists.find(
+    playlist => playlist.course_code === unit.courseId && playlist.unit_code === unit.id
+  ) || null;
 }

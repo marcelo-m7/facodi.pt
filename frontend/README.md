@@ -22,25 +22,43 @@ Nosso objetivo é **democratizar o acesso ao ensino superior** por meio de trilh
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js 20+ and Corepack enabled
 
 
 1. Install dependencies:
-   `npm install`
+   `corepack enable && pnpm install`
 2. Configure optional environment flags in `.env.local`:
+
+   - Start from the template:
+     `cp .env.local.example .env.local`
 
    - `VITE_DATA_SOURCE=mock` (default) or `VITE_DATA_SOURCE=odoo`
    - `VITE_BACKEND_URL=http://localhost:8080` (backend FastAPI base URL)
+   - `VITE_ODOO_DB`, `VITE_ODOO_USERNAME`, `VITE_ODOO_PASSWORD` (required for live Odoo)
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (when using Supabase features)
 
    Exemplo:
 
    ```dotenv
    VITE_DATA_SOURCE=odoo
    VITE_BACKEND_URL=http://localhost:8080
+   VITE_ODOO_DB=edu-facodi
+   VITE_ODOO_USERNAME=your-user@example.com
+   VITE_ODOO_PASSWORD=your-password
    ```
 
 3. Run the app:
-   `npm run dev`
+   `pnpm dev`
+
+> Security: never commit `.env`, `.env.local`, or any key/token values.
+
+## E2E Tests (Playwright)
+
+On first machine setup, install browser binaries:
+`pnpm exec playwright install`
+
+Then run E2E tests:
+`pnpm test:e2e`
 
 
 ## 🤝 Contribuindo

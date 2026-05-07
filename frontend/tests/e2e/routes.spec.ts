@@ -8,6 +8,10 @@ test('home loads and shows mission statement', async ({ page }) => {
 test('courses page lists all degrees', async ({ page }) => {
   await page.goto('/courses');
   const cards = page.locator('[data-testid="course-card"]');
+  // Wait for either course cards or the empty state message to appear
+  await expect(
+    cards.first().or(page.getByText('Sem cursos sincronizados do Odoo neste momento.'))
+  ).toBeVisible({ timeout: 10000 });
   const count = await cards.count();
   if (count === 0) {
     await expect(page.getByText('Sem cursos sincronizados do Odoo neste momento.')).toBeVisible();

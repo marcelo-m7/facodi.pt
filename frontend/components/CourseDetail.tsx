@@ -1,17 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
-import { CurricularUnit } from '../types';
+import { CurricularUnit, Playlist, VideoItem } from '../types';
 import MarkdownView from './MarkdownView';
+import { findPlaylistForUnit } from '../services/catalogSource';
+import { usePlaylistVideos } from '../hooks/usePlaylistVideos';
+import VideoCard from './videos/VideoCard';
+import YouTubePlayer from './videos/YouTubePlayer';
+import VideoState from './videos/VideoState';
 
 interface Props {
   unit: CurricularUnit;
   allUnits: CurricularUnit[];
+  playlists: Playlist[];
   onBack: () => void;
   onNavigate?: (id: string) => void;
   t: (key: string) => string;
 }
 
-const CourseDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }) => {
+const CourseDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNavigate, t }) => {
   const [fetchedContent, setFetchedContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +44,13 @@ const CourseDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }
 
     fetchContent();
   }, [unit.contentUrl, unit.id]);
+
+  // Find playlist for this unit
+  const playlist = findPlaylistForUnit(unit, playlists);
+  
+  // Load videos for playlist
+  const { videos, isLoading: videosLoading, error: videosError, selectedVideoIndex, setSelectedVideoIndex } = 
+    usePlaylistVideos(playlist?.id || null);
 
   const displayContent = unit.content || fetchedContent;
   const prerequisiteUnits = unit.prerequisites 
@@ -151,12 +164,66 @@ const CourseDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }
                 </div>
                 <span className="material-symbols-outlined text-2xl group-hover:translate-x-2 transition-transform self-end">arrow_right_alt</span>
               </div>
-              <div className="stark-border p-10 bg-black text-white hover:bg-primary hover:text-black transition-all cursor-pointer group flex flex-col justify-between h-48">
-                <div>
-                  <p className="text-[9px] font-black mb-2 opacity-40 uppercase tracking-widest">Recurso Externo</p>
-                  <p className="text-xl font-black uppercase tracking-tight leading-none">{t('courseDetail.relatedPlaylist')}</p>
-                </div>
-                <span className="material-symbols-outlined text-2xl group-hover:translate-x-2 transition-transform self-end">play_circle</span>
+
+              {/* Videos Section - REPLACES Recurso Externo Card */}
+              <div>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 text-gray-400">{t('courseDetail.unitVideos')}</h2>
+                
+                {videosLoading && (
+                  <VideoState 
+                    type="loading" 
+                    title={t('videoState.loading')}
+                  />
+                )}
+                {videosError && (
+                  <VideoState 
+                    type="error" 
+                    title={t('videoState.error')}
+                    message={videosError.message}
+                  />
+                )}
+                
+                {!videosLoading && !videosError && videos.length === 0 && (
+                  <VideoState 
+                    type="empty" 
+                    title={t('videoState.empty')}
+                    message={t('courseDetail.noVideos')}
+                  />
+                )}
+                
+                {!videosLoading && videos.length > 0 && (
+                  <div className="space-y-6">
+                    {/* Player for selected video */}
+                    <div className="stark-border bg-black p-4">
+                      <YouTubePlayer 
+                        youtubeId={videos[selectedVideoIndex]?.youtubeId} 
+                        title={videos[selectedVideoIndex]?.title || 'Video'} 
+                      />
+                    </div>
+                    
+                    {/* Video list */}
+                    {videos.length > 1 && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {videos.map((video, idx) => (
+                          <button
+                            key={video.id}
+                            onClick={() => setSelectedVideoIndex(idx)}
+                            className={`transition-all ${
+                              idx === selectedVideoIndex
+                                ? 'ring-2 ring-primary'
+                                : 'hover:opacity-80'
+                            }`}
+                          >
+                            <VideoCard
+                              video={video}
+                              onSelect={() => setSelectedVideoIndex(idx)}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
