@@ -11,15 +11,16 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "@google/genai": "^1.40.0",
+    "@supabase/supabase-js": "^2.105.3",
     "marked": "^15.0.0",
-    "@google/genai": "^1.40.0"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "@playwright/test": "^1.55.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
