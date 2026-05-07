@@ -14,8 +14,9 @@ import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
 import LessonDetail from './components/LessonDetail';
+import InstitutionalPage from './components/InstitutionalPage';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard' | 'institutional-page';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -54,6 +56,7 @@ const App: React.FC = () => {
     if (view === 'dashboard') path = '/dashboard';
     if (view === 'playlists') path = '/playlists';
     if (view === 'contributors') path = '/contributors';
+    if (view === 'institutional-page' && unitId) path = `/${unitId}`;
     window.history.pushState({}, '', path);
   };
 
@@ -107,6 +110,14 @@ const App: React.FC = () => {
     }
     if (path.startsWith('/contributors')) {
       setCurrentView('contributors');
+      return;
+    }
+    // Institutional pages: /manifesto, /sobre, /comunidade, /roadmap, /infraestrutura, /como-contribuir
+    const INSTITUTIONAL_SLUGS = ['manifesto', 'sobre', 'comunidade', 'roadmap', 'infraestrutura', 'como-contribuir', 'sobre-marcelo', 'sobre-ualg', 'sobre-open2', 'modelo-academico'];
+    const slug = path.replace('/', '');
+    if (INSTITUTIONAL_SLUGS.includes(slug)) {
+      setSelectedPageSlug(slug);
+      setCurrentView('institutional-page');
       return;
     }
     setCurrentView('home');
@@ -226,6 +237,12 @@ const App: React.FC = () => {
     updateRoute('lesson-detail', undefined, id);
   };
 
+  const handlePageNavigate = (slug: string) => {
+    setSelectedPageSlug(slug);
+    setCurrentView('institutional-page');
+    updateRoute('institutional-page', slug);
+  };
+
   const handleVideoSelect = (id: string) => {
     setSelectedVideoId(id);
     setCurrentView('video-detail');
@@ -245,6 +262,19 @@ const App: React.FC = () => {
                 onNavigate={handleUnitSelect}
                 t={t}
              />;
+    }
+
+    if (currentView === 'institutional-page' && selectedPageSlug) {
+      return (
+        <InstitutionalPage
+          slug={selectedPageSlug}
+          locale={locale}
+          onBack={() => {
+            setCurrentView('home');
+            updateRoute('home');
+          }}
+        />
+      );
     }
 
     if (currentView === 'lesson-detail' && selectedLesson) {
@@ -291,6 +321,7 @@ const App: React.FC = () => {
               setCurrentView('courses');
               updateRoute('courses');
             }}
+            onNavigatePage={handlePageNavigate}
             t={t}
             courses={courses}
             units={units}
@@ -423,6 +454,7 @@ const App: React.FC = () => {
         setCurrentView(view);
         updateRoute(view);
       }}
+      onNavigatePage={handlePageNavigate}
       savedCount={savedUnitIds.length}
       locale={locale}
       onLocaleChange={setLocale}

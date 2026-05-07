@@ -2,12 +2,13 @@
 import React from 'react';
 import { Locale } from '../data/i18n';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail' | 'institutional-page';
 
 interface Props {
   children: React.ReactNode;
   currentView: View;
   onViewChange: (view: View) => void;
+  onNavigatePage?: (slug: string) => void;
   savedCount: number;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
@@ -20,6 +21,7 @@ const Layout: React.FC<Props> = ({
   children,
   currentView,
   onViewChange,
+  onNavigatePage,
   savedCount,
   locale,
   onLocaleChange,
@@ -134,7 +136,10 @@ const Layout: React.FC<Props> = ({
             <div className="md:col-span-2">
               <h5 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-8">COMUNIDADE</h5>
               <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest">
-                <li><a href="#" className="hover:text-primary">GitHub</a></li>
+                <li><button onClick={() => onNavigatePage?.('manifesto')} className="hover:text-primary">Manifesto</button></li>
+                <li><button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">Sobre a FACODI</button></li>
+                <li><button onClick={() => onNavigatePage?.('comunidade')} className="hover:text-primary">Comunidade</button></li>
+                <li><button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">Contribuir</button></li>
                 <li><a href="https://open2.tech" className="hover:text-primary">Open2 Technology</a></li>
               </ul>
             </div>

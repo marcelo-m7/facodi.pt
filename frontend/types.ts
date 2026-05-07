@@ -70,6 +70,15 @@ export interface Playlist {
   unit_code?: string;
 }
 
+export interface ContentPage {
+  slug: string;
+  titlePt: string;
+  titleEn?: string;
+  bodyPt: string;
+  bodyEn?: string;
+  published: boolean;
+}
+
 export interface VideoCategory {
   id: string;
   name: string;

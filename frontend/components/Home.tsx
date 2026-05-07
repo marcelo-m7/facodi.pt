@@ -4,12 +4,13 @@ import { Course, CurricularUnit } from '../types';
 
 interface HomeProps {
   onExplore: () => void;
+  onNavigatePage?: (slug: string) => void;
   t: (key: string) => string;
   courses: Course[];
   units: CurricularUnit[];
 }
 
-const Home: React.FC<HomeProps> = ({ onExplore, t, courses, units }) => {
+const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, t, courses, units }) => {
   const totalUnits = units.length;
   const totalCourses = courses.length;
   return (
@@ -210,7 +211,12 @@ const Home: React.FC<HomeProps> = ({ onExplore, t, courses, units }) => {
           <p className="text-gray-500 font-medium leading-relaxed mb-12 max-w-2xl mx-auto uppercase text-xs tracking-widest">
             {t('home.manifestoDescription')}
           </p>
-          <a href="#" className="text-[10px] font-black uppercase tracking-[0.3em] underline decoration-primary decoration-4 underline-offset-8 hover:bg-primary transition-all">{t('home.readManifesto')}</a>
+          <button
+            onClick={() => onNavigatePage?.('manifesto')}
+            className="text-[10px] font-black uppercase tracking-[0.3em] underline decoration-primary decoration-4 underline-offset-8 hover:bg-primary transition-all"
+          >
+            {t('home.readManifesto')}
+          </button>
         </div>
       </section>
 

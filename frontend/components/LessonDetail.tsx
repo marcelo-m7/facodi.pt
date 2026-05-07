@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CurricularUnit, Playlist } from '../types';
 import MarkdownView from './MarkdownView';
 import { findPlaylistForUnit } from '../services/catalogSource';
@@ -14,6 +14,29 @@ interface Props {
 }
 
 const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNavigate, t }) => {
+  const [fetchedContent, setFetchedContent] = useState<string | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (unit.contentUrl) {
+      setContentLoading(true);
+      setContentError(null);
+      fetch(unit.contentUrl)
+        .then(r => {
+          if (!r.ok) throw new Error('Falha ao carregar conteúdo externo.');
+          return r.text();
+        })
+        .then(text => setFetchedContent(text))
+        .catch(err => setContentError(err instanceof Error ? err.message : 'Erro desconhecido'))
+        .finally(() => setContentLoading(false));
+    } else {
+      setFetchedContent(null);
+    }
+  }, [unit.contentUrl, unit.id]);
+
+  const displayContent = unit.content || fetchedContent;
+
   const getYouTubeEmbedUrl = (url: string): string | null => {
     const trimmed = url.trim();
     if (!trimmed) return null;
@@ -202,10 +225,20 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNa
           )}
 
           {/* Extended Content */}
-          {unit.content && (
+          {contentLoading && (
+            <div className="stark-border p-8 bg-gray-50 mb-16 text-sm text-gray-500 uppercase tracking-widest font-bold">
+              A carregar conteúdo...
+            </div>
+          )}
+          {contentError && (
+            <div className="stark-border p-8 bg-red-50 mb-16 text-sm text-red-700">
+              {contentError}
+            </div>
+          )}
+          {displayContent && !contentLoading && (
             <div className="stark-border p-8 bg-white mb-16">
               <h2 className="text-2xl font-black uppercase tracking-tighter mb-8">Conteúdo Detalhado</h2>
-              <MarkdownView content={unit.content} />
+              <MarkdownView content={displayContent} />
             </div>
           )}
         </main>
@@ -237,8 +270,55 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNa
                     <p className="text-lg font-bold capitalize">{unit.difficulty}</p>
                   </div>
                 )}
+                <div>
+                  <p className="text-[9px] uppercase font-black tracking-widest text-gray-500 mb-1">{t('lessonDetail.category')}</p>
+                  <p className="text-sm font-bold">{unit.category}</p>
+                </div>
+                {unit.sectionName && (
+                  <div>
+                    <p className="text-[9px] uppercase font-black tracking-widest text-gray-500 mb-1">{t('lessonDetail.section')}</p>
+                    <p className="text-sm font-bold">{unit.sectionName}</p>
+                  </div>
+                )}
+                {unit.unitCode && (
+                  <div>
+                    <p className="text-[9px] uppercase font-black tracking-widest text-gray-500 mb-1">{t('lessonDetail.unitCode')}</p>
+                    <p className="text-sm font-mono">{unit.unitCode}</p>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* External Links Card */}
+            {(unit.websiteUrl || unit.syllabusUrl) && (
+              <div className="stark-border p-8 bg-brand-muted">
+                <p className="text-[9px] uppercase font-black tracking-[0.3em] mb-4 text-gray-400">{t('lessonDetail.links')}</p>
+                <div className="space-y-3">
+                  {unit.websiteUrl && (
+                    <a
+                      href={unit.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between w-full p-3 bg-white stark-border hover:bg-black hover:text-white transition-all group text-xs font-bold uppercase"
+                    >
+                      <span className="truncate pr-2">{t('lessonDetail.officialSite')}</span>
+                      <span className="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">open_in_new</span>
+                    </a>
+                  )}
+                  {unit.syllabusUrl && (
+                    <a
+                      href={unit.syllabusUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between w-full p-3 bg-white stark-border hover:bg-black hover:text-white transition-all group text-xs font-bold uppercase"
+                    >
+                      <span className="truncate pr-2">{t('lessonDetail.syllabus')}</span>
+                      <span className="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">description</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Prerequisites */}
             {unit.prerequisites && unit.prerequisites.length > 0 && (
