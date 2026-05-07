@@ -579,6 +579,6 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
  */
 export function findPlaylistForUnit(unit: CurricularUnit, playlists: Playlist[]): Playlist | null {
   return playlists.find(
-    playlist => playlist.courseCode === unit.courseId && playlist.unitCode === unit.id
+    playlist => playlist.course_code === unit.courseId && playlist.unit_code === unit.id
   ) || null;
 }
