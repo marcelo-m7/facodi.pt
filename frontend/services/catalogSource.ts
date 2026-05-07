@@ -163,6 +163,8 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
         units: [row.unit_code!],
         estimatedHours,
         creator: 'FACODI Community',
+        course_code: row.course_code ?? undefined,
+        unit_code: row.unit_code ?? undefined,
       };
     });
 
