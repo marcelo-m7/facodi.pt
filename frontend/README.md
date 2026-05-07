@@ -52,6 +52,14 @@ Nosso objetivo é **democratizar o acesso ao ensino superior** por meio de trilh
 
 > Security: never commit `.env`, `.env.local`, or any key/token values.
 
+## E2E Tests (Playwright)
+
+On first machine setup, install browser binaries:
+`pnpm exec playwright install`
+
+Then run E2E tests:
+`pnpm test:e2e`
+
 
 ## 🤝 Contribuindo
 
