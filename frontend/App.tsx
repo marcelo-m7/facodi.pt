@@ -251,6 +251,7 @@ const App: React.FC = () => {
       return <LessonDetail 
                 unit={selectedLesson} 
                 allUnits={units}
+                  playlists={playlists}
                 onBack={() => {
                   setCurrentView('repository');
                   updateRoute('repository');

@@ -1,16 +1,19 @@
 import React from 'react';
-import { CurricularUnit } from '../types';
+import { CurricularUnit, Playlist } from '../types';
 import MarkdownView from './MarkdownView';
+import { findPlaylistForUnit } from '../services/catalogSource';
+import { usePlaylistVideos } from '../hooks/usePlaylistVideos';
 
 interface Props {
   unit: CurricularUnit;
   allUnits: CurricularUnit[];
+  playlists: Playlist[];
   onBack: () => void;
   onNavigate?: (id: string) => void;
   t: (key: string) => string;
 }
 
-const LessonDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }) => {
+const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNavigate, t }) => {
   const getYouTubeEmbedUrl = (url: string): string | null => {
     const trimmed = url.trim();
     if (!trimmed) return null;
@@ -72,6 +75,81 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }
     );
   };
 
+    // Find playlist for this unit and load videos
+    const playlist = findPlaylistForUnit(unit, playlists);
+    const { videos, isLoading: videosLoading, error: videosError, selectedVideoIndex, setSelectedVideoIndex } = 
+      usePlaylistVideos(playlist?.id || null);
+
+    const renderPlaylistVideos = () => {
+      if (!playlist || videos.length === 0) {
+        if (videosError) {
+          return (
+            <div className="mb-16 p-4 bg-red-100 border border-red-300 rounded text-sm text-red-800">
+              <p className="font-bold">{t('videoState.error')}</p>
+              <p className="text-xs mt-1">{videosError.message}</p>
+            </div>
+          );
+        }
+        if (videosLoading) {
+          return (
+            <div className="mb-16 p-4 bg-blue-100 border border-blue-300 rounded text-sm text-blue-800">
+              <p className="font-bold">{t('videoState.loading')}</p>
+            </div>
+          );
+        }
+        return null;
+      }
+
+      const selectedVideo = videos[selectedVideoIndex];
+      if (!selectedVideo) return null;
+
+      return (
+        <div className="mb-16">
+          <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-6">{t('courseDetail.unitVideos')}</h3>
+        
+          {/* Player */}
+          <div className="aspect-video bg-black stark-border mb-8 overflow-hidden">
+            <iframe
+              key={selectedVideo.youtubeId}
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}`}
+              title={selectedVideo.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+
+          {/* Video Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
+            {videos.map((video, idx) => (
+              <button
+                key={video.id}
+                onClick={() => setSelectedVideoIndex(idx)}
+                className={`aspect-video rounded overflow-hidden border-2 transition-all ${
+                  idx === selectedVideoIndex 
+                    ? 'border-primary bg-yellow-100' 
+                    : 'border-gray-300 hover:border-primary'
+                }`}
+              >
+                <img 
+                  src={video.thumbnailUrl} 
+                  alt={video.title}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Info */}
+          <div className="text-xs text-gray-600">
+            <p className="font-bold">{selectedVideo.title}</p>
+            <p className="text-gray-500 mt-1">{selectedVideo.channelName}</p>
+          </div>
+        </div>
+      );
+    };
+
   const relatedUnits = allUnits.filter(u => 
     u.courseId === unit.courseId && 
     u.semester === unit.semester && 
@@ -93,6 +171,9 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, onBack, onNavigate, t }
         <main className="flex-1">
           {/* Video Player */}
           {renderVideoPlayer()}
+
+            {/* Playlist Videos */}
+            {renderPlaylistVideos()}
 
           {/* Lesson Title & Metadata */}
           <div className="mb-16">

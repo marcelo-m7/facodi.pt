@@ -157,7 +157,7 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
         : 0;
 
       return {
-        id: row.slug ?? row.id,
+          id: row.id,
         title: row.name,
         description: row.description || `Caminho de aprendizado da unidade ${row.unit_code}.`,
         units: [row.unit_code!],
