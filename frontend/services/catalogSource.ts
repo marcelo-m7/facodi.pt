@@ -133,39 +133,38 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
     };
   });
 
-  // 3. Load playlists with unit associations
+  // 3. Load playlists from public.playlists (learning path collections on tube.open2.tech)
+  // These are curated video collections mapped per unit via course_code + unit_code
   const { data: playlistsRaw, error: playlistsErr } = await sb
-    .schema('facodi')
+    .schema('public')
     .from('playlists')
-    .select('provider_playlist_id, title, metadata, unit_playlists(priority, is_primary, units(code))')
-    .eq('provider', 'youtube')
-    .order('provider_playlist_id');
+    .select('id, name, slug, description, course_code, unit_code, video_count, total_duration_seconds, is_public')
+    .eq('is_public', true)
+    .not('course_code', 'is', null)
+    .order('course_code')
+    .order('unit_code');
 
   if (playlistsErr) throw new Error(`[catalogSource:supabase] playlists: ${playlistsErr.message}`);
 
+  // Build a set of valid unit codes for filtering
+  const unitCodeSet = new Set(units.map((u) => u.id));
+
   const playlists: Playlist[] = (playlistsRaw ?? [])
+    .filter((row) => row.unit_code && unitCodeSet.has(row.unit_code))
     .map((row) => {
-      const meta = (row.metadata as Record<string, unknown>) ?? {};
-      const unitLinks = (row.unit_playlists ?? []) as Array<{
-        priority: number;
-        is_primary: boolean;
-        units: { code: string } | null;
-      }>;
-      const unitIds = unitLinks
-        .filter((l) => l.units?.code)
-        .sort((a, b) => a.priority - b.priority)
-        .map((l) => l.units!.code);
+      const estimatedHours = row.total_duration_seconds
+        ? Math.round(row.total_duration_seconds / 3600 * 10) / 10
+        : 0;
 
       return {
-        id: row.provider_playlist_id,
-        title: row.title ?? `Playlist ${row.provider_playlist_id}`,
-        description: (meta.description as string) || 'Playlist comunitária referenciada nas unidades curriculares FACODI.',
-        units: unitIds,
-        estimatedHours: 0,
-        creator: (meta.creator as string) ?? 'FACODI Community',
+        id: row.slug ?? row.id,
+        title: row.name,
+        description: row.description || `Caminho de aprendizado da unidade ${row.unit_code}.`,
+        units: [row.unit_code!],
+        estimatedHours,
+        creator: 'FACODI Community',
       };
-    })
-    .filter((p) => p.units.length > 0);
+    });
 
   return { source: 'supabase', courses, units, playlists };
 }

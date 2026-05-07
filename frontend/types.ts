@@ -68,6 +68,41 @@ export interface Playlist {
   creator: string;
 }
 
+export interface VideoCategory {
+  id: string;
+  name: string;
+  slug: string;
+  color?: string;
+}
+
+export interface PublicPlaylist {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  courseCode?: string;
+  unitCode?: string;
+  videoCount: number;
+  totalDurationSeconds?: number;
+}
+
+export interface VideoItem {
+  id: string;
+  youtubeId: string;
+  title: string;
+  description: string;
+  channelName: string;
+  durationSeconds?: number;
+  thumbnailUrl: string;
+  language: string;
+  categoryId?: string;
+  category?: VideoCategory;
+  playlistId?: string;
+  playlistName?: string;
+  playlistSlug?: string;
+  position?: number;
+}
+
 export interface FilterState {
   category: Category | 'All';
   difficulty: Difficulty | 'All';

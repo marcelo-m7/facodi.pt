@@ -2,7 +2,7 @@
 import React from 'react';
 import { Locale } from '../data/i18n';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail' | 'videos' | 'video-detail';
 
 interface Props {
   children: React.ReactNode;
@@ -53,9 +53,15 @@ const Layout: React.FC<Props> = ({
               </button>
               <button 
                 onClick={() => onViewChange('repository')}
-                className={`transition-all ${['repository', 'course-detail'].includes(currentView) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
+                className={`transition-all ${['repository', 'course-detail', 'lesson-detail'].includes(currentView) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
               >
                 {t('nav.units')}
+              </button>
+              <button
+                onClick={() => onViewChange('videos')}
+                className={`transition-all ${['videos', 'video-detail'].includes(currentView) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
+              >
+                {t('nav.videos')}
               </button>
               <button 
                 onClick={() => onViewChange('dashboard')}

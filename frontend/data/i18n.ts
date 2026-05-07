@@ -7,6 +7,7 @@ const pt: TranslationDict = {
   'nav.courses': 'Cursos',
   'nav.units': 'Unidades',
   'nav.progress': 'Meu Progresso',
+  'nav.videos': 'Vídeos',
   'nav.exploreTracks': 'Explorar Trilhas',
   'nav.languageLabel': 'Selecionar idioma',
   'nav.themeToggle': 'Alternar tema',
@@ -78,7 +79,19 @@ const pt: TranslationDict = {
   'courseDetail.download': 'Download Programa (PDF)',
   'courseDetail.related': 'Conteúdo Relacionado',
   'courseDetail.relatedExercises': 'Exercícios & Práticas Comunitárias',
-  'courseDetail.relatedPlaylist': 'Playlist de Apoio Verificada'
+  'courseDetail.relatedPlaylist': 'Playlist de Apoio Verificada',
+  'videos.title': 'Vídeos',
+  'videos.subtitle': 'Descubra e reproduza vídeos curados pela comunidade TubeO2.',
+  'videos.searchPlaceholder': 'Pesquisar por título, canal ou descrição...',
+  'videos.allCategories': 'Todas as categorias',
+  'videos.allPlaylists': 'Todas as playlists',
+  'videos.loading': 'Carregando vídeos...',
+  'videos.empty': 'Nenhum vídeo encontrado para os filtros aplicados.',
+  'videos.error': 'Falha ao carregar vídeos do schema público.',
+  'videos.open': 'Abrir vídeo',
+  'videos.back': 'Voltar para vídeos',
+  'videos.related': 'Vídeos relacionados',
+  'videos.upNext': 'Na playlist'
 };
 
 const en: TranslationDict = {
@@ -86,6 +99,7 @@ const en: TranslationDict = {
   'nav.courses': 'Courses',
   'nav.units': 'Units',
   'nav.progress': 'My Progress',
+  'nav.videos': 'Videos',
   'nav.exploreTracks': 'Explore Tracks',
   'nav.languageLabel': 'Select language',
   'nav.themeToggle': 'Toggle theme',
@@ -157,7 +171,19 @@ const en: TranslationDict = {
   'courseDetail.download': 'Download syllabus (PDF)',
   'courseDetail.related': 'Related content',
   'courseDetail.relatedExercises': 'Exercises & community practices',
-  'courseDetail.relatedPlaylist': 'Verified support playlist'
+  'courseDetail.relatedPlaylist': 'Verified support playlist',
+  'videos.title': 'Videos',
+  'videos.subtitle': 'Discover and watch community-curated videos from TubeO2.',
+  'videos.searchPlaceholder': 'Search by title, channel, or description...',
+  'videos.allCategories': 'All categories',
+  'videos.allPlaylists': 'All playlists',
+  'videos.loading': 'Loading videos...',
+  'videos.empty': 'No videos found for the current filters.',
+  'videos.error': 'Failed to load videos from the public schema.',
+  'videos.open': 'Open video',
+  'videos.back': 'Back to videos',
+  'videos.related': 'Related videos',
+  'videos.upNext': 'In playlist'
 };
 
 export const translations: Record<Locale, TranslationDict> = { pt, en };

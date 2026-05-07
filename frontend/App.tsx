@@ -14,14 +14,17 @@ import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
 import LessonDetail from './components/LessonDetail';
+import VideoList from './components/videos/VideoList';
+import VideoDetail from './components/videos/VideoDetail';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard' | 'videos' | 'video-detail';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
-    const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -42,12 +45,14 @@ const App: React.FC = () => {
 
   const t = useMemo(() => createTranslator(locale), [locale]);
 
-  const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null) => {
+  const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null, videoId?: string | null) => {
     let path = '/';
     if (view === 'courses') path = '/courses';
     if (view === 'repository') path = '/courses/units';
     if (view === 'course-detail' && unitId) path = `/courses/units/${unitId}`;
     if (view === 'lesson-detail' && lessonId) path = `/lessons/${lessonId}`;
+    if (view === 'videos') path = '/videos';
+    if (view === 'video-detail' && videoId) path = `/videos/${videoId}`;
     if (view === 'dashboard') path = '/dashboard';
     if (view === 'playlists') path = '/playlists';
     if (view === 'contributors') path = '/contributors';
@@ -56,15 +61,27 @@ const App: React.FC = () => {
 
   const syncViewWithLocation = () => {
     const path = window.location.pathname;
-        if (path.startsWith('/lessons/')) {
-          const lessonId = path.replace('/lessons/', '').split('/')[0];
-          const lessonExists = units.some(unit => unit.id === lessonId);
-          if (lessonExists) {
-            setSelectedLessonId(lessonId);
-            setCurrentView('lesson-detail');
-            return;
-          }
-        }
+    if (path.startsWith('/videos/')) {
+      const videoId = path.replace('/videos/', '').split('/')[0];
+      if (videoId) {
+        setSelectedVideoId(videoId);
+        setCurrentView('video-detail');
+        return;
+      }
+    }
+    if (path.startsWith('/videos')) {
+      setCurrentView('videos');
+      return;
+    }
+    if (path.startsWith('/lessons/')) {
+      const lessonId = path.replace('/lessons/', '').split('/')[0];
+      const lessonExists = units.some(unit => unit.id === lessonId);
+      if (lessonExists) {
+        setSelectedLessonId(lessonId);
+        setCurrentView('lesson-detail');
+        return;
+      }
+    }
     if (path.startsWith('/courses/units/')) {
       const unitId = path.replace('/courses/units/', '').split('/')[0];
       const unitExists = units.some(unit => unit.id === unitId);
@@ -211,6 +228,12 @@ const App: React.FC = () => {
     updateRoute('lesson-detail', undefined, id);
   };
 
+  const handleVideoSelect = (id: string) => {
+    setSelectedVideoId(id);
+    setCurrentView('video-detail');
+    updateRoute('video-detail', undefined, undefined, id);
+  };
+
   const renderContent = () => {
     if (currentView === 'course-detail' && selectedUnit) {
       return <CourseDetail 
@@ -236,6 +259,20 @@ const App: React.FC = () => {
                 onNavigate={handleLessonSelect}
                 t={t}
              />;
+    }
+
+    if (currentView === 'video-detail' && selectedVideoId) {
+      return (
+        <VideoDetail
+          videoId={selectedVideoId}
+          onBack={() => {
+            setCurrentView('videos');
+            updateRoute('videos');
+          }}
+          onSelectVideo={handleVideoSelect}
+          t={t}
+        />
+      );
     }
 
     switch (currentView) {
@@ -274,6 +311,8 @@ const App: React.FC = () => {
           />
         );
       case 'contributors': return <Contributors />;
+      case 'videos':
+        return <VideoList onSelectVideo={handleVideoSelect} t={t} />;
       case 'playlists':
         return (
           <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
