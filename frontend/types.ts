@@ -66,6 +66,8 @@ export interface Playlist {
   units: string[]; 
   estimatedHours: number;
   creator: string;
+  courseCode?: string;
+  unitCode?: string;
 }
 
 export interface VideoCategory {

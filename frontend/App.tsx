@@ -14,10 +14,8 @@ import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
 import LessonDetail from './components/LessonDetail';
-import VideoList from './components/videos/VideoList';
-import VideoDetail from './components/videos/VideoDetail';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard' | 'videos' | 'video-detail';
+type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -239,6 +237,7 @@ const App: React.FC = () => {
       return <CourseDetail 
                 unit={selectedUnit} 
                 allUnits={units}
+                playlists={playlists}
                 onBack={() => {
                   setCurrentView('repository');
                   updateRoute('repository');
@@ -311,8 +310,6 @@ const App: React.FC = () => {
           />
         );
       case 'contributors': return <Contributors />;
-      case 'videos':
-        return <VideoList onSelectVideo={handleVideoSelect} t={t} />;
       case 'playlists':
         return (
           <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">

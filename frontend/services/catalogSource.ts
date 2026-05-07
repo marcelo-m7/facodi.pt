@@ -572,3 +572,13 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
     };
   }
 }
+
+/**
+ * Find playlist for a given curricular unit by matching courseId + unitId
+ * to playlist course_code + unit_code fields
+ */
+export function findPlaylistForUnit(unit: CurricularUnit, playlists: Playlist[]): Playlist | null {
+  return playlists.find(
+    playlist => playlist.courseCode === unit.courseId && playlist.unitCode === unit.id
+  ) || null;
+}
