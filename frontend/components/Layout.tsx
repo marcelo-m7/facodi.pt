@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Locale } from '../data/i18n';
 
 type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail' | 'institutional-page';
@@ -107,62 +107,64 @@ const Layout: React.FC<Props> = ({
       )}
 
       {/* Mobile drawer */}
-      <nav
-        id="mobile-menu"
-        aria-label="Menu mobile"
-        className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col transition-transform duration-300 md:hidden ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
-        <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
-          <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
-          <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
-            <span className="material-symbols-outlined text-xl">close</span>
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-1">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Navegar</p>
-          {([
-            { view: 'home' as View, label: t('nav.home') },
-            { view: 'courses' as View, label: t('nav.courses') },
-            { view: 'repository' as View, label: t('nav.units') },
-            { view: 'dashboard' as View, label: t('nav.progress') },
-          ] as { view: View; label: string }[]).map(({ view, label }) => (
-            <button key={view} onClick={() => navGo(view)}
-              className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}>
-              {label}
+      {mobileOpen && (
+        <nav
+          id="mobile-menu"
+          aria-label="Menu mobile"
+          className="fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden"
+        >
+          <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
+            <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
+            <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
+              <span className="material-symbols-outlined text-xl">close</span>
             </button>
-          ))}
-          <div className="border-t border-black/10 mt-6 pt-6">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Projeto</p>
-            {[
-              { slug: 'manifesto', label: 'Manifesto' },
-              { slug: 'sobre', label: 'Sobre a FACODI' },
-              { slug: 'comunidade', label: 'Comunidade Corvanis' },
-              { slug: 'roadmap', label: 'Roadmap' },
-              { slug: 'como-contribuir', label: 'Como Contribuir' },
-            ].map(({ slug, label }) => (
-              <button key={slug} onClick={() => pageGo(slug)} className="text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest text-gray-600 hover:bg-brand-muted hover:text-black transition-all">
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Navegar</p>
+            {([
+              { view: 'home' as View, label: t('nav.home') },
+              { view: 'courses' as View, label: t('nav.courses') },
+              { view: 'repository' as View, label: t('nav.units') },
+              { view: 'dashboard' as View, label: t('nav.progress') },
+            ] as { view: View; label: string }[]).map(({ view, label }) => (
+              <button key={view} onClick={() => navGo(view)}
+                className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}>
                 {label}
               </button>
             ))}
+            <div className="border-t border-black/10 mt-6 pt-6">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Projeto</p>
+              {[
+                { slug: 'manifesto', label: 'Manifesto' },
+                { slug: 'sobre', label: 'Sobre a FACODI' },
+                { slug: 'comunidade', label: 'Comunidade Corvanis' },
+                { slug: 'roadmap', label: 'Roadmap' },
+                { slug: 'como-contribuir', label: 'Como Contribuir' },
+              ].map(({ slug, label }) => (
+                <button key={slug} onClick={() => pageGo(slug)} className="text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest text-gray-600 hover:bg-brand-muted hover:text-black transition-all">
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="shrink-0 px-6 py-6 stark-border-t flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <label htmlFor="facodi-language-mobile" className="text-[10px] font-black uppercase tracking-widest">Idioma</label>
-            <select id="facodi-language-mobile" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-white stark-border text-[10px] font-bold uppercase px-3 py-1.5 outline-none cursor-pointer">
-              <option value="pt">Português</option>
-              <option value="en">English</option>
-            </select>
+          <div className="shrink-0 px-6 py-6 stark-border-t flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <label htmlFor="facodi-language-mobile" className="text-[10px] font-black uppercase tracking-widest">Idioma</label>
+              <select id="facodi-language-mobile" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-white stark-border text-[10px] font-bold uppercase px-3 py-1.5 outline-none cursor-pointer">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
+              <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
+              {isDark ? 'Modo claro' : 'Modo escuro'}
+            </button>
+            <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
+              {t('nav.exploreTracks')}
+            </button>
           </div>
-          <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
-            <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
-            {isDark ? 'Modo claro' : 'Modo escuro'}
-          </button>
-          <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
-            {t('nav.exploreTracks')}
-          </button>
-        </div>
-      </nav>
+        </nav>
+      )}
 
       <main id="main-content" className="flex-grow pt-16 md:pt-20">
         {children}

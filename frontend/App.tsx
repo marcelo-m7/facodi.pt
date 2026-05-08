@@ -193,10 +193,12 @@ const App: React.FC = () => {
       playlists: `Playlists — ${BASE}`,
       contributors: `Contribuidores — ${BASE}`,
     };
-    if (currentView === 'course-detail' && selectedUnit) {
-      document.title = `${selectedUnit.name} — ${BASE}`;
-    } else if (currentView === 'lesson-detail' && selectedLesson) {
-      document.title = `${selectedLesson.name} — ${BASE}`;
+    const selectedUnitForTitle = units.find((u) => u.id === selectedUnitId) || null;
+    const selectedLessonForTitle = units.find((u) => u.id === selectedLessonId) || null;
+    if (currentView === 'course-detail' && selectedUnitForTitle) {
+      document.title = `${selectedUnitForTitle.name} — ${BASE}`;
+    } else if (currentView === 'lesson-detail' && selectedLessonForTitle) {
+      document.title = `${selectedLessonForTitle.name} — ${BASE}`;
     } else if (currentView === 'institutional-page' && selectedPageSlug) {
       const slugLabels: Record<string, string> = {
         manifesto: 'Manifesto',
@@ -214,7 +216,7 @@ const App: React.FC = () => {
     } else {
       document.title = map[currentView] ?? BASE;
     }
-  }, [currentView, selectedUnit, selectedLesson, selectedPageSlug]);
+  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, units]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
