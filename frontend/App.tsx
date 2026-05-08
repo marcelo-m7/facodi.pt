@@ -358,6 +358,11 @@ const App: React.FC = () => {
               updateRoute('courses');
             }}
             onNavigatePage={handlePageNavigate}
+            onSelectCourse={(courseId) => {
+              setFilters((f) => ({ ...f, courseId }));
+              setCurrentView('repository');
+              updateRoute('repository');
+            }}
             t={t}
             courses={courses}
             units={units}

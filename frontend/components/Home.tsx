@@ -5,12 +5,13 @@ import { Course, CurricularUnit } from '../types';
 interface HomeProps {
   onExplore: () => void;
   onNavigatePage?: (slug: string) => void;
+  onSelectCourse?: (courseId: string) => void;
   t: (key: string) => string;
   courses: Course[];
   units: CurricularUnit[];
 }
 
-const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, t, courses, units }) => {
+const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, t, courses, units }) => {
   const totalUnits = units.length;
   const totalCourses = courses.length;
   return (
@@ -42,7 +43,10 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, t, courses, unit
               >
                 {t('home.heroCtaPrimary')}
               </button>
-              <button className="bg-white text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:bg-brand-muted transition-all">
+              <button
+                onClick={() => onNavigatePage?.('sobre-open2')}
+                className="bg-white text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:bg-brand-muted transition-all"
+              >
                 {t('home.heroCtaSecondary')}
               </button>
             </div>
@@ -144,13 +148,20 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, t, courses, unit
             <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-none">{t('home.coursesTitle')}</h2>
             <p className="text-sm text-gray-500 font-medium uppercase tracking-widest mt-4 max-w-2xl">{t('home.coursesSubtitle')}</p>
           </div>
-          <button className="hidden lg:block stark-border px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">
+          <button
+            onClick={onExplore}
+            className="hidden lg:block stark-border px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+          >
             {t('home.viewAllCourses')}
           </button>
         </div>
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
           {courses.map((course, i) => (
-            <div key={i} className="bg-white stark-border p-12 group hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer">
+            <button
+              key={i}
+              onClick={() => onSelectCourse?.(course.id)}
+              className="bg-white stark-border p-12 group hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer text-left"
+            >
               <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 border border-black/10 px-2 py-1 mb-8 inline-block">PLANO 2025/2026</span>
               <h3 className="text-3xl font-black uppercase tracking-tighter mb-8 group-hover:text-primary transition-colors">{course.title}</h3>
               <p className="text-sm font-medium text-gray-500 mb-12 leading-relaxed">{course.description}</p>
@@ -175,7 +186,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, t, courses, unit
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -232,7 +243,10 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, t, courses, unit
             >
               {t('home.ctaPrimary')}
             </button>
-            <button className="bg-white text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:bg-brand-muted transition-all">
+            <button
+              onClick={() => onNavigatePage?.('como-contribuir')}
+              className="bg-white text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:bg-brand-muted transition-all"
+            >
               {t('home.ctaSecondary')}
             </button>
           </div>
