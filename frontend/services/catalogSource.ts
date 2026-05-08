@@ -60,11 +60,10 @@ const DIFFICULTY_MAP: Record<string, Difficulty> = {
 async function loadSupabaseData(): Promise<CatalogPayload> {
   const sb = getSupabaseClient();
 
-  // 1. Load courses (facodi.courses joined with institutions via curriculum_versions)
+  // 1. Load courses from public schema
   const { data: coursesRaw, error: coursesErr } = await sb
-    .schema('facodi')
     .from('courses')
-    .select('code, name, slug, degree_level, language_code, ects_total, duration_semesters, metadata, institutions(name, website_url)')
+    .select('code, title, description, ects_total, duration_semesters, institution, school, degree_type, language_code, long_description, website_url, curriculum_version, content_license, metadata, is_active')
     .eq('is_active', true)
     .order('code');
 
@@ -72,71 +71,71 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
   if (!coursesRaw?.length) throw new Error('[catalogSource:supabase] No courses returned');
 
   const courses: Course[] = coursesRaw.map((row) => {
-    const inst = Array.isArray(row.institutions) ? row.institutions[0] : row.institutions;
     const meta = (row.metadata as Record<string, unknown>) ?? {};
     return {
       id: row.code,
-      title: row.name,
-      description: (meta.description as string) || row.name,
+      title: row.title,
+      description: row.description || (meta.description as string) || row.title,
       ects: Number(row.ects_total) || 0,
       semesters: Number(row.duration_semesters) || 6,
-      institution: inst?.name ?? 'UALG',
-      school: 'FACODI',
-      degreeType: row.degree_level === 'bachelor' ? 'bachelor' : 'other',
+      institution: row.institution ?? 'UALG',
+      school: row.school ?? 'FACODI',
+      degreeType: row.degree_type === 'bachelor' || row.degree_type === 'master' ? row.degree_type : 'other',
       language: row.language_code ?? 'pt',
-      longDescription: (meta.long_description as string) || row.name,
-      websiteUrl: inst?.website_url ?? undefined,
-      curriculumVersion: undefined,
-      contentLicense: (meta.content_license as string) ?? undefined,
+      longDescription: row.long_description || (meta.long_description as string) || row.title,
+      websiteUrl: row.website_url ?? undefined,
+      curriculumVersion: row.curriculum_version ?? undefined,
+      contentLicense: row.content_license ?? (meta.content_license as string) ?? undefined,
     };
   });
 
-  // 2. Load units (facodi.units → curriculum_versions → courses)
+  // 2. Load units from public schema
   const { data: unitsRaw, error: unitsErr } = await sb
-    .schema('facodi')
     .from('units')
-    .select('code, name, summary, description, ects, language_code, is_elective, position, workload_hours, source_url, metadata, curriculum_versions(course_id, courses(code))')
+    .select('code, name, summary, content, content_url, syllabus_url, ects, semester, year, category, difficulty, duration, contributor, tags, prerequisites, unit_code, section_name, website_url, video_url, source_url, metadata, course_id, courses(code)')
     .order('position');
 
   if (unitsErr) throw new Error(`[catalogSource:supabase] units: ${unitsErr.message}`);
 
   const units: CurricularUnit[] = (unitsRaw ?? []).map((row) => {
     const meta = (row.metadata as Record<string, unknown>) ?? {};
-    const cvRow = Array.isArray(row.curriculum_versions) ? row.curriculum_versions[0] : row.curriculum_versions;
-    const courseRow = cvRow ? (Array.isArray(cvRow.courses) ? cvRow.courses[0] : cvRow.courses) : null;
-    const courseId: string = courseRow?.code ?? (meta.courseId as string) ?? 'UNKNOWN';
-    const category = CATEGORY_MAP[(meta.category as string) ?? ''] ?? Category.COMPUTER_SCIENCE;
-    const difficulty = DIFFICULTY_MAP[(meta.difficulty as string) ?? ''] ?? Difficulty.FOUNDATIONAL;
-    const semester = Number(meta.semester) || 1;
-    const year = Number(meta.year) || 1;
-    const workload = Number(row.workload_hours) || 0;
-    const durationLabel = workload > 0 ? `${workload}h` : 'N/A';
+    const courseRel = Array.isArray(row.courses) ? row.courses[0] : row.courses;
+    const categoryRaw = String(row.category || meta.category || '').toLowerCase();
+    const difficultyRaw = String(row.difficulty || meta.difficulty || '').toLowerCase();
+    const courseId: string = courseRel?.code ?? (meta.courseId as string) ?? 'UNKNOWN';
+    const category = CATEGORY_MAP[categoryRaw] ?? Category.COMPUTER_SCIENCE;
+    const difficulty = DIFFICULTY_MAP[difficultyRaw] ?? Difficulty.FOUNDATIONAL;
+    const semester = Number(row.semester) || Number(meta.semester) || 1;
+    const year = Number(row.year) || Number(meta.year) || 1;
+    const durationLabel = row.duration || 'N/A';
 
     return {
       id: row.code,
       name: row.name,
-      description: row.summary || row.description || '',
-      content: row.description ?? undefined,
+      description: row.summary || row.content || '',
+      content: row.content ?? undefined,
+      contentUrl: row.content_url ?? undefined,
+      syllabusUrl: row.syllabus_url ?? undefined,
       ects: Number(row.ects) || 0,
       semester,
       year,
       category,
       difficulty,
       duration: durationLabel,
-      contributor: 'FACODI',
-      tags: [],
+      contributor: row.contributor || 'FACODI',
+      tags: (row.tags as string[]) ?? [],
       courseId,
-      unitCode: row.code,
-      sectionName: undefined,
-      websiteUrl: row.source_url ?? undefined,
-      videoUrl: undefined,
+      prerequisites: (row.prerequisites as string[]) ?? undefined,
+      unitCode: row.unit_code ?? row.code,
+      sectionName: row.section_name ?? undefined,
+      websiteUrl: row.website_url ?? row.source_url ?? undefined,
+      videoUrl: row.video_url ?? undefined,
     };
   });
 
   // 3. Load playlists from public.playlists (learning path collections on tube.open2.tech)
   // These are curated video collections mapped per unit via course_code + unit_code
   const { data: playlistsRaw, error: playlistsErr } = await sb
-    .schema('public')
     .from('playlists')
     .select('id, name, slug, description, course_code, unit_code, video_count, total_duration_seconds, is_public')
     .eq('is_public', true)
@@ -157,7 +156,7 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
         : 0;
 
       return {
-          id: row.id,
+        id: row.id,
         title: row.name,
         description: row.description || `Caminho de aprendizado da unidade ${row.unit_code}.`,
         units: [row.unit_code!],
