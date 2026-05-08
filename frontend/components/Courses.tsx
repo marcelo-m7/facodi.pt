@@ -27,6 +27,25 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, is
       </section>
 
       <section className="py-16 lg:py-24 border-t border-black/10">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 mb-12 lg:mb-16">
+          <div className="stark-border bg-brand-muted p-8 lg:p-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-500 mb-6">Como Explorar Esta Página</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-2">1. Escolha um curso</p>
+                <p className="text-xs text-gray-600 leading-relaxed">Cada cartão resume a estrutura curricular com ECTS, duração e unidades já mapeadas.</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-2">2. Abra o currículo</p>
+                <p className="text-xs text-gray-600 leading-relaxed">Use Ver Currículo para navegar pelas unidades e aplicar filtros por ano, semestre e área.</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-2">3. Continue no seu ritmo</p>
+                <p className="text-xs text-gray-600 leading-relaxed">Guarde unidades relevantes e acompanhe seu progresso no painel Meu Progresso.</p>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
           {courses.map(course => {
             const unitCount = units.filter(unit => unit.courseId === course.id).length;

@@ -31,6 +31,7 @@ const Layout: React.FC<Props> = ({
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const CONTENT_SUBMIT_URL = 'https://tube.open2.tech';
 
   const projectLinks = [
     { slug: 'manifesto', label: 'Manifesto', icon: 'flag' },
@@ -209,6 +210,14 @@ const Layout: React.FC<Props> = ({
           <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
             {t('nav.exploreTracks')}
           </button>
+          <a
+            href={CONTENT_SUBMIT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:bg-brand-muted transition-all w-full text-center"
+          >
+            Enviar Conteudo
+          </a>
         </div>
       </nav>
 
@@ -226,12 +235,24 @@ const Layout: React.FC<Props> = ({
               </p>
               <p className="text-[10px] text-gray-400 font-bold uppercase">Conteúdo disponível sob licença aberta e amor comunitário.</p>
               <div className="flex gap-4 mt-8">
-                <div className="w-10 h-10 stark-border flex items-center justify-center hover:bg-primary transition-all cursor-pointer">
-                  <span className="material-symbols-outlined text-lg">share</span>
-                </div>
-                <div className="w-10 h-10 stark-border flex items-center justify-center hover:bg-primary transition-all cursor-pointer">
-                  <span className="material-symbols-outlined text-lg">code</span>
-                </div>
+                <a
+                  href="https://open2.tech/contact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Contactar Open2 Technology"
+                  className="w-10 h-10 stark-border flex items-center justify-center hover:bg-primary transition-all cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-lg">contact_support</span>
+                </a>
+                <a
+                  href="https://open2.tech/contact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Abrir página de contato Open2 Technology"
+                  className="w-10 h-10 stark-border flex items-center justify-center hover:bg-primary transition-all cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-lg">mail</span>
+                </a>
               </div>
             </div>
             
@@ -249,8 +270,9 @@ const Layout: React.FC<Props> = ({
                 <li><button onClick={() => onNavigatePage?.('manifesto')} className="hover:text-primary">Manifesto</button></li>
                 <li><button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">Sobre a FACODI</button></li>
                 <li><button onClick={() => onNavigatePage?.('comunidade')} className="hover:text-primary">Comunidade</button></li>
-                <li><button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">Contribuir</button></li>
+                <li><a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">Enviar Conteudo</a></li>
                 <li><a href="https://open2.tech" className="hover:text-primary">Open2 Technology</a></li>
+                <li><a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Contacto Open2</a></li>
               </ul>
             </div>
 
@@ -270,6 +292,8 @@ const Layout: React.FC<Props> = ({
           <div className="pt-10 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
             <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
+              <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
+              <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
               <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
               <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
             </div>

@@ -12,6 +12,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, t, courses, units }) => {
+  const CONTENT_SUBMIT_URL = 'https://tube.open2.tech';
   const totalUnits = units.length;
   const totalCourses = courses.length;
   return (
@@ -243,12 +244,14 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             >
               {t('home.ctaPrimary')}
             </button>
-            <button
-              onClick={() => onNavigatePage?.('como-contribuir')}
-              className="bg-white text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:bg-brand-muted transition-all"
+            <a
+              href={CONTENT_SUBMIT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:bg-brand-muted transition-all inline-flex items-center"
             >
               {t('home.ctaSecondary')}
-            </button>
+            </a>
           </div>
         </div>
       </section>

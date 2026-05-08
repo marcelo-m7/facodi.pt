@@ -31,6 +31,26 @@ const Dashboard: React.FC<DashboardProps> = ({ savedUnits, onUnitClick, onRemove
         </p>
       </div>
 
+      <section className="mb-12 lg:mb-14">
+        <div className="stark-border bg-brand-muted p-8 lg:p-10">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-500 mb-6">Como Ler Este Painel</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-2">Créditos acumulados</p>
+              <p className="text-xs text-gray-600 leading-relaxed">Mostra o total de ECTS das unidades guardadas em relação ao objetivo de referência.</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-2">Distribuição por área</p>
+              <p className="text-xs text-gray-600 leading-relaxed">Ajuda a identificar desequilíbrios entre áreas e orientar o próximo bloco de estudo.</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-2">Plano em foco</p>
+              <p className="text-xs text-gray-600 leading-relaxed">Use a lista para abrir unidades, remover itens e manter um plano realista por semestre.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left Column: Stats */}
         <div className="lg:col-span-4 space-y-8">

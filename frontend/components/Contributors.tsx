@@ -49,9 +49,35 @@ const Contributors: React.FC = () => {
         <p className="text-gray-500 font-medium max-w-2xl mx-auto mb-12 uppercase text-xs tracking-[0.2em] leading-loose">
           We are always looking for curriculum experts, software engineers, and community leads to join our mission.
         </p>
-        <button className="bg-black text-white px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-black transition-all">
+        <a
+          href="https://github.com/open2tech"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-black text-white px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-black transition-all inline-flex items-center"
+        >
           Join the GitHub Organization
-        </button>
+        </a>
+      </div>
+
+      <div className="mt-12 stark-border p-10 lg:p-12 bg-white">
+        <h4 className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-500 mb-6">How To Contribute</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <article className="space-y-4">
+            <p className="text-[10px] font-black uppercase tracking-widest">Content Submission</p>
+            <p className="text-xs text-gray-600 leading-relaxed">Publish educational videos and playlists through the community media pipeline.</p>
+            <a href="https://tube.open2.tech" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest underline decoration-primary decoration-2 underline-offset-4">Open Tube Platform</a>
+          </article>
+          <article className="space-y-4">
+            <p className="text-[10px] font-black uppercase tracking-widest">Technical Collaboration</p>
+            <p className="text-xs text-gray-600 leading-relaxed">Help with frontend, data integration, QA and developer experience improvements.</p>
+            <a href="https://github.com/open2tech" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest underline decoration-primary decoration-2 underline-offset-4">Explore Repositories</a>
+          </article>
+          <article className="space-y-4">
+            <p className="text-[10px] font-black uppercase tracking-widest">Institutional Contact</p>
+            <p className="text-xs text-gray-600 leading-relaxed">Talk to the Open2 team for partnerships, curriculum mapping and strategic initiatives.</p>
+            <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest underline decoration-primary decoration-2 underline-offset-4">Contact Open2</a>
+          </article>
+        </div>
       </div>
     </div>
   );
