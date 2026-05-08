@@ -26,7 +26,27 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://facodi.open2.tech/sobre-marcelo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/sobre-ualg</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/sobre-open2</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://facodi.open2.tech/comunidade</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/modelo-academico</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

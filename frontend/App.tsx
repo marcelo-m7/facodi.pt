@@ -218,6 +218,133 @@ const App: React.FC = () => {
     }
   }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, units]);
 
+  // Dynamic SEO meta tags for SPA routes
+  useEffect(() => {
+    const siteUrl = 'https://facodi.open2.tech';
+    const defaultDescription = 'Curriculos universitarios abertos com playlists, progresso comunitario e materiais livres para todos.';
+
+    const selectedUnitForSeo = units.find((u) => u.id === selectedUnitId) || null;
+    const selectedLessonForSeo = units.find((u) => u.id === selectedLessonId) || null;
+
+    const slugMeta: Record<string, { title: string; description: string }> = {
+      manifesto: {
+        title: 'Manifesto - FACODI',
+        description: 'Conheca a visao da FACODI para ensino superior aberto, comunitario e remixavel.',
+      },
+      sobre: {
+        title: 'Sobre a FACODI',
+        description: 'Entenda a origem da FACODI e o contexto institucional da iniciativa.',
+      },
+      'sobre-marcelo': {
+        title: 'Marcelo Santos - FACODI',
+        description: 'Perfil do fundador e arquiteto da FACODI e sua visao para educacao aberta.',
+      },
+      'sobre-ualg': {
+        title: 'Universidade do Algarve - FACODI',
+        description: 'Relacao institucional entre FACODI e Universidade do Algarve.',
+      },
+      'sobre-open2': {
+        title: 'Open2 Technology - FACODI',
+        description: 'Como o ecossistema Open2 Technology sustenta a evolucao tecnica da FACODI.',
+      },
+      comunidade: {
+        title: 'Comunidade Corvanis - FACODI',
+        description: 'Descubra como participar da comunidade que constroi e cura a FACODI.',
+      },
+      roadmap: {
+        title: 'Roadmap - FACODI',
+        description: 'Prioridades de curto, medio e longo prazo para a evolucao da FACODI.',
+      },
+      'modelo-academico': {
+        title: 'Modelo Academico - FACODI',
+        description: 'Estrutura academica da FACODI: cursos, unidades curriculares, playlists e recursos abertos.',
+      },
+      infraestrutura: {
+        title: 'Infraestrutura Tecnica - FACODI',
+        description: 'Arquitetura tecnica da plataforma FACODI com React, Supabase e integracoes.',
+      },
+      'como-contribuir': {
+        title: 'Como Contribuir - FACODI',
+        description: 'Guia para contribuir com conteudo, codigo, traducao e curadoria na FACODI.',
+      },
+    };
+
+    const viewMeta: Record<View, { path: string; title: string; description: string }> = {
+      home: {
+        path: '/',
+        title: 'FACODI - Faculdade Comunitaria Digital',
+        description: defaultDescription,
+      },
+      courses: {
+        path: '/courses',
+        title: 'Cursos - FACODI',
+        description: 'Explore licenciaturas e percursos com curriculos oficiais e recursos abertos.',
+      },
+      repository: {
+        path: '/courses/units',
+        title: 'Unidades Curriculares - FACODI',
+        description: 'Navegue por unidades curriculares com ementa, contexto e playlists integradas.',
+      },
+      paths: {
+        path: '/courses/units',
+        title: 'Trilhas - FACODI',
+        description: defaultDescription,
+      },
+      contributors: {
+        path: '/contributors',
+        title: 'Contribuidores - FACODI',
+        description: 'Conheca as pessoas e comunidades que constroem a FACODI.',
+      },
+      'course-detail': {
+        path: selectedUnitForSeo ? `/courses/units/${selectedUnitForSeo.id}` : '/courses/units',
+        title: selectedUnitForSeo ? `${selectedUnitForSeo.name} - FACODI` : 'Detalhe de Unidade - FACODI',
+        description: selectedUnitForSeo?.description || 'Detalhes da unidade curricular com recursos relacionados.',
+      },
+      'lesson-detail': {
+        path: selectedLessonForSeo ? `/lessons/${selectedLessonForSeo.id}` : '/courses/units',
+        title: selectedLessonForSeo ? `${selectedLessonForSeo.name} - FACODI` : 'Licao - FACODI',
+        description: selectedLessonForSeo?.description || 'Pagina da licao com conteudo, links e videos da playlist.',
+      },
+      playlists: {
+        path: '/playlists',
+        title: 'Playlists - FACODI',
+        description: 'Colecoes de playlists organizadas para apoiar o estudo por unidade curricular.',
+      },
+      dashboard: {
+        path: '/dashboard',
+        title: 'Meu Progresso - FACODI',
+        description: 'Acompanhe unidades guardadas e progresso de estudo na FACODI.',
+      },
+      'institutional-page': {
+        path: selectedPageSlug ? `/${selectedPageSlug}` : '/',
+        title: selectedPageSlug ? (slugMeta[selectedPageSlug]?.title || 'Pagina Institucional - FACODI') : 'FACODI',
+        description: selectedPageSlug ? (slugMeta[selectedPageSlug]?.description || defaultDescription) : defaultDescription,
+      },
+    };
+
+    const { path, title, description } = viewMeta[currentView];
+    const fullUrl = `${siteUrl}${path}`;
+
+    const setMeta = (selector: string, value: string) => {
+      const element = document.querySelector(selector);
+      if (element) {
+        element.setAttribute('content', value);
+      }
+    };
+
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', fullUrl);
+    }
+
+    setMeta('meta[name="description"]', description);
+    setMeta('meta[property="og:title"]', title);
+    setMeta('meta[property="og:description"]', description);
+    setMeta('meta[property="og:url"]', fullUrl);
+    setMeta('meta[name="twitter:title"]', title);
+    setMeta('meta[name="twitter:description"]', description);
+  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, units]);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('facodi_theme', isDark ? 'dark' : 'light');
