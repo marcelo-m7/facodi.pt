@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Locale } from '../data/i18n';
 
 type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail' | 'institutional-page';
@@ -30,17 +30,57 @@ const Layout: React.FC<Props> = ({
   t
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const projectLinks = [
+    { slug: 'manifesto', label: 'Manifesto', icon: 'flag' },
+    { slug: 'sobre', label: 'Sobre a FACODI', icon: 'school' },
+    { slug: 'comunidade', label: 'Comunidade Corvanis', icon: 'groups' },
+    { slug: 'roadmap', label: 'Roadmap', icon: 'route' },
+    { slug: 'como-contribuir', label: 'Como Contribuir', icon: 'volunteer_activism' },
+  ];
+
   const navGo = (view: View) => { onViewChange(view); setMobileOpen(false); };
   const pageGo = (slug: string) => { onNavigatePage?.(slug); setMobileOpen(false); };
   const isActive = (view: View, extra?: View[]) => currentView === view || (extra?.includes(currentView) ?? false);
   const navCls = (view: View, extra?: View[]) =>
-    `transition-all text-[10px] font-bold uppercase tracking-widest ${isActive(view, extra) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`;
+    `transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 ${isActive(view, extra) ? 'text-black bg-primary stark-border' : 'text-gray-500 hover:text-black hover:bg-brand-muted'}`;
 
   // Prevent body scroll when drawer is open
-  React.useEffect(() => {
+  useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+      }
+    };
+
+    const onResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false);
+      }
+    };
+
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 8);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    onScroll();
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -49,7 +89,7 @@ const Layout: React.FC<Props> = ({
         Ir para conteúdo
       </a>
 
-      <header className="fixed top-0 w-full z-50 bg-white stark-border-b h-16 md:h-20">
+      <header className={`fixed top-0 w-full z-50 h-16 md:h-20 transition-all ${isScrolled ? 'bg-white/95 backdrop-blur stark-border-b shadow-[0_4px_0_0_rgba(0,0,0,0.06)]' : 'bg-white stark-border-b'}`}>
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between">
           {/* Logo */}
           <button onClick={() => navGo('home')} aria-label="FACODI — Página inicial" className="flex items-center gap-2 shrink-0">
@@ -57,7 +97,7 @@ const Layout: React.FC<Props> = ({
           </button>
 
           {/* Desktop nav */}
-          <nav aria-label="Navegação principal" className="hidden md:flex items-center gap-8 lg:gap-12">
+          <nav aria-label="Navegação principal" className="hidden md:flex items-center gap-5 lg:gap-8">
             <button onClick={() => navGo('home')} aria-current={isActive('home') ? 'page' : undefined} className={navCls('home')}>{t('nav.home')}</button>
             <button onClick={() => navGo('courses')} aria-current={isActive('courses') ? 'page' : undefined} className={navCls('courses')}>{t('nav.courses')}</button>
             <button onClick={() => navGo('repository')} aria-current={isActive('repository', ['course-detail', 'lesson-detail']) ? 'page' : undefined} className={navCls('repository', ['course-detail', 'lesson-detail'])}>{t('nav.units')}</button>
@@ -66,6 +106,9 @@ const Layout: React.FC<Props> = ({
               {savedCount > 0 && (
                 <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
               )}
+            </button>
+            <button onClick={() => pageGo('manifesto')} className="transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500 hover:text-black hover:bg-brand-muted">
+              Manifesto
             </button>
           </nav>
 
@@ -94,77 +137,80 @@ const Layout: React.FC<Props> = ({
                 <span className="absolute top-0 right-0 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
               )}
             </button>
-            <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu" aria-expanded={mobileOpen} aria-controls="mobile-menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
-              <span className="material-symbols-outlined text-xl">menu</span>
+            <button onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileOpen} aria-controls="mobile-menu" className="w-10 h-10 flex items-center justify-center stark-border hover:bg-brand-muted transition-all text-black dark:text-white">
+              <span className="relative block w-5 h-4" aria-hidden="true">
+                <span className={`absolute left-0 w-5 h-0.5 bg-current transition-all ${mobileOpen ? 'top-1.5 rotate-45' : 'top-0'}`} />
+                <span className={`absolute left-0 top-1.5 w-5 h-0.5 bg-current transition-all ${mobileOpen ? 'opacity-0' : 'opacity-100'}`} />
+                <span className={`absolute left-0 w-5 h-0.5 bg-current transition-all ${mobileOpen ? 'top-1.5 -rotate-45' : 'top-3'}`} />
+              </span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/40 md:hidden" aria-hidden="true" onClick={() => setMobileOpen(false)} />
-      )}
+      <div className={`fixed inset-0 z-[100] md:hidden bg-black/40 transition-opacity ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} aria-hidden="true" onClick={() => setMobileOpen(false)} />
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <nav
-          id="mobile-menu"
-          aria-label="Menu mobile"
-          className="fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden"
-        >
-          <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
-            <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
-            <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
-              <span className="material-symbols-outlined text-xl">close</span>
+      <nav
+        id="mobile-menu"
+        aria-label="Menu mobile"
+        className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
+          <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
+          <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-1">
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Navegar</p>
+          {([
+            { view: 'home' as View, label: t('nav.home'), icon: 'home' },
+            { view: 'courses' as View, label: t('nav.courses'), icon: 'school' },
+            { view: 'repository' as View, label: t('nav.units'), icon: 'grid_view' },
+            { view: 'dashboard' as View, label: t('nav.progress'), icon: 'dashboard' },
+          ] as { view: View; label: string; icon: string }[]).map(({ view, label, icon }) => (
+            <button
+              key={view}
+              onClick={() => navGo(view)}
+              className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-between ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}
+            >
+              <span>{label}</span>
+              <span className="material-symbols-outlined text-lg">{icon}</span>
             </button>
-          </div>
-          <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Navegar</p>
-            {([
-              { view: 'home' as View, label: t('nav.home') },
-              { view: 'courses' as View, label: t('nav.courses') },
-              { view: 'repository' as View, label: t('nav.units') },
-              { view: 'dashboard' as View, label: t('nav.progress') },
-            ] as { view: View; label: string }[]).map(({ view, label }) => (
-              <button key={view} onClick={() => navGo(view)}
-                className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}>
-                {label}
+          ))}
+          <div className="border-t border-black/10 mt-6 pt-6">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Projeto</p>
+            {projectLinks.map(({ slug, label, icon }) => (
+              <button
+                key={slug}
+                onClick={() => pageGo(slug)}
+                className="text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest text-gray-600 hover:bg-brand-muted hover:text-black transition-all flex items-center justify-between"
+              >
+                <span>{label}</span>
+                <span className="material-symbols-outlined text-lg">{icon}</span>
               </button>
             ))}
-            <div className="border-t border-black/10 mt-6 pt-6">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Projeto</p>
-              {[
-                { slug: 'manifesto', label: 'Manifesto' },
-                { slug: 'sobre', label: 'Sobre a FACODI' },
-                { slug: 'comunidade', label: 'Comunidade Corvanis' },
-                { slug: 'roadmap', label: 'Roadmap' },
-                { slug: 'como-contribuir', label: 'Como Contribuir' },
-              ].map(({ slug, label }) => (
-                <button key={slug} onClick={() => pageGo(slug)} className="text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest text-gray-600 hover:bg-brand-muted hover:text-black transition-all">
-                  {label}
-                </button>
-              ))}
-            </div>
           </div>
-          <div className="shrink-0 px-6 py-6 stark-border-t flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <label htmlFor="facodi-language-mobile" className="text-[10px] font-black uppercase tracking-widest">Idioma</label>
-              <select id="facodi-language-mobile" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-white stark-border text-[10px] font-bold uppercase px-3 py-1.5 outline-none cursor-pointer">
-                <option value="pt">Português</option>
-                <option value="en">English</option>
-              </select>
-            </div>
-            <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
-              <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
-              {isDark ? 'Modo claro' : 'Modo escuro'}
-            </button>
-            <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
-              {t('nav.exploreTracks')}
-            </button>
+        </div>
+        <div className="shrink-0 px-6 py-6 stark-border-t flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <label htmlFor="facodi-language-mobile" className="text-[10px] font-black uppercase tracking-widest">Idioma</label>
+            <select id="facodi-language-mobile" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-white stark-border text-[10px] font-bold uppercase px-3 py-1.5 outline-none cursor-pointer">
+              <option value="pt">Português</option>
+              <option value="en">English</option>
+            </select>
           </div>
-        </nav>
-      )}
+          <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
+            <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
+            {isDark ? 'Modo claro' : 'Modo escuro'}
+          </button>
+          <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
+            {t('nav.exploreTracks')}
+          </button>
+        </div>
+      </nav>
 
       <main id="main-content" className="flex-grow pt-16 md:pt-20">
         {children}

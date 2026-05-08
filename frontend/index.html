@@ -96,6 +96,24 @@
             font-family: 'Space Grotesk', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
+        html {
+            scroll-behavior: smooth;
+        }
+        :focus-visible {
+            outline: 3px solid #EFFF00;
+            outline-offset: 2px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
         .stark-border {
             border: 1px solid #000000;
         }
