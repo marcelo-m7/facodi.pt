@@ -182,6 +182,42 @@ const App: React.FC = () => {
     localStorage.setItem('facodi_locale', locale);
   }, [locale]);
 
+  // Dynamic page title
+  useEffect(() => {
+    const BASE = 'FACODI';
+    const map: Partial<Record<View, string>> = {
+      home: `${BASE} — Faculdade Comunitária Digital`,
+      courses: `Cursos — ${BASE}`,
+      repository: `Unidades Curriculares — ${BASE}`,
+      dashboard: `Meu Progresso — ${BASE}`,
+      playlists: `Playlists — ${BASE}`,
+      contributors: `Contribuidores — ${BASE}`,
+    };
+    const selectedUnitForTitle = units.find((u) => u.id === selectedUnitId) || null;
+    const selectedLessonForTitle = units.find((u) => u.id === selectedLessonId) || null;
+    if (currentView === 'course-detail' && selectedUnitForTitle) {
+      document.title = `${selectedUnitForTitle.name} — ${BASE}`;
+    } else if (currentView === 'lesson-detail' && selectedLessonForTitle) {
+      document.title = `${selectedLessonForTitle.name} — ${BASE}`;
+    } else if (currentView === 'institutional-page' && selectedPageSlug) {
+      const slugLabels: Record<string, string> = {
+        manifesto: 'Manifesto',
+        sobre: 'Sobre a FACODI',
+        'sobre-marcelo': 'Marcelo Santos',
+        'sobre-ualg': 'Universidade do Algarve',
+        'sobre-open2': 'Open2 Technology',
+        comunidade: 'Comunidade Corvanis',
+        roadmap: 'Roadmap',
+        'modelo-academico': 'Modelo Académico',
+        infraestrutura: 'Infraestrutura',
+        'como-contribuir': 'Como Contribuir',
+      };
+      document.title = `${slugLabels[selectedPageSlug] ?? selectedPageSlug} — ${BASE}`;
+    } else {
+      document.title = map[currentView] ?? BASE;
+    }
+  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, units]);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('facodi_theme', isDark ? 'dark' : 'light');

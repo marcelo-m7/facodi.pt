@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Locale } from '../data/i18n';
 
 type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail' | 'institutional-page';
@@ -29,80 +29,144 @@ const Layout: React.FC<Props> = ({
   onToggleTheme,
   t
 }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navGo = (view: View) => { onViewChange(view); setMobileOpen(false); };
+  const pageGo = (slug: string) => { onNavigatePage?.(slug); setMobileOpen(false); };
+  const isActive = (view: View, extra?: View[]) => currentView === view || (extra?.includes(currentView) ?? false);
+  const navCls = (view: View, extra?: View[]) =>
+    `transition-all text-[10px] font-bold uppercase tracking-widest ${isActive(view, extra) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`;
+
+  // Prevent body scroll when drawer is open
+  React.useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="fixed top-0 w-full z-50 bg-white stark-border-b h-20">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 h-full flex items-center justify-between">
-          <div className="flex items-center gap-12 lg:gap-24">
-            <div 
-              className="flex items-center gap-2 cursor-pointer" 
-              onClick={() => onViewChange('home')}
-            >
-              <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">FACODI</span>
-            </div>
-            <nav className="hidden md:flex items-center gap-8 lg:gap-12 text-[10px] font-bold uppercase tracking-widest">
-              <button 
-                onClick={() => onViewChange('home')}
-                className={`transition-all ${currentView === 'home' ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
-              >
-                {t('nav.home')}
-              </button>
-              <button 
-                onClick={() => onViewChange('courses')}
-                className={`transition-all ${currentView === 'courses' ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
-              >
-                {t('nav.courses')}
-              </button>
-              <button 
-                onClick={() => onViewChange('repository')}
-                className={`transition-all ${['repository', 'course-detail', 'lesson-detail'].includes(currentView) ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
-              >
-                {t('nav.units')}
-              </button>
-              <button 
-                onClick={() => onViewChange('dashboard')}
-                className={`transition-all relative ${currentView === 'dashboard' ? 'text-black font-black' : 'text-gray-400 hover:text-black'}`}
-              >
-                {t('nav.progress')}
-                {savedCount > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">
-                    {savedCount}
-                  </span>
-                )}
-              </button>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-2 border border-black/10 px-4 py-2 text-[10px] font-bold uppercase">
+      {/* Skip to content */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-primary focus:text-black focus:px-4 focus:py-2 focus:font-black focus:text-[10px] focus:uppercase focus:tracking-widest">
+        Ir para conteúdo
+      </a>
+
+      <header className="fixed top-0 w-full z-50 bg-white stark-border-b h-16 md:h-20">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between">
+          {/* Logo */}
+          <button onClick={() => navGo('home')} aria-label="FACODI — Página inicial" className="flex items-center gap-2 shrink-0">
+            <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">FACODI</span>
+          </button>
+
+          {/* Desktop nav */}
+          <nav aria-label="Navegação principal" className="hidden md:flex items-center gap-8 lg:gap-12">
+            <button onClick={() => navGo('home')} aria-current={isActive('home') ? 'page' : undefined} className={navCls('home')}>{t('nav.home')}</button>
+            <button onClick={() => navGo('courses')} aria-current={isActive('courses') ? 'page' : undefined} className={navCls('courses')}>{t('nav.courses')}</button>
+            <button onClick={() => navGo('repository')} aria-current={isActive('repository', ['course-detail', 'lesson-detail']) ? 'page' : undefined} className={navCls('repository', ['course-detail', 'lesson-detail'])}>{t('nav.units')}</button>
+            <button onClick={() => navGo('dashboard')} aria-current={isActive('dashboard') ? 'page' : undefined} className={`relative ${navCls('dashboard')}`}>
+              {t('nav.progress')}
+              {savedCount > 0 && (
+                <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
+              )}
+            </button>
+          </nav>
+
+          {/* Desktop right */}
+          <div className="hidden md:flex items-center gap-3 lg:gap-4">
+            <div className="hidden lg:flex items-center gap-2 border border-black/10 px-3 py-1.5 text-[10px] font-bold uppercase">
               <label htmlFor="facodi-language" className="sr-only">{t('nav.languageLabel')}</label>
-              <select
-                id="facodi-language"
-                value={locale}
-                onChange={(event) => onLocaleChange(event.target.value as Locale)}
-                className="bg-transparent outline-none cursor-pointer"
-              >
-                <option value="pt">Português</option>
-                <option value="en">English</option>
+              <select id="facodi-language" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-transparent outline-none cursor-pointer">
+                <option value="pt">PT</option>
+                <option value="en">EN</option>
               </select>
             </div>
-            <button
-              onClick={onToggleTheme}
-              aria-label={t('nav.themeToggle')}
-              className="stark-border w-10 h-10 flex items-center justify-center hover:bg-brand-muted transition-all"
-            >
-              <span className="material-symbols-outlined text-lg">{isDark ? 'light_mode' : 'dark_mode'}</span>
+            <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all">
+              <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
             </button>
-            <button 
-              onClick={() => onViewChange('courses')}
-              className="bg-primary text-black px-6 py-2.5 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap"
-            >
+            <button onClick={() => navGo('courses')} className="bg-primary text-black px-5 py-2 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap">
               {t('nav.exploreTracks')}
+            </button>
+          </div>
+
+          {/* Mobile: bookmark + hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <button onClick={() => navGo('dashboard')} aria-label="Meu progresso" className="relative w-9 h-9 flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">bookmark</span>
+              {savedCount > 0 && (
+                <span className="absolute top-0 right-0 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
+              )}
+            </button>
+            <button onClick={() => setMobileOpen(true)} aria-label="Abrir menu" aria-expanded={mobileOpen} aria-controls="mobile-menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
+              <span className="material-symbols-outlined text-xl">menu</span>
             </button>
           </div>
         </div>
       </header>
-      
-      <main className="flex-grow pt-20">
+
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/40 md:hidden" aria-hidden="true" onClick={() => setMobileOpen(false)} />
+      )}
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <nav
+          id="mobile-menu"
+          aria-label="Menu mobile"
+          className="fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden"
+        >
+          <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
+            <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
+            <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
+              <span className="material-symbols-outlined text-xl">close</span>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Navegar</p>
+            {([
+              { view: 'home' as View, label: t('nav.home') },
+              { view: 'courses' as View, label: t('nav.courses') },
+              { view: 'repository' as View, label: t('nav.units') },
+              { view: 'dashboard' as View, label: t('nav.progress') },
+            ] as { view: View; label: string }[]).map(({ view, label }) => (
+              <button key={view} onClick={() => navGo(view)}
+                className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}>
+                {label}
+              </button>
+            ))}
+            <div className="border-t border-black/10 mt-6 pt-6">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Projeto</p>
+              {[
+                { slug: 'manifesto', label: 'Manifesto' },
+                { slug: 'sobre', label: 'Sobre a FACODI' },
+                { slug: 'comunidade', label: 'Comunidade Corvanis' },
+                { slug: 'roadmap', label: 'Roadmap' },
+                { slug: 'como-contribuir', label: 'Como Contribuir' },
+              ].map(({ slug, label }) => (
+                <button key={slug} onClick={() => pageGo(slug)} className="text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest text-gray-600 hover:bg-brand-muted hover:text-black transition-all">
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="shrink-0 px-6 py-6 stark-border-t flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <label htmlFor="facodi-language-mobile" className="text-[10px] font-black uppercase tracking-widest">Idioma</label>
+              <select id="facodi-language-mobile" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-white stark-border text-[10px] font-bold uppercase px-3 py-1.5 outline-none cursor-pointer">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
+              <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
+              {isDark ? 'Modo claro' : 'Modo escuro'}
+            </button>
+            <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
+              {t('nav.exploreTracks')}
+            </button>
+          </div>
+        </nav>
+      )}
+
+      <main id="main-content" className="flex-grow pt-16 md:pt-20">
         {children}
       </main>
 
