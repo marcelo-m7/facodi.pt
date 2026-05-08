@@ -1,20 +1,20 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { Suspense, useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout';
 import Home from './components/Home';
-import Dashboard from './components/Dashboard';
 import CourseCard from './components/CourseCard';
-import CourseDetail from './components/CourseDetail';
-import Contributors from './components/Contributors';
 import PlaylistCard from './components/PlaylistCard';
-import AINavigator from './components/AINavigator';
 import Courses from './components/Courses';
 import { Category, Course, CurricularUnit, FilterState, Playlist } from './types';
 import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 
-import LessonDetail from './components/LessonDetail';
-import InstitutionalPage from './components/InstitutionalPage';
+const Dashboard = React.lazy(() => import('./components/Dashboard'));
+const CourseDetail = React.lazy(() => import('./components/CourseDetail'));
+const Contributors = React.lazy(() => import('./components/Contributors'));
+const LessonDetail = React.lazy(() => import('./components/LessonDetail'));
+const InstitutionalPage = React.lazy(() => import('./components/InstitutionalPage'));
+const AINavigator = React.lazy(() => import('./components/AINavigator'));
 
 type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard' | 'institutional-page';
 
@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [catalogSource, setCatalogSource] = useState<CatalogSource>('mock');
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [isCatalogLoading, setIsCatalogLoading] = useState(true);
+  const [enableAiNavigator, setEnableAiNavigator] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
     difficulty: 'All',
@@ -354,6 +355,36 @@ const App: React.FC = () => {
     document.body.classList.toggle('text-black', !isDark);
   }, [isDark]);
 
+  useEffect(() => {
+    let timeoutId: number | null = null;
+    const schedule = () => setEnableAiNavigator(true);
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleId = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(schedule);
+      return () => {
+        if ('cancelIdleCallback' in window) {
+          (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    timeoutId = window.setTimeout(schedule, 900);
+    return () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
+  const lazyFallback = (
+    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-10">
+      <div className="stark-border bg-brand-muted p-6 text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3">
+        <span className="material-symbols-outlined animate-pulse">hourglass_top</span>
+        A carregar...
+      </div>
+    </div>
+  );
+
   const toggleSave = (id: string) => {
     const newSaved = savedUnitIds.includes(id) 
       ? savedUnitIds.filter(sid => sid !== id)
@@ -414,44 +445,54 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     if (currentView === 'course-detail' && selectedUnit) {
-      return <CourseDetail 
-                unit={selectedUnit} 
-                allUnits={units}
-                playlists={playlists}
-                onBack={() => {
-                  setCurrentView('repository');
-                  updateRoute('repository');
-                }} 
-                onNavigate={handleUnitSelect}
-                t={t}
-             />;
+      return (
+        <Suspense fallback={lazyFallback}>
+          <CourseDetail
+            unit={selectedUnit}
+            allUnits={units}
+            playlists={playlists}
+            onBack={() => {
+              setCurrentView('repository');
+              updateRoute('repository');
+            }}
+            onNavigate={handleUnitSelect}
+            t={t}
+          />
+        </Suspense>
+      );
     }
 
     if (currentView === 'institutional-page' && selectedPageSlug) {
       return (
-        <InstitutionalPage
-          slug={selectedPageSlug}
-          locale={locale}
-          onBack={() => {
-            setCurrentView('home');
-            updateRoute('home');
-          }}
-        />
+        <Suspense fallback={lazyFallback}>
+          <InstitutionalPage
+            slug={selectedPageSlug}
+            locale={locale}
+            onBack={() => {
+              setCurrentView('home');
+              updateRoute('home');
+            }}
+          />
+        </Suspense>
       );
     }
 
     if (currentView === 'lesson-detail' && selectedLesson) {
-      return <LessonDetail 
-                unit={selectedLesson} 
-                allUnits={units}
-                  playlists={playlists}
-                onBack={() => {
-                  setCurrentView('repository');
-                  updateRoute('repository');
-                }} 
-                onNavigate={handleLessonSelect}
-                t={t}
-             />;
+      return (
+        <Suspense fallback={lazyFallback}>
+          <LessonDetail
+            unit={selectedLesson}
+            allUnits={units}
+            playlists={playlists}
+            onBack={() => {
+              setCurrentView('repository');
+              updateRoute('repository');
+            }}
+            onNavigate={handleLessonSelect}
+            t={t}
+          />
+        </Suspense>
+      );
     }
 
     if (currentView === 'video-detail' && selectedVideoId) {
@@ -471,11 +512,13 @@ const App: React.FC = () => {
     switch (currentView) {
       case 'dashboard':
         return (
-          <Dashboard 
-            savedUnits={savedUnits} 
-            onUnitClick={handleUnitSelect}
-            onRemove={toggleSave}
-          />
+          <Suspense fallback={lazyFallback}>
+            <Dashboard
+              savedUnits={savedUnits}
+              onUnitClick={handleUnitSelect}
+              onRemove={toggleSave}
+            />
+          </Suspense>
         );
       case 'home':
         return (
@@ -509,7 +552,12 @@ const App: React.FC = () => {
             isLoading={isCatalogLoading}
           />
         );
-      case 'contributors': return <Contributors />;
+      case 'contributors':
+        return (
+          <Suspense fallback={lazyFallback}>
+            <Contributors />
+          </Suspense>
+        );
       case 'playlists':
         return (
           <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
@@ -631,7 +679,11 @@ const App: React.FC = () => {
       t={t}
     >
       {renderContent()}
-      <AINavigator units={units} />
+      {enableAiNavigator && (
+        <Suspense fallback={null}>
+          <AINavigator units={units} />
+        </Suspense>
+      )}
     </Layout>
   );
 };
