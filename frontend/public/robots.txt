@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://facodi.open2.tech/sitemap.xml

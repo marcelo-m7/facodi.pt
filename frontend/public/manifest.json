@@ -1,0 +1,21 @@
+{
+  "name": "FACODI — Faculdade Comunitária Digital",
+  "short_name": "FACODI",
+  "description": "Currículos universitários abertos com playlists, progresso comunitário e materiais livres para todos.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#EFFF00",
+  "lang": "pt-PT",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "related_applications": []
+}
