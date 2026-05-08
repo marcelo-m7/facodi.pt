@@ -2,7 +2,19 @@
 import React, { useEffect, useState } from 'react';
 import { Locale } from '../data/i18n';
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'playlists' | 'dashboard' | 'course-detail' | 'lesson-detail' | 'institutional-page';
+type View =
+  | 'home'
+  | 'courses'
+  | 'repository'
+  | 'paths'
+  | 'contributors'
+  | 'playlists'
+  | 'dashboard'
+  | 'course-detail'
+  | 'lesson-detail'
+  | 'institutional-page'
+  | 'videos'
+  | 'video-detail';
 
 interface Props {
   children: React.ReactNode;

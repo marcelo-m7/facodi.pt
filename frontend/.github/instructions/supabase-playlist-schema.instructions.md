@@ -11,6 +11,7 @@ Use this instruction when implementing or reviewing Supabase integration for cat
 - Keep provider-specific logic (Odoo/Supabase) in `services/catalogSource.ts`.
 - Keep UI components provider-agnostic; they must only consume domain types from `types.ts`.
 - Do not move SQL/table names into components.
+- For FACODI catalog, use only schema `public`.
 
 ## Data Contract Preservation
 
@@ -23,6 +24,7 @@ Use this instruction when implementing or reviewing Supabase integration for cat
 - Add Supabase as a source path in `loadCatalogData()` instead of creating parallel entrypoints.
 - Validate required env keys (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) only when Supabase mode is selected.
 - Never use service role or secret keys in frontend code or frontend env examples.
+- Prefer querying `public.courses`, `public.units`, and `public.playlists` for runtime catalog payloads.
 
 ## Fallback and Errors
 
@@ -31,5 +33,6 @@ Use this instruction when implementing or reviewing Supabase integration for cat
 
 ## Playlist Modeling Expectation
 
-- If backend uses a join table (`playlist_units`), map it to `Playlist.units` deterministically.
-- Preserve unit ordering by explicit `position` when available.
+- Current production mapping uses `public.playlists.unit_code` to build `Playlist.units`.
+- Filter out playlists that reference unknown units.
+- Preserve deterministic ordering by `course_code` and `unit_code` in Supabase query order.

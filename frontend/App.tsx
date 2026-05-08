@@ -15,8 +15,21 @@ const Contributors = React.lazy(() => import('./components/Contributors'));
 const LessonDetail = React.lazy(() => import('./components/LessonDetail'));
 const InstitutionalPage = React.lazy(() => import('./components/InstitutionalPage'));
 const AINavigator = React.lazy(() => import('./components/AINavigator'));
+const VideoDetail = React.lazy(() => import('./components/videos/VideoDetail'));
 
-type View = 'home' | 'courses' | 'repository' | 'paths' | 'contributors' | 'course-detail' | 'lesson-detail' | 'playlists' | 'dashboard' | 'institutional-page';
+type View =
+  | 'home'
+  | 'courses'
+  | 'repository'
+  | 'paths'
+  | 'contributors'
+  | 'course-detail'
+  | 'lesson-detail'
+  | 'playlists'
+  | 'dashboard'
+  | 'institutional-page'
+  | 'videos'
+  | 'video-detail';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -192,6 +205,7 @@ const App: React.FC = () => {
       repository: `Unidades Curriculares — ${BASE}`,
       dashboard: `Meu Progresso — ${BASE}`,
       playlists: `Playlists — ${BASE}`,
+      videos: `Videos — ${BASE}`,
       contributors: `Contribuidores — ${BASE}`,
     };
     const selectedUnitForTitle = units.find((u) => u.id === selectedUnitId) || null;
@@ -200,6 +214,8 @@ const App: React.FC = () => {
       document.title = `${selectedUnitForTitle.name} — ${BASE}`;
     } else if (currentView === 'lesson-detail' && selectedLessonForTitle) {
       document.title = `${selectedLessonForTitle.name} — ${BASE}`;
+    } else if (currentView === 'video-detail' && selectedVideoId) {
+      document.title = `Video ${selectedVideoId} — ${BASE}`;
     } else if (currentView === 'institutional-page' && selectedPageSlug) {
       const slugLabels: Record<string, string> = {
         manifesto: 'Manifesto',
@@ -217,7 +233,7 @@ const App: React.FC = () => {
     } else {
       document.title = map[currentView] ?? BASE;
     }
-  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, units]);
+  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
 
   // Dynamic SEO meta tags for SPA routes
   useEffect(() => {
@@ -311,6 +327,16 @@ const App: React.FC = () => {
         title: 'Playlists - FACODI',
         description: 'Colecoes de playlists organizadas para apoiar o estudo por unidade curricular.',
       },
+      videos: {
+        path: '/videos',
+        title: 'Videos - FACODI',
+        description: 'Colecao de videos educacionais organizados por playlists e contexto curricular.',
+      },
+      'video-detail': {
+        path: selectedVideoId ? `/videos/${selectedVideoId}` : '/videos',
+        title: selectedVideoId ? `Video ${selectedVideoId} - FACODI` : 'Video - FACODI',
+        description: 'Visualizacao detalhada de video com relacao a trilhas e unidade curricular.',
+      },
       dashboard: {
         path: '/dashboard',
         title: 'Meu Progresso - FACODI',
@@ -344,7 +370,7 @@ const App: React.FC = () => {
     setMeta('meta[property="og:url"]', fullUrl);
     setMeta('meta[name="twitter:title"]', title);
     setMeta('meta[name="twitter:description"]', description);
-  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, units]);
+  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
@@ -497,15 +523,17 @@ const App: React.FC = () => {
 
     if (currentView === 'video-detail' && selectedVideoId) {
       return (
-        <VideoDetail
-          videoId={selectedVideoId}
-          onBack={() => {
-            setCurrentView('videos');
-            updateRoute('videos');
-          }}
-          onSelectVideo={handleVideoSelect}
-          t={t}
-        />
+        <Suspense fallback={lazyFallback}>
+          <VideoDetail
+            videoId={selectedVideoId}
+            onBack={() => {
+              setCurrentView('videos');
+              updateRoute('videos');
+            }}
+            onSelectVideo={handleVideoSelect}
+            t={t}
+          />
+        </Suspense>
       );
     }
 

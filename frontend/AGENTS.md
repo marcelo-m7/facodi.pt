@@ -17,7 +17,7 @@ Primary references:
 
 - `App.tsx`: app shell, route-state sync, data bootstrap.
 - `components/`: view-level React components only.
-- `services/catalogSource.ts`: single gateway for catalog data (mock and Odoo live; extend here for Supabase).
+- `services/catalogSource.ts`: single gateway for catalog data (mock, Odoo, Supabase public).
 - `data/`: static fallback catalog and i18n dictionaries.
 - `types.ts`: stable domain contract (`Course`, `CurricularUnit`, `Playlist`).
 - `tests/e2e/`: Playwright route and lesson navigation checks.
@@ -49,7 +49,7 @@ Notes:
 - Copy from `.env.local.example` when starting setup.
 
 Expected frontend variables:
-- `VITE_DATA_SOURCE`: `mock` (default) or `odoo`.
+- `VITE_DATA_SOURCE`: `mock` (default), `odoo`, or `supabase`.
 - `VITE_BACKEND_URL`: backend/proxy URL for production Odoo path.
 - `VITE_ODOO_DB`, `VITE_ODOO_USERNAME`, `VITE_ODOO_PASSWORD`: Odoo auth for live sync.
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`: Supabase client config.
@@ -100,12 +100,11 @@ Use this workflow whenever a task involves database schema changes through Supab
 
 ## 9) Supabase Frontend Integration Kickoff
 
-Use this checklist when implementing `VITE_DATA_SOURCE=supabase` in `services/catalogSource.ts`.
+Use this checklist when updating `VITE_DATA_SOURCE=supabase` in `services/catalogSource.ts`.
 
 1. Data source contract:
-	- Keep `loadCatalogData()` as the single public entrypoint.
-	- Extend `CatalogSource` to include `supabase` only after `loadSupabaseData()` is implemented.
-	- Preserve graceful fallback to mock (`source: 'mock'`) on Supabase errors.
+- Keep `loadCatalogData()` as the single public entrypoint.
+- Preserve graceful fallback to mock (`source: 'mock'`) on Supabase errors.
 2. Environment guards:
 	- Require `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only in Supabase mode.
 	- Never use service role keys in frontend code or frontend `.env` files.
@@ -129,17 +128,17 @@ Current frontend expectations from `types.ts` and app views:
 - `Playlist.estimatedHours`: numeric value (currently `0` is acceptable).
 - `Playlist.creator`: source/curation label.
 
-Recommended relational model in Supabase to preserve current behavior and future ordering:
+Current production model in Supabase public schema:
 
-- `courses` (`id` primary key).
-- `curricular_units` (`id` primary key, `course_id` foreign key to `courses.id`).
-- `playlists` (`id` primary key, metadata columns matching `Playlist` fields except `units`).
-- `playlist_units` (`playlist_id` foreign key, `unit_id` foreign key, `position` integer; unique on `playlist_id, unit_id`).
+- `courses` (catalog metadata, `code` used as stable external course id).
+- `units` (curricular units with `code`, `course_id`, and enriched fields).
+- `playlists` (public playlists with `course_code` + `unit_code` mapping to frontend route ids).
+- `unit_enrichments`, `learning_outcomes`, `resources` (enrichment layers).
 
 Mapping rule in `services/catalogSource.ts`:
 
-- Build `Playlist.units` from `playlist_units` grouped by `playlist_id`, ordered by `position` then `unit_id`.
-- If `position` is null, keep deterministic ordering to avoid UI flicker.
+- Build `Playlist.units` from `playlists.unit_code` where unit exists in loaded `units`.
+- Keep deterministic ordering by `course_code` then `unit_code` in Supabase queries.
 
 ## 11) Supabase Security Baseline For Agents
 

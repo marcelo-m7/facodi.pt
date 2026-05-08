@@ -1,96 +1,109 @@
-# FACODI — Faculdade Comunitária Digital
+# FACODI Frontend
 
-**FACODI** é uma plataforma EAD gratuita e open-source inspirada nos planos curriculares da Universidade do Algarve (UALG).
-Nosso objetivo é **democratizar o acesso ao ensino superior** por meio de trilhas de estudo organizadas em cursos, unidades curriculares e playlists do YouTube.
+Single Page Application em React + TypeScript + Vite para navegação de currículos abertos, unidades curriculares e trilhas com playlists.
 
-🚀 Projeto mantido pela [Open2 Technology](https://open2.tech).
+Projeto mantido por Open2 Technology: https://open2.tech
 
----
+## Visão Geral
 
-## ✨ Funcionalidades
+- Frontend orientado a dados com fallback resiliente.
+- Catálogo acadêmico com cursos, unidades e playlists.
+- Páginas institucionais renderizadas em Markdown.
+- Modo claro/escuro, navegação mobile e acessibilidade por teclado.
+- Testes E2E com Playwright.
 
-- 📚 Catálogo de cursos e currículos completos (40+ UCs do LESTI)
-- 🎥 Aulas organizadas em **playlists do YouTube**
-- 📝 Conteúdo textual em **Markdown versionado**
-- 🌙 Alternância de tema (claro/escuro) com persistência da preferência
-- 🌍 Interface multi-idioma (PT como padrão + EN / ES / FR configurados)
-- ♿ **WCAG 2.1 AA Acessibilidade** com suporte a teclado e leitores de tela
-- 🧪 **Suite de testes automatizados** (Vitest com 19+ testes)
-- ⚡ Geração estática com Hugo - sem dependências de backend
+## Fontes de Dados
 
----
+A aplicação usa VITE_DATA_SOURCE com três modos:
 
-## Run Locally
+- mock: dados locais em data/*.ts.
+- odoo: sincronização por JSON-RPC via proxy /odoo.
+- supabase: leitura do catálogo no schema public.
 
-**Prerequisites:** Node.js 20+ and Corepack enabled
+No modo supabase, o catálogo é lido principalmente de:
 
+- public.courses
+- public.units
+- public.playlists
+- public.unit_enrichments
+- public.learning_outcomes
+- public.resources
 
-1. Install dependencies:
-   `corepack enable && pnpm install`
-2. Configure optional environment flags in `.env.local`:
+## Requisitos
 
-   - Start from the template:
-     `cp .env.local.example .env.local`
+- Node.js 20+
+- Corepack habilitado
+- pnpm 10.17.1 (definido em packageManager)
 
-   - `VITE_DATA_SOURCE=mock` (default) or `VITE_DATA_SOURCE=odoo`
-   - `VITE_BACKEND_URL=http://localhost:8080` (backend FastAPI base URL)
-   - `VITE_ODOO_DB`, `VITE_ODOO_USERNAME`, `VITE_ODOO_PASSWORD` (required for live Odoo)
-   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (when using Supabase features)
+## Desenvolvimento Local
 
-   Exemplo:
+1. Instalação:
 
-   ```dotenv
-   VITE_DATA_SOURCE=odoo
-   VITE_BACKEND_URL=http://localhost:8080
-   VITE_ODOO_DB=edu-facodi
-   VITE_ODOO_USERNAME=your-user@example.com
-   VITE_ODOO_PASSWORD=your-password
-   ```
+```bash
+corepack enable
+pnpm install
+```
 
-3. Run the app:
-   `pnpm dev`
+2. Ambiente local:
 
-> Security: never commit `.env`, `.env.local`, or any key/token values.
+```bash
+cp .env.local.example .env.local
+```
 
-## E2E Tests (Playwright)
+3. Executar:
 
-On first machine setup, install browser binaries:
-`pnpm exec playwright install`
+```bash
+pnpm dev
+```
 
-Then run E2E tests:
-`pnpm test:e2e`
+4. Build de produção:
 
+```bash
+pnpm build
+pnpm preview
+```
 
-## 🤝 Contribuindo
+## Variáveis de Ambiente
 
-FACODI é open-source!
+- VITE_DATA_SOURCE=mock|odoo|supabase
+- VITE_BACKEND_URL (necessário para modo odoo em produção)
+- VITE_ODOO_DB, VITE_ODOO_USERNAME, VITE_ODOO_PASSWORD (modo odoo)
+- VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY (modo supabase)
 
-1. Fork e abra Pull Request
-2. Reporte bugs em [Issues](../../issues)
-3. Traduza conteúdos (PT → EN/ES/FR)
-4. Revise planos curriculares
+Segurança:
 
-Consulte [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+- Não commitar .env ou .env.local.
+- Nunca usar service role key no frontend.
 
----
+## Testes
 
-## 📈 Métricas
+Instalação inicial do Playwright:
 
-**Build**: 1,229 páginas | 13.7s | Zero erros
-**Tests**: 19/19 passing | 100% rate
-**Accessibility**: WCAG 2.1 AA | Focus AAA | 280+ CSS lines
+```bash
+pnpm exec playwright install
+```
 
----
+Execução E2E:
 
-## 👩‍💻 Autores & Créditos
+```bash
+pnpm test:e2e
+```
 
-- [Marcelo Santos](https://github.com/marcelo-m7) — fundador
-- Comunidade Open2 Technology
-- Base acadêmica: [UALG](https://www.ualg.pt)
+## Estrutura Relevante
 
----
+- App.tsx: shell, roteamento e bootstrap do catálogo.
+- services/catalogSource.ts: gateway único de dados (mock/odoo/supabase).
+- services/contentSource.ts: páginas institucionais.
+- components/: páginas e blocos de UI.
+- scripts/public_catalog_enrichment.sql: baseline de schema/enriquecimento para public.
 
-## 📜 Licença
+## Contribuição
 
-MIT License — Ver [`LICENSE`](./LICENSE)
+- Guia: CONTRIBUTING.md
+- Envio de conteúdo: https://tube.open2.tech
+- Contato institucional: https://open2.tech/contact
+
+## Licença
+
+MIT.
 
