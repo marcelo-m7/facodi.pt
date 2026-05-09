@@ -192,9 +192,14 @@ const Layout: React.FC<Props> = ({
                 title={profile?.display_name ?? profile?.username ?? t('nav.profile')}
               >
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img
+                    src={profile.avatar_url}
+                    alt={`Avatar de ${profile?.display_name ?? profile?.username ?? 'utilizador'}`}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 ) : (
-                  <span className="text-[11px] font-black">{(profile?.display_name ?? profile?.username ?? 'U')[0].toUpperCase()}</span>
+                  <span className="text-[11px] font-black" aria-hidden="true">{(profile?.display_name ?? profile?.username ?? 'U')[0].toUpperCase()}</span>
                 )}
               </button>
             ) : (

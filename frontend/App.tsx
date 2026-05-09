@@ -12,6 +12,8 @@ import { useAuth } from './contexts/AuthContext';
 import { supabase } from './services/supabase';
 import RequireAuth from './components/auth/RequireAuth';
 import PermissionDenied from './components/auth/PermissionDenied';
+import SEOHead from './components/SEOHead';
+import { getPostBySlug } from './data/blogPosts';
 
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 const CourseDetail = React.lazy(() => import('./components/CourseDetail'));
@@ -320,270 +322,252 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.documentElement.lang = locale;
+    document.documentElement.lang = locale === 'pt' ? 'pt-PT' : 'en-US';
     localStorage.setItem('facodi_locale', locale);
   }, [locale]);
 
-  // Dynamic page title
-  useEffect(() => {
-    const BASE = 'FACODI';
-    const map: Partial<Record<View, string>> = {
-      home: `${BASE} — Faculdade Comunitária Digital`,
-      courses: `Cursos — ${BASE}`,
-      repository: `Unidades Curriculares — ${BASE}`,
-      dashboard: `Meu Progresso — ${BASE}`,
-      playlists: `Playlists — ${BASE}`,
-      videos: `Videos — ${BASE}`,
-      contributors: `Contribuidores — ${BASE}`,
-      'student-dashboard': `Meus Cursos — ${BASE}`,
-      'student-my-courses': `Meus Cursos — ${BASE}`,
-      'student-progress': `Meu Progresso — ${BASE}`,
-      'student-history': `Histórico — ${BASE}`,
-      'admin-dashboard': `Administracao — ${BASE}`,
-      'admin-contents': `Revisao de Conteudos — ${BASE}`,
-      'admin-content-detail': `Conteudo em Revisao — ${BASE}`,
-      'admin-curators': `Curadores — ${BASE}`,
-      blog: `Blog — ${BASE}`,
-      'blog-post': `Artigo — ${BASE}`,
-    };
-    const selectedUnitForTitle = units.find((u) => u.id === selectedUnitId) || null;
-    const selectedLessonForTitle = units.find((u) => u.id === selectedLessonId) || null;
-    if (currentView === 'course-detail' && selectedUnitForTitle) {
-      document.title = `${selectedUnitForTitle.name} — ${BASE}`;
-    } else if (currentView === 'lesson-detail' && selectedLessonForTitle) {
-      document.title = `${selectedLessonForTitle.name} — ${BASE}`;
-    } else if (currentView === 'video-detail' && selectedVideoId) {
-      document.title = `Video ${selectedVideoId} — ${BASE}`;
-    } else if (currentView === 'institutional-page' && selectedPageSlug) {
-      const slugLabels: Record<string, string> = {
-        manifesto: 'Manifesto',
-        sobre: 'Sobre a FACODI',
-        'sobre-marcelo': 'Marcelo Santos',
-        'sobre-ualg': 'Universidade do Algarve',
-        'sobre-open2': 'Open2 Technology',
-        comunidade: 'Comunidade Open2',
-        roadmap: 'Roadmap',
-        'modelo-academico': 'Modelo Académico',
-        infraestrutura: 'Infraestrutura',
-        'como-contribuir': 'Como Contribuir',
-      };
-      document.title = `${slugLabels[selectedPageSlug] ?? selectedPageSlug} — ${BASE}`;
-    } else {
-      document.title = map[currentView] ?? BASE;
-    }
-  }, [currentView, selectedAdminSubmissionId, selectedBlogSlug, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
-
-  // Dynamic SEO meta tags for SPA routes
-  useEffect(() => {
-    const siteUrl = 'https://facodi.open2.tech';
-    const defaultDescription = 'Curriculos universitarios abertos com playlists, progresso comunitario e materiais livres para todos.';
-
+  const seo = useMemo(() => {
+    const rawSiteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) || 'https://facodi.open2.tech';
+    const siteUrl = rawSiteUrl.endsWith('/') ? rawSiteUrl.slice(0, -1) : rawSiteUrl;
+    const defaultImage = `${siteUrl}/og/facodi-preview.svg`;
+    const defaultDescription = 'Plataforma aberta e comunitaria de educacao digital que organiza cursos, unidades curriculares, playlists e conteudos publicos para apoiar percursos de aprendizagem acessiveis.';
     const selectedUnitForSeo = units.find((u) => u.id === selectedUnitId) || null;
     const selectedLessonForSeo = units.find((u) => u.id === selectedLessonId) || null;
+    const selectedPost = selectedBlogSlug ? getPostBySlug(selectedBlogSlug) : undefined;
+    const privateViews = new Set<View>([
+      'dashboard',
+      'profile',
+      'student-dashboard',
+      'student-my-courses',
+      'student-progress',
+      'student-history',
+      'curator-apply',
+      'curator-submit',
+      'curator-submissions',
+      'curator-admin-review',
+      'admin-dashboard',
+      'admin-contents',
+      'admin-content-detail',
+      'admin-curators',
+    ]);
 
-    const slugMeta: Record<string, { title: string; description: string }> = {
-      manifesto: {
-        title: 'Manifesto - FACODI',
-        description: 'Conheca a visao da FACODI para ensino superior aberto, comunitario e remixavel.',
+    let path = '/';
+    let title = 'FACODI - Faculdade Comunitaria Digital';
+    let description = defaultDescription;
+    let type: 'website' | 'article' = 'website';
+    let image = defaultImage;
+    let structuredData: Record<string, unknown> | Array<Record<string, unknown>> | undefined = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'FACODI - Faculdade Comunitaria Digital',
+        url: siteUrl,
+        description: defaultDescription,
+        inLanguage: locale === 'pt' ? 'pt-PT' : 'en-US',
       },
-      sobre: {
-        title: 'Sobre a FACODI',
-        description: 'Entenda a origem da FACODI e o contexto institucional da iniciativa.',
-      },
-      'sobre-marcelo': {
-        title: 'Marcelo Santos - FACODI',
-        description: 'Perfil do fundador e arquiteto da FACODI e sua visao para educacao aberta.',
-      },
-      'sobre-ualg': {
-        title: 'Universidade do Algarve - FACODI',
-        description: 'Relacao institucional entre FACODI e Universidade do Algarve.',
-      },
-      'sobre-open2': {
-        title: 'Open2 Technology - FACODI',
-        description: 'Como o ecossistema Open2 Technology sustenta a evolucao tecnica da FACODI.',
-      },
-      comunidade: {
-        title: 'Comunidade Open2 - FACODI',
-        description: 'Descubra como participar da comunidade que constroi e cura a FACODI.',
-      },
-      roadmap: {
-        title: 'Roadmap - FACODI',
-        description: 'Prioridades de curto, medio e longo prazo para a evolucao da FACODI.',
-      },
-      'modelo-academico': {
-        title: 'Modelo Academico - FACODI',
-        description: 'Estrutura academica da FACODI: cursos, unidades curriculares, playlists e recursos abertos.',
-      },
-      infraestrutura: {
-        title: 'Infraestrutura Tecnica - FACODI',
-        description: 'Arquitetura tecnica da plataforma FACODI com React, Supabase e integracoes.',
-      },
-      'como-contribuir': {
-        title: 'Como Contribuir - FACODI',
-        description: 'Guia para contribuir com conteudo, codigo, traducao e curadoria na FACODI.',
-      },
-    };
-
-    const viewMeta: Record<View, { path: string; title: string; description: string }> = {
-      home: {
-        path: '/',
-        title: 'FACODI - Faculdade Comunitaria Digital',
+      {
+        '@context': 'https://schema.org',
+        '@type': 'EducationalOrganization',
+        name: 'FACODI - Faculdade Comunitaria Digital',
+        url: siteUrl,
         description: defaultDescription,
       },
-      courses: {
-        path: '/courses',
-        title: 'Cursos - FACODI',
-        description: 'Explore licenciaturas e percursos com curriculos oficiais e recursos abertos.',
-      },
-      repository: {
-        path: '/courses/units',
-        title: 'Unidades Curriculares - FACODI',
-        description: 'Navegue por unidades curriculares com ementa, contexto e playlists integradas.',
-      },
-      paths: {
-        path: '/courses/units',
-        title: 'Trilhas - FACODI',
-        description: defaultDescription,
-      },
-      contributors: {
-        path: '/contributors',
-        title: 'Contribuidores - FACODI',
-        description: 'Conheca as pessoas e comunidades que constroem a FACODI.',
-      },
-      'course-detail': {
-        path: selectedUnitForSeo ? `/courses/units/${selectedUnitForSeo.id}` : '/courses/units',
-        title: selectedUnitForSeo ? `${selectedUnitForSeo.name} - FACODI` : 'Detalhe de Unidade - FACODI',
-        description: selectedUnitForSeo?.description || 'Detalhes da unidade curricular com recursos relacionados.',
-      },
-      'lesson-detail': {
-        path: selectedLessonForSeo ? `/lessons/${selectedLessonForSeo.id}` : '/courses/units',
-        title: selectedLessonForSeo ? `${selectedLessonForSeo.name} - FACODI` : 'Licao - FACODI',
-        description: selectedLessonForSeo?.description || 'Pagina da licao com conteudo, links e videos da playlist.',
-      },
-      playlists: {
-        path: '/playlists',
-        title: 'Playlists - FACODI',
-        description: 'Colecoes de playlists organizadas para apoiar o estudo por unidade curricular.',
-      },
-      videos: {
-        path: '/videos',
-        title: 'Videos - FACODI',
-        description: 'Colecao de videos educacionais organizados por playlists e contexto curricular.',
-      },
-      'video-detail': {
-        path: selectedVideoId ? `/videos/${selectedVideoId}` : '/videos',
-        title: selectedVideoId ? `Video ${selectedVideoId} - FACODI` : 'Video - FACODI',
-        description: 'Visualizacao detalhada de video com relacao a trilhas e unidade curricular.',
-      },
-      dashboard: {
-        path: '/dashboard',
-        title: 'Meu Progresso - FACODI',
-        description: 'Acompanhe unidades guardadas e progresso de estudo na FACODI.',
-      },
-      'student-dashboard': {
-        path: '/student/dashboard',
-        title: 'Meus Cursos - FACODI',
-        description: 'Acompanhe seus cursos, progresso e conteudo recomendado na FACODI.',
-      },
-      'student-my-courses': {
-        path: '/student/my-courses',
-        title: 'Meus Cursos - FACODI',
-        description: 'Gerencia seus cursos inscritos, veja progresso e continue aprendendo.',
-      },
-      'student-progress': {
-        path: '/student/progress',
-        title: 'Meu Progresso - FACODI',
-        description: 'Visualize seu progresso detalhado por curso e unidade curricular.',
-      },
-      'student-history': {
-        path: '/student/history',
-        title: 'Histórico - FACODI',
-        description: 'Revise seu histórico de atividades de aprendizagem e videos assistidos.',
-      },
-      'institutional-page': {
-        path: selectedPageSlug ? `/${selectedPageSlug}` : '/',
-        title: selectedPageSlug ? (slugMeta[selectedPageSlug]?.title || 'Pagina Institucional - FACODI') : 'FACODI',
-        description: selectedPageSlug ? (slugMeta[selectedPageSlug]?.description || defaultDescription) : defaultDescription,
-      },
-      profile: {
-        path: '/profile',
-        title: 'Meu Perfil - FACODI',
-        description: 'Perfil do utilizador na FACODI com favoritos e progresso de estudo.',
-      },
-      'curator-apply': {
-        path: '/curator/apply',
-        title: 'Candidatura de Curador - FACODI',
-        description: 'Candidute-se para ser curador de conteúdo na FACODI.',
-      },
-      'curator-submit': {
-        path: '/curator/submit',
-        title: 'Enviar Conteúdo - FACODI',
-        description: 'Envie conteúdo para curação e inclusão nos cursos da FACODI.',
-      },
-      'curator-submissions': {
-        path: '/curator/submissions',
-        title: 'Minhas Submissões - FACODI',
-        description: 'Visualize e acompanhe suas submissões de conteúdo na FACODI.',
-      },
-      'curator-admin-review': {
-        path: '/curator/admin-review',
-        title: 'Painel de Revisão - FACODI',
-        description: 'Painel administrativo para revisão de candidaturas e conteúdo.',
-      },
-      'admin-dashboard': {
-        path: '/admin',
-        title: 'Administracao - FACODI',
-        description: 'Area administrativa central para revisao e moderacao de conteudos.',
-      },
-      'admin-contents': {
-        path: '/admin/conteudos',
-        title: 'Revisao de Conteudos - FACODI',
-        description: 'Lista de conteudos para aprovacao, rejeicao e solicitacao de ajustes.',
-      },
-      'admin-content-detail': {
-        path: selectedAdminSubmissionId ? `/admin/conteudos/${selectedAdminSubmissionId}` : '/admin/conteudos',
-        title: 'Conteudo em Revisao - FACODI',
-        description: 'Detalhes completos de conteudo submetido com acoes de moderacao.',
-      },
-      'admin-curators': {
-        path: '/admin/curadores',
-        title: 'Curadores Pendentes - FACODI',
-        description: 'Gestao de candidaturas de curadores com aprovacao e rejeicao.',
-      },
-      blog: {
-        path: '/blog',
-        title: 'Blog - FACODI',
-        description: 'Artigos sobre tecnologia, educacao aberta e comunidade.',
-      },
-      'blog-post': {
-        path: selectedBlogSlug ? `/blog/${selectedBlogSlug}` : '/blog',
-        title: 'Artigo - FACODI',
-        description: 'Leitura completa de artigo do blog FACODI.',
-      },
-    };
+    ];
 
-    const { path, title, description } = viewMeta[currentView];
-    const fullUrl = `${siteUrl}${path}`;
-
-    const setMeta = (selector: string, value: string) => {
-      const element = document.querySelector(selector);
-      if (element) {
-        element.setAttribute('content', value);
-      }
-    };
-
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) {
-      canonical.setAttribute('href', fullUrl);
+    if (currentView === 'courses') {
+      path = '/courses';
+      title = 'Cursos abertos | FACODI';
+      description = 'Explore cursos abertos organizados por unidades curriculares, trilhas de estudo e conteudos educacionais selecionados pela comunidade FACODI.';
+    } else if (currentView === 'repository') {
+      path = '/courses/units';
+      title = 'Unidades curriculares | FACODI';
+      description = 'Navegue por unidades curriculares com objetivos, conteudos e playlists para estudo aberto e digital.';
+    } else if (currentView === 'course-detail') {
+      path = selectedUnitForSeo ? `/courses/units/${selectedUnitForSeo.id}` : '/courses/units';
+      title = selectedUnitForSeo ? `${selectedUnitForSeo.name} | FACODI` : 'Unidade curricular | FACODI';
+      description = selectedUnitForSeo ? `Acesse conteudos, videos e materiais organizados para estudar ${selectedUnitForSeo.name} no FACODI.` : defaultDescription;
+      structuredData = selectedUnitForSeo
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'Course',
+            name: selectedUnitForSeo.name,
+            description,
+            provider: {
+              '@type': 'EducationalOrganization',
+              name: 'FACODI',
+              sameAs: siteUrl,
+            },
+          }
+        : structuredData;
+    } else if (currentView === 'lesson-detail') {
+      path = selectedLessonForSeo ? `/lessons/${selectedLessonForSeo.id}` : '/courses/units';
+      title = selectedLessonForSeo ? `${selectedLessonForSeo.name} | FACODI` : 'Licao | FACODI';
+      description = selectedLessonForSeo ? `Acesse conteudos, videos e materiais organizados para estudar ${selectedLessonForSeo.name} no FACODI.` : defaultDescription;
+    } else if (currentView === 'contributors') {
+      path = '/contributors';
+      title = 'Contribuidores | FACODI';
+      description = 'Conheca pessoas e comunidades que fortalecem a aprendizagem aberta e colaborativa na FACODI.';
+    } else if (currentView === 'playlists') {
+      path = '/playlists';
+      title = 'Playlists educacionais | FACODI';
+      description = 'Descubra playlists educacionais curadas para apoiar trilhas de estudo e aprendizagem aberta.';
+    } else if (currentView === 'videos') {
+      path = '/videos';
+      title = 'Videos educacionais | FACODI';
+      description = 'Explore videos educacionais relacionados a unidades curriculares e percursos de aprendizagem.';
+    } else if (currentView === 'video-detail') {
+      path = selectedVideoId ? `/videos/${selectedVideoId}` : '/videos';
+      title = selectedVideoId ? `Video ${selectedVideoId} | FACODI` : 'Video | FACODI';
+      description = 'Pagina de video educacional com contexto curricular e navegacao relacionada.';
+    } else if (currentView === 'institutional-page') {
+      const slugMeta: Record<string, { title: string; description: string }> = {
+        manifesto: {
+          title: 'Manifesto | FACODI',
+          description: 'Conheca a visao da FACODI para uma educacao digital aberta, comunitaria e acessivel.',
+        },
+        sobre: {
+          title: 'Sobre o projeto | FACODI',
+          description: 'Conheca o FACODI, iniciativa de educacao digital aberta e comunitaria ligada ao contexto SEA-EU Student-Led Projects 2026 e Universidade do Algarve.',
+        },
+        'sobre-marcelo': {
+          title: 'Sobre Marcelo Santos | FACODI',
+          description: 'Conheca a lideranca e a visao por tras do projeto FACODI.',
+        },
+        'sobre-ualg': {
+          title: 'Universidade do Algarve | FACODI',
+          description: 'Contexto institucional e colaborativo entre FACODI e Universidade do Algarve.',
+        },
+        'sobre-open2': {
+          title: 'Open2 Technology | FACODI',
+          description: 'Conheca a contribuicao da Open2 Technology na evolucao da plataforma FACODI.',
+        },
+        comunidade: {
+          title: 'Comunidade academica | FACODI',
+          description: 'Participe da comunidade academica e colaborativa que constroi trilhas de aprendizagem abertas no FACODI.',
+        },
+        roadmap: {
+          title: 'Roadmap | FACODI',
+          description: 'Veja os proximos passos da plataforma FACODI para educacao aberta e curadoria comunitaria.',
+        },
+        infraestrutura: {
+          title: 'Infraestrutura | FACODI',
+          description: 'Entenda a base tecnica da plataforma FACODI para ensino aberto e digital.',
+        },
+        'como-contribuir': {
+          title: 'Curadoria de conteudo | FACODI',
+          description: 'Candidate-se ou contribua com conteudos educacionais para fortalecer trilhas de estudo abertas e comunitarias no FACODI.',
+        },
+        'modelo-academico': {
+          title: 'Modelo academico | FACODI',
+          description: 'Entenda como cursos, unidades curriculares e playlists estruturam percursos abertos de aprendizagem.',
+        },
+      };
+      path = selectedPageSlug ? `/${selectedPageSlug}` : '/';
+      title = selectedPageSlug ? (slugMeta[selectedPageSlug]?.title || 'Institucional | FACODI') : title;
+      description = selectedPageSlug ? (slugMeta[selectedPageSlug]?.description || defaultDescription) : description;
+    } else if (currentView === 'blog') {
+      path = '/blog';
+      title = 'Blog | FACODI';
+      description = 'Artigos sobre educacao aberta, aprendizagem digital, curadoria de conteudos e inovacao comunitaria no FACODI.';
+    } else if (currentView === 'blog-post') {
+      path = selectedBlogSlug ? `/blog/${selectedBlogSlug}` : '/blog';
+      title = selectedPost ? `${selectedPost.title} | Blog FACODI` : 'Artigo | Blog FACODI';
+      description = selectedPost?.excerpt || 'Leitura de artigo do blog FACODI sobre educacao aberta e tecnologia comunitaria.';
+      type = 'article';
+      structuredData = selectedPost
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: selectedPost.title,
+            description: selectedPost.excerpt,
+            datePublished: selectedPost.date,
+            author: {
+              '@type': 'Person',
+              name: selectedPost.author,
+            },
+            keywords: selectedPost.tags,
+            mainEntityOfPage: `${siteUrl}${path}`,
+          }
+        : undefined;
+    } else if (currentView === 'dashboard') {
+      path = '/dashboard';
+      title = 'Meu progresso | FACODI';
+      description = 'Area pessoal para acompanhar progresso de aprendizagem no FACODI.';
+    } else if (currentView === 'student-dashboard') {
+      path = '/student/dashboard';
+      title = 'Area do estudante | FACODI';
+      description = 'Painel privado para acompanhar cursos e progresso.';
+    } else if (currentView === 'student-my-courses') {
+      path = '/student/my-courses';
+      title = 'Meus cursos | FACODI';
+      description = 'Area privada com matriculas e andamento de estudos.';
+    } else if (currentView === 'student-progress') {
+      path = '/student/progress';
+      title = 'Meu progresso | FACODI';
+      description = 'Area privada com relatorio de progresso.';
+    } else if (currentView === 'student-history') {
+      path = '/student/history';
+      title = 'Meu historico | FACODI';
+      description = 'Area privada com historico de atividades.';
+    } else if (currentView === 'profile') {
+      path = '/profile';
+      title = 'Meu perfil | FACODI';
+      description = 'Area privada com informacoes do perfil do utilizador.';
+    } else if (currentView === 'curator-apply') {
+      path = '/curator/apply';
+      title = 'Candidatura de curador | FACODI';
+      description = 'Area privada para candidatura de curadoria de conteudo.';
+    } else if (currentView === 'curator-submit') {
+      path = '/curator/submit';
+      title = 'Enviar conteudo | FACODI';
+      description = 'Area privada para submissao de conteudo educacional.';
+    } else if (currentView === 'curator-submissions') {
+      path = '/curator/submissions';
+      title = 'Minhas submissoes | FACODI';
+      description = 'Area privada para acompanhar o status das submissoes.';
+    } else if (currentView === 'curator-admin-review') {
+      path = '/curator/admin-review';
+      title = 'Revisao administrativa | FACODI';
+      description = 'Area administrativa privada de revisao de conteudo.';
+    } else if (currentView === 'admin-dashboard') {
+      path = '/admin';
+      title = 'Painel admin | FACODI';
+      description = 'Area administrativa privada do FACODI.';
+    } else if (currentView === 'admin-contents') {
+      path = '/admin/conteudos';
+      title = 'Revisao de conteudos | FACODI';
+      description = 'Area administrativa privada para moderacao de conteudos.';
+    } else if (currentView === 'admin-content-detail') {
+      path = selectedAdminSubmissionId ? `/admin/conteudos/${selectedAdminSubmissionId}` : '/admin/conteudos';
+      title = 'Conteudo em revisao | FACODI';
+      description = 'Area administrativa privada com detalhes de revisao de conteudo.';
+    } else if (currentView === 'admin-curators') {
+      path = '/admin/curadores';
+      title = 'Curadores | FACODI';
+      description = 'Area administrativa privada para avaliacao de curadores.';
     }
 
-    setMeta('meta[name="description"]', description);
-    setMeta('meta[property="og:title"]', title);
-    setMeta('meta[property="og:description"]', description);
-    setMeta('meta[property="og:url"]', fullUrl);
-    setMeta('meta[name="twitter:title"]', title);
-    setMeta('meta[name="twitter:description"]', description);
-  }, [currentView, selectedBlogSlug, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
+    return {
+      title,
+      description,
+      canonical: `${siteUrl}${path}`,
+      image,
+      type,
+      noindex: privateViews.has(currentView),
+      locale: locale === 'pt' ? 'pt_PT' : 'en_US',
+      structuredData,
+    };
+  }, [
+    currentView,
+    locale,
+    selectedAdminSubmissionId,
+    selectedBlogSlug,
+    selectedLessonId,
+    selectedPageSlug,
+    selectedUnitId,
+    selectedVideoId,
+    units,
+  ]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
@@ -1082,13 +1066,16 @@ const App: React.FC = () => {
                     )}
                   </div>
                   <div className="w-full lg:w-[480px] relative group">
+                    <label htmlFor="units-search" className="sr-only">Pesquisar unidades curriculares</label>
                     <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-black text-2xl group-focus-within:text-primary transition-colors">search</span>
-                    <input 
+                    <input
+                      id="units-search"
                       type="text"
                       value={filters.search}
                       onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                       className="w-full bg-white stark-border px-14 py-5 text-sm font-bold uppercase tracking-widest outline-none transition-all focus:shadow-[6px_6px_0px_0px_rgba(239,255,0,1)]"
                       placeholder="PESQUISAR..."
+                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -1162,33 +1149,45 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout
-      currentView={currentView}
-      onViewChange={(view) => {
-        setCurrentView(view);
-        updateRoute(view);
-      }}
-      onNavigatePage={handlePageNavigate}
-      savedCount={savedUnitIds.length}
-      locale={locale}
-      onLocaleChange={setLocale}
-      isDark={isDark}
-      onToggleTheme={() => setIsDark(prev => !prev)}
-      t={t}
-      onOpenAuth={() => setShowAuthModal(true)}
-    >
-      {renderContent()}
-      {showAuthModal && (
-        <Suspense fallback={null}>
-          <AuthModal onClose={() => setShowAuthModal(false)} t={t} />
-        </Suspense>
-      )}
-      {enableAiNavigator && (
-        <Suspense fallback={null}>
-          <AINavigator units={units} />
-        </Suspense>
-      )}
-    </Layout>
+    <>
+      <SEOHead
+        title={seo.title}
+        description={seo.description}
+        canonical={seo.canonical}
+        image={seo.image}
+        type={seo.type}
+        noindex={seo.noindex}
+        locale={seo.locale}
+        structuredData={seo.structuredData}
+      />
+      <Layout
+        currentView={currentView}
+        onViewChange={(view) => {
+          setCurrentView(view);
+          updateRoute(view);
+        }}
+        onNavigatePage={handlePageNavigate}
+        savedCount={savedUnitIds.length}
+        locale={locale}
+        onLocaleChange={setLocale}
+        isDark={isDark}
+        onToggleTheme={() => setIsDark(prev => !prev)}
+        t={t}
+        onOpenAuth={() => setShowAuthModal(true)}
+      >
+        {renderContent()}
+        {showAuthModal && (
+          <Suspense fallback={null}>
+            <AuthModal onClose={() => setShowAuthModal(false)} t={t} />
+          </Suspense>
+        )}
+        {enableAiNavigator && (
+          <Suspense fallback={null}>
+            <AINavigator units={units} />
+          </Suspense>
+        )}
+      </Layout>
+    </>
   );
 };
 

@@ -16,11 +16,42 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
-  // Close on Escape
+  // Close on Escape and keep focus inside modal while open
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key !== 'Tab' || !modalRef.current) {
+        return;
+      }
+
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+
+      if (!focusableElements.length) {
+        return;
+      }
+
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (!e.shiftKey && activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    };
+
     window.addEventListener('keydown', onKey);
     firstInputRef.current?.focus();
     return () => window.removeEventListener('keydown', onKey);
@@ -77,7 +108,7 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
       aria-label={tab === 'signin' ? t('auth.signIn') : t('auth.signUp')}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className="bg-white stark-border w-full max-w-sm relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      <div ref={modalRef} className="bg-white stark-border w-full max-w-sm relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 stark-border-b">
           <span className="text-[10px] font-black uppercase tracking-widest">FACODI</span>

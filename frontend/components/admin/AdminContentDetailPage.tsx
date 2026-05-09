@@ -174,10 +174,22 @@ const AdminContentDetailPage: React.FC<AdminContentDetailPageProps> = ({ submiss
           <div className="stark-border p-8 bg-white mb-8">
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6">Metadados</h3>
             <div className="space-y-4">
-              <input className="w-full stark-border px-3 py-2" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titulo" />
-              <textarea className="w-full stark-border px-3 py-2" rows={3} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Resumo" />
-              <input className="w-full stark-border px-3 py-2" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topico" />
-              <textarea className="w-full stark-border px-3 py-2" rows={3} value={pedagogicalReason} onChange={(e) => setPedagogicalReason(e.target.value)} placeholder="Justificativa pedagogica" />
+              <div>
+                <label htmlFor="admin-title" className="facodi-label">Titulo</label>
+                <input id="admin-title" className="w-full stark-border px-3 py-2" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titulo" autoComplete="off" />
+              </div>
+              <div>
+                <label htmlFor="admin-summary" className="facodi-label">Resumo</label>
+                <textarea id="admin-summary" className="w-full stark-border px-3 py-2" rows={3} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Resumo" />
+              </div>
+              <div>
+                <label htmlFor="admin-topic" className="facodi-label">Topico</label>
+                <input id="admin-topic" className="w-full stark-border px-3 py-2" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topico" autoComplete="off" />
+              </div>
+              <div>
+                <label htmlFor="admin-pedagogical-reason" className="facodi-label">Justificativa pedagogica</label>
+                <textarea id="admin-pedagogical-reason" className="w-full stark-border px-3 py-2" rows={3} value={pedagogicalReason} onChange={(e) => setPedagogicalReason(e.target.value)} placeholder="Justificativa pedagogica" />
+              </div>
               <button disabled={saving} onClick={saveMetadata} className="bg-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40 hover:shadow-[4px_4px_0px_0px_rgba(239,255,0,1)] transition-all">
                 Salvar Metadados
               </button>

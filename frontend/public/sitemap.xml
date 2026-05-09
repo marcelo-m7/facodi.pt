@@ -16,6 +16,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://facodi.open2.tech/contributors</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/playlists</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/videos</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/blog/design-tecnologia-inclusiva</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://facodi.open2.tech/blog/por-tras-da-monynha</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://facodi.open2.tech/manifesto</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -64,10 +94,5 @@
     <loc>https://facodi.open2.tech/como-contribuir</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://facodi.open2.tech/dashboard</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
   </url>
 </urlset>

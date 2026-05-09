@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /student
+Disallow: /profile
+Disallow: /curator
+Disallow: /auth
+
 Sitemap: https://facodi.open2.tech/sitemap.xml
