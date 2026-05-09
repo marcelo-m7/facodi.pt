@@ -57,8 +57,7 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
     setSaveMsg(null);
     const { error } = await supabase
       .from('profiles')
-      .update({ display_name: displayName || null, bio: bio || null })
-      .eq('id', user.id);
+      .upsert({ id: user.id, display_name: displayName || null, bio: bio || null }, { onConflict: 'id' });
     setIsSaving(false);
     setSaveMsg(error ? t('auth.errorGeneric') : t('auth.saveChanges') + ' ✓');
   };
@@ -81,7 +80,7 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
     }
   };
 
-  if (!user || !profile) {
+  if (!user) {
     return (
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16">
         <p className="text-sm text-gray-400 uppercase font-bold">Sessão não encontrada.</p>
@@ -89,9 +88,22 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
     );
   }
 
-  const avatarUrl = profile.avatar_url ?? null;
-  const roleKey = ROLE_LABELS[profile.role] ?? 'auth.userBadge';
-  const canSuggestVideos = profile.role === 'editor';
+  const resolvedProfile = profile ?? {
+    id: user.id,
+    username: null,
+    display_name: user.user_metadata?.full_name ?? null,
+    avatar_url: user.user_metadata?.avatar_url ?? null,
+    bio: null,
+    avatar_path: null,
+    role: 'user' as const,
+    submissions_count: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const avatarUrl = resolvedProfile.avatar_url ?? null;
+  const roleKey = ROLE_LABELS[resolvedProfile.role] ?? 'auth.userBadge';
+  const canSuggestVideos = resolvedProfile.role === 'editor';
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
@@ -114,8 +126,8 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
               </div>
             )}
             <div className="text-center">
-              <p className="text-xl font-black tracking-tighter">{profile.display_name ?? profile.username ?? user.email}</p>
-              {profile.username && <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">@{profile.username}</p>}
+              <p className="text-xl font-black tracking-tighter">{resolvedProfile.display_name ?? resolvedProfile.username ?? user.email}</p>
+              {resolvedProfile.username && <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">@{resolvedProfile.username}</p>}
               <span className="inline-block mt-3 px-3 py-1 text-[9px] font-black uppercase tracking-widest stark-border bg-white">
                 {t(roleKey)}
               </span>

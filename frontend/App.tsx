@@ -319,7 +319,6 @@ const App: React.FC = () => {
   useEffect(() => {
     const privateViews = new Set<View>([
       'dashboard',
-      'profile',
       'student-dashboard',
       'student-my-courses',
       'student-progress',

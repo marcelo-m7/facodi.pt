@@ -127,14 +127,14 @@ const Layout: React.FC<Props> = ({
       </a>
 
       <header className={`fixed top-0 w-full z-50 h-16 md:h-20 transition-all ${isScrolled ? 'bg-white/95 backdrop-blur stark-border-b shadow-[0_4px_0_0_rgba(0,0,0,0.06)]' : 'bg-white stark-border-b'}`}>
-        <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between gap-3">
           {/* Logo */}
           <button onClick={() => navGo('home')} aria-label="FACODI — Página inicial" className="flex items-center gap-2 shrink-0">
             <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">FACODI</span>
           </button>
 
           {/* Desktop nav */}
-          <nav aria-label="Navegação principal" className="hidden md:flex items-center gap-5 lg:gap-8">
+          <nav aria-label="Navegação principal" className="hidden md:flex flex-1 min-w-0 items-center gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap">
             <button onClick={() => navGo('home')} aria-current={isActive('home') ? 'page' : undefined} className={navCls('home')}>{t('nav.home')}</button>
             <button onClick={() => navGo('courses')} aria-current={isActive('courses') ? 'page' : undefined} className={navCls('courses')}>{t('nav.courses')}</button>
             <button onClick={() => navGo('repository')} aria-current={isActive('repository', ['course-detail', 'lesson-detail']) ? 'page' : undefined} className={navCls('repository', ['course-detail', 'lesson-detail'])}>{t('nav.units')}</button>
@@ -147,6 +147,11 @@ const Layout: React.FC<Props> = ({
             {user && (
               <button onClick={() => navGo('student-dashboard')} aria-current={isActive('student-dashboard', ['student-my-courses', 'student-progress', 'student-history']) ? 'page' : undefined} className={navCls('student-dashboard', ['student-my-courses', 'student-progress', 'student-history'])}>
                 Meus Cursos
+              </button>
+            )}
+            {user && (
+              <button onClick={() => navGo('profile')} aria-current={isActive('profile') ? 'page' : undefined} className={navCls('profile')}>
+                {t('nav.profile')}
               </button>
             )}
             {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
@@ -183,7 +188,7 @@ const Layout: React.FC<Props> = ({
           </nav>
 
           {/* Desktop right */}
-          <div className="hidden md:flex items-center gap-3 lg:gap-4">
+          <div className="hidden md:flex items-center gap-3 lg:gap-4 shrink-0">
             <div className="hidden lg:flex items-center gap-2 border border-black/10 px-3 py-1.5 text-[10px] font-bold uppercase">
               <label htmlFor="facodi-language" className="sr-only">{t('nav.languageLabel')}</label>
               <select id="facodi-language" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-transparent outline-none cursor-pointer">
@@ -197,7 +202,7 @@ const Layout: React.FC<Props> = ({
             {user ? (
               <button
                 onClick={() => navGo('profile')}
-                aria-label={t('nav.profile')}
+                aria-label="Atalho de perfil"
                 className={`stark-border w-11 h-11 flex items-center justify-center hover:bg-brand-muted transition-all overflow-hidden ${isActive('profile') ? 'bg-primary' : ''}`}
                 title={profile?.display_name ?? profile?.username ?? t('nav.profile')}
               >
@@ -248,7 +253,8 @@ const Layout: React.FC<Props> = ({
       <nav
         id="mobile-menu"
         aria-label="Menu mobile"
-        className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        aria-hidden={!mobileOpen}
+        className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden transition-transform duration-300 ${mobileOpen ? 'translate-x-0 visible' : 'translate-x-full invisible pointer-events-none'}`}
       >
         <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
           <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>

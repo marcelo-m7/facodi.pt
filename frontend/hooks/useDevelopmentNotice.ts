@@ -9,12 +9,14 @@ export const useDevelopmentNotice = () => {
   useEffect(() => {
     try {
       const seen = localStorage.getItem(STORAGE_KEY) === '1';
-      setIsOpen(!seen);
+      setIsOpen(false);
+      if (!seen) {
+        localStorage.setItem(STORAGE_KEY, '1');
+      }
     } catch {
-      setIsOpen(true);
-    } finally {
-      setIsReady(true);
+      setIsOpen(false);
     }
+    setIsReady(true);
   }, []);
 
   const closeNotice = useCallback((persist = true) => {

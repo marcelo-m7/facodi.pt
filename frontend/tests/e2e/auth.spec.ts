@@ -140,9 +140,11 @@ test.describe('Auth – Profile page', () => {
     await expect(page.getByText(/favorit/i).first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('navigating to /profile without auth shows session-not-found message', async ({ page: unauthPage }) => {
-    // Fresh page without login — app renders the profile page but shows gated content
-    await unauthPage.goto('/profile');
-    await expect(unauthPage.getByText(/Sessão não encontrada/i)).toBeVisible({ timeout: 5000 });
+});
+
+test.describe('Auth – Profile page (unauthenticated)', () => {
+  test('navigating to /profile without auth opens auth prompt', async ({ page }) => {
+    await page.goto('/profile');
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
   });
 });
