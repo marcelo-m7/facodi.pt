@@ -260,9 +260,9 @@ const pt: TranslationDict = {
   'institutional.curator.context.text': 'A curadoria de conteúdos no FACODI faz parte de uma visão maior: construir uma plataforma aberta de aprendizagem, conectada à colaboração universitária europeia e contemplada pela iniciativa SEA-EU Student-Led Projects 2026. Ao contribuir com conteúdos, curadores ajudam a organizar conhecimento público em percursos de estudo mais acessíveis.',
   'institutional.content.submission.text': 'Envie conteúdos que contribuam para trilhas de aprendizagem abertas, bem organizadas e alinhadas às unidades curriculares do FACODI. O projeto foi contemplado pela SEA-EU Student-Led Projects 2026 e busca fortalecer práticas de curadoria educacional com impacto comunitário.',
   'development.badge': 'Projeto em desenvolvimento',
-  'development.title': 'FACODI esta em construcao',
-  'development.body': 'O FACODI ainda esta em desenvolvimento ativo. Algumas funcionalidades podem estar incompletas ou instaveis enquanto construimos a plataforma junto da comunidade.',
-  'development.message': 'Estamos construindo o FACODI de forma aberta e comunitaria. Algumas areas ainda estao experimentais, mas cada feedback ajuda a melhorar o projeto.',
+  'development.title': 'FACODI está em construção',
+  'development.body': 'O FACODI ainda está em desenvolvimento ativo. Algumas funcionalidades podem estar incompletas ou instáveis enquanto construímos a plataforma junto da comunidade.',
+  'development.message': 'Estamos construindo o FACODI de forma aberta e comunitária. Algumas áreas ainda estão experimentais, mas cada feedback ajuda a melhorar o projeto.',
   'development.signature': 'Marcelo Santos | Open2.Tech / FACODI',
   'development.institutional': 'Projeto contemplado pela SEA-EU Student-Led Projects 2026.',
   'development.close': 'Entendi'
