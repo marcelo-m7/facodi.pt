@@ -132,9 +132,10 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-slate-600">{t('nav.progress')}</p>
+          <div className="facodi-spinner mx-auto mb-4" />
+          <p className="text-[10px] font-black uppercase tracking-widest">{t('nav.progress')}</p>
         </div>
       </div>
     );
@@ -143,12 +144,11 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
   // If user has an existing application, show status
   if (existingApp) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-4">
+      <div className="facodi-page">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white stark-border p-6 md:p-8 rounded-lg">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4">{t('curator.apply.title')}</h1>
-            
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+          <div className="facodi-card">
+            <h1 className="text-4xl font-black uppercase tracking-tighter mb-6">{t('curator.apply.title')}</h1>
+            <div className="facodi-alert facodi-alert-info">
               <p className="text-blue-900">
                 {locale === 'pt' 
                   ? 'Você já possui uma candidatura ativa.' 
@@ -191,21 +191,32 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-4">
+    <div className="facodi-page">
       <div className="max-w-2xl mx-auto">
+        {/* Institutional Context Section */}
+        <div className="mb-10 bg-brand-muted stark-border p-8">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-4">
+            {t('institutional.curator.context.title')}
+          </h2>
+          <p className="text-sm font-medium text-gray-700 leading-relaxed">
+            {t('institutional.curator.context.text')}
+          </p>
+        </div>
+
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('curator.apply.title')}</h1>
-          <p className="text-lg text-slate-600">{t('curator.apply.intro')}</p>
+        <div className="mb-10">
+          <span className="text-[10px] font-black bg-black text-primary px-3 py-1.5 uppercase tracking-[0.2em] mb-4 inline-block">Curadoria</span>
+          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter">{t('curator.apply.title')}</h1>
+          <p className="text-sm text-gray-500 mt-3">{t('curator.apply.intro')}</p>
         </div>
 
         {/* Info Sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white stark-border p-6 rounded-lg">
-            <h3 className="font-bold text-lg mb-3">
+          <div className="facodi-card">
+            <h3 className="text-[10px] font-black uppercase tracking-widest mb-4">
               {locale === 'pt' ? 'Responsabilidades' : 'Responsibilities'}
             </h3>
-            <ul className="space-y-2 text-sm text-slate-700">
+            <ul className="space-y-2 text-sm text-gray-600">
               <li>• {locale === 'pt' ? 'Revisar e aprovar conteúdo enviado' : 'Review and approve submitted content'}</li>
               <li>• {locale === 'pt' ? 'Mapear unidades curriculares' : 'Map curricular units'}</li>
               <li>• {locale === 'pt' ? 'Organizar playlists' : 'Organize playlists'}</li>
@@ -213,11 +224,11 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
             </ul>
           </div>
 
-          <div className="bg-white stark-border p-6 rounded-lg">
-            <h3 className="font-bold text-lg mb-3">
+          <div className="facodi-card">
+            <h3 className="text-[10px] font-black uppercase tracking-widest mb-4">
               {locale === 'pt' ? 'Tipos de conteúdo' : 'Content types'}
             </h3>
-            <ul className="space-y-2 text-sm text-slate-700">
+            <ul className="space-y-2 text-sm text-gray-600">
               <li>• Vídeos / Videos</li>
               <li>• Artigos / Articles</li>
               <li>• Recursos interativos / Interactive resources</li>
@@ -227,24 +238,19 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
         </div>
 
         {/* Form */}
-        <div className="bg-white stark-border p-6 md:p-8 rounded-lg">
-          <h2 className="text-xl font-bold mb-6">{t('curator.apply.form.submit')}</h2>
+        <div className="facodi-card">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8">{t('curator.apply.form.submit')}</h2>
 
           {success && (
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded text-green-900">
-              {t('curator.apply.success')}
-            </div>
+            <div className="facodi-alert facodi-alert-success">{t('curator.apply.success')}</div>
           )}
-
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded text-red-900">
-              {error}
-            </div>
+            <div className="facodi-alert facodi-alert-error">{error}</div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-semibold text-slate-700 mb-2">
+              <label htmlFor="fullName" className="facodi-label">
                 {t('curator.apply.form.fullName')} *
               </label>
               <input
@@ -254,12 +260,12 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="facodi-input"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
+              <label htmlFor="email" className="facodi-label">
                 {t('curator.apply.form.email')} *
               </label>
               <input
@@ -269,13 +275,13 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="facodi-input"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="specialtyArea" className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="specialtyArea" className="facodi-label">
                   {t('curator.apply.form.specialtyArea')}
                 </label>
                 <input
@@ -284,12 +290,12 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                   name="specialtyArea"
                   value={formData.specialtyArea}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="facodi-input"
                 />
               </div>
 
               <div>
-                <label htmlFor="availability" className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="availability" className="facodi-label">
                   {t('curator.apply.form.availability')}
                 </label>
                 <input
@@ -299,13 +305,13 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                   placeholder={locale === 'pt' ? 'ex: 10h/semana' : 'e.g. 10h/week'}
                   value={formData.availability}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="facodi-input"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="experienceSummary" className="block text-sm font-semibold text-slate-700 mb-2">
+              <label htmlFor="experienceSummary" className="facodi-label">
                 {t('curator.apply.form.experienceSummary')}
               </label>
               <textarea
@@ -314,12 +320,12 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                 value={formData.experienceSummary}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="facodi-input resize-none"
               />
             </div>
 
             <div>
-              <label htmlFor="motivation" className="block text-sm font-semibold text-slate-700 mb-2">
+              <label htmlFor="motivation" className="facodi-label">
                 {t('curator.apply.form.motivation')} *
               </label>
               <textarea
@@ -329,13 +335,13 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                 onChange={handleChange}
                 required
                 rows={4}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="facodi-input resize-none"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="portfolioUrl" className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="portfolioUrl" className="facodi-label">
                   {t('curator.apply.form.portfolioUrl')}
                 </label>
                 <input
@@ -344,13 +350,13 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                   name="portfolioUrl"
                   value={formData.portfolioUrl}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="facodi-input"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="relevantLinks" className="block text-sm font-semibold text-slate-700 mb-2">
+              <label htmlFor="relevantLinks" className="facodi-label">
                 {t('curator.apply.form.relevantLinks')}
               </label>
               <textarea
@@ -360,7 +366,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                 onChange={handleChange}
                 placeholder={locale === 'pt' ? 'Uma URL por linha' : 'One URL per line'}
                 rows={3}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="facodi-input resize-none"
               />
             </div>
 
@@ -397,7 +403,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-primary text-black py-3 font-bold uppercase tracking-widest stark-border hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+              className="facodi-btn facodi-btn-primary facodi-btn-full"
             >
               {submitting ? t('curator.apply.form.submitting') : t('curator.apply.form.submit')}
             </button>

@@ -146,33 +146,39 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-4">
+    <div className="facodi-page">
       <div className="max-w-4xl mx-auto">
+        {/* Institutional Guidance Section */}
+        <div className="mb-10 bg-brand-muted stark-border p-8">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-4">
+            {locale === 'pt' ? 'Orientação para envio de conteúdos' : 'Content submission guidance'}
+          </h2>
+          <p className="text-sm font-medium text-gray-700 leading-relaxed">
+            {t('institutional.content.submission.text')}
+          </p>
+        </div>
+
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('curator.submit.title')}</h1>
-          <p className="text-lg text-slate-600">{t('curator.submit.intro')}</p>
+        <div className="mb-10">
+          <span className="text-[10px] font-black bg-black text-primary px-3 py-1.5 uppercase tracking-[0.2em] mb-4 inline-block">Curadoria</span>
+          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter">{t('curator.submit.title')}</h1>
+          <p className="text-sm text-gray-500 mt-3 max-w-xl">{t('curator.submit.intro')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white stark-border p-6 md:p-8 rounded-lg">
+            <div className="facodi-card">
               {success && (
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded text-green-900">
-                  {t('curator.submit.success')}
-                </div>
+                <div className="facodi-alert facodi-alert-success">{t('curator.submit.success')}</div>
               )}
-
               {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded text-red-900">
-                  {error}
-                </div>
+                <div className="facodi-alert facodi-alert-error">{error}</div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="contentType" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="contentType" className="facodi-label">
                     {t('curator.submit.contentType')} *
                   </label>
                   <select
@@ -180,7 +186,7 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                     name="contentType"
                     value={formData.contentType}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="facodi-input"
                   >
                     <option value="video">Vídeo / Video</option>
                     <option value="article">Artigo / Article</option>
@@ -191,7 +197,7 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
 
                 {formData.contentType === 'video' && (
                   <div>
-                    <label htmlFor="url" className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label htmlFor="url" className="facodi-label">
                       {t('curator.submit.youtubeUrl')} *
                     </label>
                     <input
@@ -202,7 +208,7 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                       onChange={handleChange}
                       placeholder="https://youtu.be/... or https://youtube.com/watch?v=..."
                       required={formData.contentType === 'video'}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="facodi-input"
                     />
                     {formData.youtubeVideoId && (
                       <p className="text-sm text-green-600 mt-2">
@@ -214,7 +220,7 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
 
                 {formData.contentType !== 'video' && (
                   <div>
-                    <label htmlFor="url" className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label htmlFor="url" className="facodi-label">
                       {t('curator.submit.url')}
                     </label>
                     <input
@@ -223,13 +229,13 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                       name="url"
                       value={formData.url}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="facodi-input"
                     />
                   </div>
                 )}
 
                 <div>
-                  <label htmlFor="suggestedTitle" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="suggestedTitle" className="facodi-label">
                     {t('curator.submit.suggestedTitle')} *
                   </label>
                   <input
@@ -239,12 +245,12 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                     value={formData.suggestedTitle}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="facodi-input"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="summary" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="summary" className="facodi-label">
                     {t('curator.submit.summary')}
                   </label>
                   <textarea
@@ -253,13 +259,13 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                     value={formData.summary}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    className="facodi-input resize-none"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label htmlFor="courseId" className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label htmlFor="courseId" className="facodi-label">
                       {t('curator.submit.courseId')}
                     </label>
                     <input
@@ -269,12 +275,12 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                       value={formData.courseId}
                       onChange={handleChange}
                       placeholder="ex: CC"
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="facodi-input"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="unitId" className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label htmlFor="unitId" className="facodi-label">
                       {t('curator.submit.unitId')}
                     </label>
                     <input
@@ -284,12 +290,12 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                       value={formData.unitId}
                       onChange={handleChange}
                       placeholder="ex: 19411003"
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="facodi-input"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="topic" className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label htmlFor="topic" className="facodi-label">
                       {t('curator.submit.topic')}
                     </label>
                     <input
@@ -298,13 +304,13 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                       name="topic"
                       value={formData.topic}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="facodi-input"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="pedagogicalReason" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="pedagogicalReason" className="facodi-label">
                     {t('curator.submit.pedagogicalReason')}
                   </label>
                   <textarea
@@ -313,12 +319,12 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                     value={formData.pedagogicalReason}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    className="facodi-input resize-none"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="tags" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="tags" className="facodi-label">
                     {t('curator.submit.tags')}
                   </label>
                   <input
@@ -328,12 +334,12 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                     value={formData.tags}
                     onChange={handleChange}
                     placeholder={locale === 'pt' ? 'Separadas por vírgula' : 'Comma-separated'}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="facodi-input"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="additionalNotes" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="additionalNotes" className="facodi-label">
                     {t('curator.submit.additionalNotes')}
                   </label>
                   <textarea
@@ -342,14 +348,14 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
                     value={formData.additionalNotes}
                     onChange={handleChange}
                     rows={2}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    className="facodi-input resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full bg-primary text-black py-3 font-bold uppercase tracking-widest stark-border hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="facodi-btn facodi-btn-primary facodi-btn-full"
                 >
                   {submitting ? t('curator.submit.submitting') : t('curator.submit.submit')}
                 </button>
@@ -359,8 +365,8 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
 
           {/* Recent Submissions Sidebar */}
           <div>
-            <div className="bg-white stark-border p-6 rounded-lg sticky top-4">
-              <h3 className="font-bold text-lg mb-4">{t('curator.mySubmissions.title')}</h3>
+            <div className="facodi-card sticky top-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest mb-6">{t('curator.mySubmissions.title')}</h3>
 
               {loadingSubmissions ? (
                 <p className="text-slate-600 text-sm">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
@@ -369,7 +375,7 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
               ) : (
                 <div className="space-y-3">
                   {submissions.slice(0, 5).map((sub) => (
-                    <div key={sub.id} className="border-l-2 border-slate-200 pl-3 text-sm">
+                    <div key={sub.id} className="border-l-2 border-black pl-3 text-sm">
                       <p className="font-medium text-slate-900 truncate">{sub.suggested_title}</p>
                       <p className="text-xs text-slate-600 mt-1">
                         {t('curator.mySubmissions.status.' + sub.status)}

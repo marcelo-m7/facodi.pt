@@ -379,13 +379,29 @@ const Layout: React.FC<Props> = ({
             </div>
           </div>
           
-          <div className="pt-10 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
-            <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
-              <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
-              <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
-              <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
-              <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
+          <div className="pt-10 border-t border-black/10">
+            {/* Institutional reference section */}
+            <div className="mb-8 pb-8 border-b border-black/10">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 leading-relaxed">
+                {t('institutional.footer.text')}
+              </p>
+            </div>
+
+            {/* Copyright and disclaimer */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
+              <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
+                <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
+                <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
+                <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
+                <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
+                <details className="cursor-pointer">
+                  <summary className="hover:text-primary">AVISO LEGAL</summary>
+                  <div className="mt-4 text-[8px] font-medium leading-relaxed p-4 bg-gray-50 stark-border max-w-2xl">
+                    <p>{t('institutional.disclaimer.pt')}</p>
+                  </div>
+                </details>
+              </div>
             </div>
           </div>
         </div>

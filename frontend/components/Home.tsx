@@ -232,6 +232,58 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
         </div>
       </section>
 
+      {/* Institutional Recognition Section */}
+      <section className="py-24 bg-brand-muted border-y-4 border-black">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+            {/* Left: Badges */}
+            <div className="flex flex-col gap-4">
+              <div className="bg-black text-white px-4 py-3 stark-border text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.seaEu.badge')}</p>
+              </div>
+              <div className="bg-black text-white px-4 py-3 stark-border text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.ualg.badge')}</p>
+              </div>
+              <div className="bg-primary text-black px-4 py-3 stark-border text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.education.badge')}</p>
+              </div>
+            </div>
+
+            {/* Center: Text */}
+            <div>
+              <h2 className="text-3xl font-black uppercase tracking-tighter mb-6 leading-tight">
+                {t('institutional.homepage.title')}
+              </h2>
+              <p className="text-sm font-medium text-gray-600 leading-relaxed mb-8">
+                {t('institutional.homepage.textLong')}
+              </p>
+              <button
+                onClick={() => onNavigatePage?.('sobre')}
+                className="bg-black text-white px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(239,255,0,1)] transition-all"
+              >
+                {t('institutional.homepage.cta')}
+              </button>
+            </div>
+
+            {/* Right: Key info */}
+            <div className="space-y-6">
+              <div className="stark-border p-6 bg-white">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Iniciativa</p>
+                <p className="text-sm font-bold">{t('institutional.project.publicName')}</p>
+              </div>
+              <div className="stark-border p-6 bg-white">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Instituição</p>
+                <p className="text-sm font-bold">{t('institutional.ualg.link')}</p>
+              </div>
+              <div className="stark-border p-6 bg-white">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Aliança</p>
+                <p className="text-sm font-bold">{t('institutional.seaEu.link')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-24 bg-white">
         <div className="max-w-[1600px] mx-auto px-6 text-center">
