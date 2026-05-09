@@ -16,7 +16,15 @@ type View =
   | 'institutional-page'
   | 'videos'
   | 'video-detail'
-  | 'profile';
+  | 'profile'
+  | 'student-dashboard'
+  | 'student-my-courses'
+  | 'student-progress'
+  | 'student-history'
+  | 'curator-apply'
+  | 'curator-submit'
+  | 'curator-submissions'
+  | 'curator-admin-review';
 
 interface Props {
   children: React.ReactNode;
@@ -125,6 +133,26 @@ const Layout: React.FC<Props> = ({
                 <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
               )}
             </button>
+            {user && (
+              <button onClick={() => navGo('student-dashboard')} aria-current={isActive('student-dashboard', ['student-my-courses', 'student-progress', 'student-history']) ? 'page' : undefined} className={navCls('student-dashboard', ['student-my-courses', 'student-progress', 'student-history'])}>
+                Meus Cursos
+              </button>
+            )}
+            {user && (
+              <button onClick={() => navGo('curator-submit')} aria-current={isActive('curator-submit', ['curator-submissions']) ? 'page' : undefined} className={navCls('curator-submit', ['curator-submissions'])}>
+                Enviar Conteúdo
+              </button>
+            )}
+            {user && (
+              <button onClick={() => navGo('curator-apply')} aria-current={isActive('curator-apply') ? 'page' : undefined} className={navCls('curator-apply')}>
+                Ser Curador
+              </button>
+            )}
+            {user && profile?.role === 'admin' && (
+              <button onClick={() => navGo('curator-admin-review')} aria-current={isActive('curator-admin-review') ? 'page' : undefined} className={navCls('curator-admin-review')}>
+                Painel Admin
+              </button>
+            )}
             <button onClick={() => pageGo('manifesto')} className="transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500 hover:text-black hover:bg-brand-muted">
               Manifesto
             </button>
@@ -206,6 +234,10 @@ const Layout: React.FC<Props> = ({
             { view: 'courses' as View, label: t('nav.courses'), icon: 'school' },
             { view: 'repository' as View, label: t('nav.units'), icon: 'grid_view' },
             { view: 'dashboard' as View, label: t('nav.progress'), icon: 'dashboard' },
+            ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library' }] : []),
+            ...(user ? [{ view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload' }] : []),
+            ...(user ? [{ view: 'curator-apply' as View, label: 'Ser Curador', icon: 'edit_note' }] : []),
+            ...(user && profile?.role === 'admin' ? [{ view: 'curator-admin-review' as View, label: 'Painel Admin', icon: 'admin_panel_settings' }] : []),
           ] as { view: View; label: string; icon: string }[]).map(({ view, label, icon }) => (
             <button
               key={view}
