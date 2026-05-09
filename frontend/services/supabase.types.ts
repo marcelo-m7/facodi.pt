@@ -140,6 +140,200 @@ export type Database = {
           },
         ]
       }
+      content_pages: {
+        Row: {
+          body_en: string | null
+          body_pt: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          published: boolean
+          slug: string
+          title_en: string | null
+          title_pt: string
+          updated_at: string | null
+        }
+        Insert: {
+          body_en?: string | null
+          body_pt?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          published?: boolean
+          slug: string
+          title_en?: string | null
+          title_pt: string
+          updated_at?: string | null
+        }
+        Update: {
+          body_en?: string | null
+          body_pt?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          published?: boolean
+          slug?: string
+          title_en?: string | null
+          title_pt?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      content_sync_conflicts: {
+        Row: {
+          created_at: string
+          entity_key: string
+          entity_type: string
+          field_name: string
+          id: string
+          resolution: string | null
+          run_id: string | null
+          source_value: string | null
+          target_value: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_key: string
+          entity_type: string
+          field_name: string
+          id?: string
+          resolution?: string | null
+          run_id?: string | null
+          source_value?: string | null
+          target_value?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_key?: string
+          entity_type?: string
+          field_name?: string
+          id?: string
+          resolution?: string | null
+          run_id?: string | null
+          source_value?: string | null
+          target_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_sync_conflicts_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "content_sync_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_sync_runs: {
+        Row: {
+          details: Json
+          finished_at: string | null
+          id: string
+          imported_courses: number
+          imported_outcomes: number
+          imported_resources: number
+          imported_units: number
+          source_name: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          details?: Json
+          finished_at?: string | null
+          id?: string
+          imported_courses?: number
+          imported_outcomes?: number
+          imported_resources?: number
+          imported_units?: number
+          source_name: string
+          started_at?: string
+          status: string
+        }
+        Update: {
+          details?: Json
+          finished_at?: string | null
+          id?: string
+          imported_courses?: number
+          imported_outcomes?: number
+          imported_resources?: number
+          imported_units?: number
+          source_name?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      courses: {
+        Row: {
+          code: string
+          content_license: string | null
+          created_at: string
+          curriculum_version: string | null
+          degree_type: string
+          description: string | null
+          duration_semesters: number
+          ects_total: number
+          enroll: string | null
+          id: string
+          institution: string | null
+          is_active: boolean
+          language_code: string
+          long_description: string | null
+          members_count: number | null
+          metadata: Json
+          odoo_id: number | null
+          school: string | null
+          title: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          code: string
+          content_license?: string | null
+          created_at?: string
+          curriculum_version?: string | null
+          degree_type?: string
+          description?: string | null
+          duration_semesters?: number
+          ects_total?: number
+          enroll?: string | null
+          id?: string
+          institution?: string | null
+          is_active?: boolean
+          language_code?: string
+          long_description?: string | null
+          members_count?: number | null
+          metadata?: Json
+          odoo_id?: number | null
+          school?: string | null
+          title: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          code?: string
+          content_license?: string | null
+          created_at?: string
+          curriculum_version?: string | null
+          degree_type?: string
+          description?: string | null
+          duration_semesters?: number
+          ects_total?: number
+          enroll?: string | null
+          id?: string
+          institution?: string | null
+          is_active?: boolean
+          language_code?: string
+          long_description?: string | null
+          members_count?: number | null
+          metadata?: Json
+          odoo_id?: number | null
+          school?: string | null
+          title?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       diagnoses: {
         Row: {
           conversion_score: number
@@ -433,6 +627,41 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      learning_outcomes: {
+        Row: {
+          created_at: string
+          id: string
+          outcome_order: number
+          outcome_text: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          outcome_order?: number
+          outcome_text: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          outcome_order?: number
+          outcome_text?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_outcomes_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -769,6 +998,231 @@ export type Database = {
             columns: ["diagnosis_id"]
             isOneToOne: false
             referencedRelation: "diagnoses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resources: {
+        Row: {
+          created_at: string
+          id: string
+          language_code: string | null
+          license_name: string | null
+          metadata: Json
+          position: number
+          resource_type: string
+          source_provider: string | null
+          title: string | null
+          unit_id: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language_code?: string | null
+          license_name?: string | null
+          metadata?: Json
+          position?: number
+          resource_type: string
+          source_provider?: string | null
+          title?: string | null
+          unit_id: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language_code?: string | null
+          license_name?: string | null
+          metadata?: Json
+          position?: number
+          resource_type?: string
+          source_provider?: string | null
+          title?: string | null
+          unit_id?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_enrichments: {
+        Row: {
+          ai_summary: string | null
+          canonical_source: string
+          created_at: string
+          editorial_state: string | null
+          provenance: Json
+          source_legacy_ref: string | null
+          source_odoo_id: string | null
+          unit_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          canonical_source?: string
+          created_at?: string
+          editorial_state?: string | null
+          provenance?: Json
+          source_legacy_ref?: string | null
+          source_odoo_id?: string | null
+          unit_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          canonical_source?: string
+          created_at?: string
+          editorial_state?: string | null
+          provenance?: Json
+          source_legacy_ref?: string | null
+          source_odoo_id?: string | null
+          unit_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_enrichments_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: true
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          unit_code: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          unit_code: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          unit_code?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      units: {
+        Row: {
+          category: string | null
+          code: string
+          content: string | null
+          content_url: string | null
+          contributor: string | null
+          course_id: string
+          created_at: string
+          difficulty: string | null
+          duration: string | null
+          ects: number
+          editorial_state: string | null
+          id: string
+          metadata: Json
+          name: string
+          odoo_id: number | null
+          position: number
+          prerequisites: string[]
+          section_name: string | null
+          semester: number
+          slide_category: string | null
+          source_url: string | null
+          summary: string | null
+          syllabus_url: string | null
+          tags: string[]
+          unit_code: string | null
+          updated_at: string
+          video_url: string | null
+          website_url: string | null
+          year: number
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          content?: string | null
+          content_url?: string | null
+          contributor?: string | null
+          course_id: string
+          created_at?: string
+          difficulty?: string | null
+          duration?: string | null
+          ects?: number
+          editorial_state?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          odoo_id?: number | null
+          position?: number
+          prerequisites?: string[]
+          section_name?: string | null
+          semester?: number
+          slide_category?: string | null
+          source_url?: string | null
+          summary?: string | null
+          syllabus_url?: string | null
+          tags?: string[]
+          unit_code?: string | null
+          updated_at?: string
+          video_url?: string | null
+          website_url?: string | null
+          year?: number
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          content?: string | null
+          content_url?: string | null
+          contributor?: string | null
+          course_id?: string
+          created_at?: string
+          difficulty?: string | null
+          duration?: string | null
+          ects?: number
+          editorial_state?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          odoo_id?: number | null
+          position?: number
+          prerequisites?: string[]
+          section_name?: string | null
+          semester?: number
+          slide_category?: string | null
+          source_url?: string | null
+          summary?: string | null
+          syllabus_url?: string | null
+          tags?: string[]
+          unit_code?: string | null
+          updated_at?: string
+          video_url?: string | null
+          website_url?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           },
         ]

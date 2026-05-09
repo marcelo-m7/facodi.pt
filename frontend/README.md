@@ -14,11 +14,10 @@ Projeto mantido por Open2 Technology: https://open2.tech
 
 ## Fontes de Dados
 
-A aplicação usa VITE_DATA_SOURCE com três modos:
+A aplicação usa `VITE_DATA_SOURCE` com dois modos:
 
-- mock: dados locais em data/*.ts.
-- odoo: sincronização por JSON-RPC via proxy /odoo.
-- supabase: leitura do catálogo no schema public.
+- `mock`: dados locais em `data/*.ts`.
+- `supabase`: leitura do catálogo no schema `public`.
 
 No modo supabase, o catálogo é lido principalmente de:
 
@@ -65,10 +64,8 @@ pnpm preview
 
 ## Variáveis de Ambiente
 
-- VITE_DATA_SOURCE=mock|odoo|supabase
-- VITE_BACKEND_URL (necessário para modo odoo em produção)
-- VITE_ODOO_DB, VITE_ODOO_USERNAME, VITE_ODOO_PASSWORD (modo odoo)
-- VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY (modo supabase)
+- `VITE_DATA_SOURCE=mock|supabase`
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (modo supabase)
 
 Segurança:
 
@@ -92,7 +89,7 @@ pnpm test:e2e
 ## Estrutura Relevante
 
 - App.tsx: shell, roteamento e bootstrap do catálogo.
-- services/catalogSource.ts: gateway único de dados (mock/odoo/supabase).
+- services/catalogSource.ts: gateway único de dados (mock/supabase).
 - services/contentSource.ts: páginas institucionais.
 - components/: páginas e blocos de UI.
 - scripts/public_catalog_enrichment.sql: baseline de schema/enriquecimento para public.

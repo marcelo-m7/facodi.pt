@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Locale } from '../data/i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 type View =
   | 'home'
@@ -14,7 +15,8 @@ type View =
   | 'lesson-detail'
   | 'institutional-page'
   | 'videos'
-  | 'video-detail';
+  | 'video-detail'
+  | 'profile';
 
 interface Props {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ interface Props {
   isDark: boolean;
   onToggleTheme: () => void;
   t: (key: string) => string;
+  onOpenAuth: () => void;
 }
 
 const Layout: React.FC<Props> = ({
@@ -39,8 +42,10 @@ const Layout: React.FC<Props> = ({
   onLocaleChange,
   isDark,
   onToggleTheme,
-  t
+  t,
+  onOpenAuth,
 }) => {
+  const { user, profile } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const CONTENT_SUBMIT_URL = 'https://tube.open2.tech';
@@ -137,9 +142,27 @@ const Layout: React.FC<Props> = ({
             <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all">
               <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
             </button>
-            <button onClick={() => navGo('courses')} className="bg-primary text-black px-5 py-2 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap">
-              {t('nav.exploreTracks')}
-            </button>
+            {user ? (
+              <button
+                onClick={() => navGo('profile')}
+                aria-label={t('nav.profile')}
+                className={`stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all overflow-hidden ${isActive('profile') ? 'bg-primary' : ''}`}
+                title={profile?.display_name ?? profile?.username ?? t('nav.profile')}
+              >
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <span className="text-[11px] font-black">{(profile?.display_name ?? profile?.username ?? 'U')[0].toUpperCase()}</span>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={onOpenAuth}
+                className="stark-border px-4 h-9 text-[10px] font-black uppercase tracking-widest hover:bg-brand-muted transition-all"
+              >
+                {t('nav.login')}
+              </button>
+            )}
           </div>
 
           {/* Mobile: bookmark + hamburger */}
@@ -219,9 +242,16 @@ const Layout: React.FC<Props> = ({
             <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
             {isDark ? 'Modo claro' : 'Modo escuro'}
           </button>
-          <button onClick={() => navGo('courses')} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full">
-            {t('nav.exploreTracks')}
-          </button>
+          {user ? (
+            <button onClick={() => { navGo('profile'); }} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
+              <span className="material-symbols-outlined text-base">account_circle</span>
+              {t('nav.profile')}
+            </button>
+          ) : (
+            <button onClick={() => { setMobileOpen(false); onOpenAuth(); }} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border w-full">
+              {t('nav.login')}
+            </button>
+          )}
           <a
             href={CONTENT_SUBMIT_URL}
             target="_blank"

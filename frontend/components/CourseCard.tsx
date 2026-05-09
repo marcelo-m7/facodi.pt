@@ -5,9 +5,10 @@ import { CurricularUnit } from '../types';
 interface Props {
   unit: CurricularUnit;
   onClick?: (id: string) => void;
+  courseTitle?: string;
 }
 
-const CourseCard: React.FC<Props> = ({ unit, onClick }) => {
+const CourseCard: React.FC<Props> = ({ unit, onClick, courseTitle }) => {
   return (
     <div 
       onClick={() => onClick?.(unit.id)}
@@ -28,6 +29,12 @@ const CourseCard: React.FC<Props> = ({ unit, onClick }) => {
           <span className="material-symbols-outlined text-xl">bookmark_add</span>
         </button>
       </div>
+
+      {courseTitle && (
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">
+          {courseTitle}
+        </p>
+      )}
       
       <h4 className="text-2xl font-bold uppercase tracking-tighter leading-none mb-6 group-hover:text-primary group-hover:bg-black transition-all">
         {unit.name}

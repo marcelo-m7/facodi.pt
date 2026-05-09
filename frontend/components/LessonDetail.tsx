@@ -8,12 +8,13 @@ interface Props {
   unit: CurricularUnit;
   allUnits: CurricularUnit[];
   playlists: Playlist[];
+  courseTitle?: string;
   onBack: () => void;
   onNavigate?: (id: string) => void;
   t: (key: string) => string;
 }
 
-const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNavigate, t }) => {
+const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle, onBack, onNavigate, t }) => {
   const [fetchedContent, setFetchedContent] = useState<string | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
@@ -203,6 +204,9 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNa
             <span className="text-[10px] font-black bg-primary text-black px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
               {unit.courseId}
             </span>
+            {courseTitle && (
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">{courseTitle}</p>
+            )}
             <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight mb-8">
               {unit.name}
             </h1>
