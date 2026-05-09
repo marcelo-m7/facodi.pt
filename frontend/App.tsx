@@ -164,7 +164,7 @@ const App: React.FC = () => {
       })
       .catch((error) => {
         if (!active) return;
-        setCatalogError(error instanceof Error ? error.message : 'Falha ao sincronizar conteudo do Odoo.');
+        setCatalogError(error instanceof Error ? error.message : 'Falha ao sincronizar conteudo do catalogo.');
         setCourses([]);
         setUnits([]);
         setPlaylists([]);
