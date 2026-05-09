@@ -70,7 +70,7 @@ const CourseDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
 
       <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
         <aside className="w-full lg:w-96 shrink-0">
-          <div className="sticky top-32">
+          <div className="sticky top-20 md:top-24">
             <div className="stark-border p-8 bg-black text-white mb-8 shadow-[8px_8px_0px_0px_rgba(239,255,0,0.5)]">
               <span className="text-[10px] font-black bg-primary text-black px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
                 {unit.id}

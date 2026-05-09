@@ -27,6 +27,7 @@ type View =
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
+  | 'curator-channel-pipeline'
   | 'curator-admin-review'
   | 'admin-dashboard'
   | 'admin-contents'
@@ -158,6 +159,11 @@ const Layout: React.FC<Props> = ({
                 Minhas Sugestões
               </button>
             )}
+            {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
+              <button onClick={() => navGo('curator-channel-pipeline')} aria-current={isActive('curator-channel-pipeline') ? 'page' : undefined} className={navCls('curator-channel-pipeline')}>
+                Pipeline de Canal
+              </button>
+            )}
             {user && profile?.role === 'user' && (
               <button onClick={() => navGo('curator-apply')} aria-current={isActive('curator-apply') ? 'page' : undefined} className={navCls('curator-apply')}>
                 Ser Curador
@@ -185,14 +191,14 @@ const Layout: React.FC<Props> = ({
                 <option value="en">EN</option>
               </select>
             </div>
-            <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all">
+            <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-11 h-11 flex items-center justify-center hover:bg-brand-muted transition-all">
               <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
             </button>
             {user ? (
               <button
                 onClick={() => navGo('profile')}
                 aria-label={t('nav.profile')}
-                className={`stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all overflow-hidden ${isActive('profile') ? 'bg-primary' : ''}`}
+                className={`stark-border w-11 h-11 flex items-center justify-center hover:bg-brand-muted transition-all overflow-hidden ${isActive('profile') ? 'bg-primary' : ''}`}
                 title={profile?.display_name ?? profile?.username ?? t('nav.profile')}
               >
                 {profile?.avatar_url ? (
@@ -209,7 +215,7 @@ const Layout: React.FC<Props> = ({
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="stark-border px-4 h-9 text-[10px] font-black uppercase tracking-widest hover:bg-brand-muted transition-all"
+                className="stark-border px-4 h-11 text-[10px] font-black uppercase tracking-widest hover:bg-brand-muted transition-all"
               >
                 {t('nav.login')}
               </button>
@@ -218,7 +224,7 @@ const Layout: React.FC<Props> = ({
 
           {/* Mobile: bookmark + hamburger */}
           <div className="flex md:hidden items-center gap-2">
-            <button onClick={() => navGo('dashboard')} aria-label="Meu progresso" className="relative w-9 h-9 flex items-center justify-center">
+            <button onClick={() => navGo('dashboard')} aria-label="Meu progresso" className="relative w-11 h-11 flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">bookmark</span>
               {savedCount > 0 && (
                 <span className="absolute top-0 right-0 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
@@ -246,7 +252,7 @@ const Layout: React.FC<Props> = ({
       >
         <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
           <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
-          <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
+          <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-11 h-11 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
             <span className="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -261,6 +267,7 @@ const Layout: React.FC<Props> = ({
             ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submissions' as View, label: 'Minhas Sugestões', icon: 'schedule' }] : []),
+            ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-channel-pipeline' as View, label: 'Pipeline de Canal', icon: 'smart_display' }] : []),
             ...(user && profile?.role === 'user' ? [{ view: 'curator-apply' as View, label: 'Ser Curador', icon: 'edit_note' }] : []),
             ...(user && profile?.role === 'admin' ? [{ view: 'admin-dashboard' as View, label: 'Painel Admin', icon: 'admin_panel_settings' }] : []),
           ] as { view: View; label: string; icon: string }[]).map(({ view, label, icon }) => (

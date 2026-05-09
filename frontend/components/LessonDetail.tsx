@@ -249,7 +249,7 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
 
         {/* Sidebar */}
         <aside className="w-full lg:w-96 shrink-0">
-          <div className="sticky top-32 space-y-8">
+          <div className="sticky top-20 md:top-24 space-y-8">
             {/* Lesson Info Card */}
             <div className="stark-border p-8 bg-black text-white shadow-[8px_8px_0px_0px_rgba(239,255,0,0.5)]">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 text-gray-300">Informação</h3>

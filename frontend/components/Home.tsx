@@ -81,7 +81,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
 
       {/* Values & Audience Section */}
       <section className="bg-brand-muted/30 border-y border-black/5 py-24">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-24">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
           <div>
             <h2 className="text-3xl font-black uppercase tracking-tighter mb-12">{t('home.valuesTitle')}</h2>
             <ul className="space-y-6">
@@ -156,7 +156,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             {t('home.viewAllCourses')}
           </button>
         </div>
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12">
           {courses.map((course, i) => (
             <button
               key={i}

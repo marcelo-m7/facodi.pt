@@ -28,6 +28,8 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<UnitFavorite[]>([]);
   const [favLoading, setFavLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
 
   useEffect(() => {
     setDisplayName(profile?.display_name ?? '');
@@ -64,6 +66,19 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
   const handleRemoveFavorite = async (id: string) => {
     await supabase.from('unit_favorites').delete().eq('id', id);
     setFavorites((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const handleSignOut = async () => {
+    setSignOutError(null);
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      onBack();
+    } catch {
+      setSignOutError(t('auth.errorGeneric'));
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   if (!user || !profile) {
@@ -108,12 +123,14 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
           </div>
 
           <button
-            onClick={signOut}
-            className="w-full stark-border py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center justify-center gap-2"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            className="w-full stark-border py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="material-symbols-outlined text-base">logout</span>
-            {t('nav.logout')}
+            <span className={`material-symbols-outlined text-base ${isSigningOut ? 'animate-spin' : ''}`}>{isSigningOut ? 'progress_activity' : 'logout'}</span>
+            {isSigningOut ? 'A sair...' : t('nav.logout')}
           </button>
+          {signOutError && <p className="text-[10px] font-bold uppercase text-red-600">{signOutError}</p>}
         </div>
 
         {/* Right: edit form + favorites */}

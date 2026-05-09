@@ -2,18 +2,13 @@
 
 Guidance for AI coding agents working in this frontend workspace.
 
-## Scope
+## Quick Start
 
 - Stack: React 19 + TypeScript + Vite SPA.
-- Primary references:
-  - [README.md](README.md)
-  - [CONTRIBUTING.md](CONTRIBUTING.md)
-  - [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
-  - [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
+- Package manager: pnpm (`packageManager` is pinned in [package.json](package.json)).
+- Start from workspace root `frontend/`.
 
-## High-Value Commands
-
-Run from `frontend/`:
+Core commands:
 
 ```bash
 corepack enable
@@ -21,63 +16,54 @@ pnpm install
 pnpm dev
 pnpm build
 pnpm test:e2e
+pnpm security:check-rls
 ```
 
-Fresh machine for E2E:
+On fresh machines for E2E:
 
 ```bash
 pnpm exec playwright install
 ```
 
-## Architecture Boundaries
+## Source Of Truth
 
-- Keep provider-specific data logic in `services/catalogSource.ts`.
-- Keep UI components provider-agnostic and typed via `types.ts`.
+- Project overview and runtime modes: [README.md](README.md)
+- Contribution/PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Catalog contract rules: [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
+- Supabase catalog mapping rules: [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
+- Auth/user feature rules: [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md)
+
+When touching files covered by instruction `applyTo`, follow those instruction files as authoritative.
+
+## Architecture Guardrails
+
+- Keep provider-specific data logic in [services/catalogSource.ts](services/catalogSource.ts).
+- Keep UI components provider-agnostic and typed via [types.ts](types.ts).
 - Use `loadCatalogData()` as the single catalog entrypoint.
-- Preserve fallback to mock data when live providers fail.
+- Preserve mock fallback when live providers fail.
 
-## Data Source Modes
+## Critical Data Contracts
 
-- `VITE_DATA_SOURCE=mock|supabase`.
-- Supabase runtime model is public-only for catalog reads.
-- Required in supabase mode: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
-- Never expose service role keys in frontend code.
+- `Course.id` stays stable and unique.
+- `CurricularUnit.courseId` must reference an existing `Course.id`.
+- `Playlist.units` remains `string[]` of valid unit ids.
+- Maintain deterministic playlist ordering to avoid UI flicker/regressions.
 
-## Contract Invariants
+## Supabase Safety Rules
 
-- `Course.id` must remain stable and unique.
-- `CurricularUnit.courseId` must match an existing `Course.id`.
-- `Playlist.units` must remain `string[]` of valid unit ids.
+- Frontend catalog reads use public schema only.
+- Never expose service-role or other secret keys in frontend code.
+- Use a single shared client from [services/supabase.ts](services/supabase.ts); do not create additional client instances.
+- Never query `auth.users` from frontend code; use `public.profiles` access patterns defined in auth instructions.
 
-## User Authentication (in progress)
+## Common Failure Modes
 
-Facodi uses **Supabase Auth** for user identity. The backend schema is already in place; frontend integration is the next phase.
+- ID format changes break routing and joins.
+- Provider logic leaking into components causes coupling and regressions.
+- Parallel data entrypoints drift; keep integration centralized.
 
-Key facts:
-- `public.profiles` is auto-created via `handle_new_user()` trigger on `auth.users` insert.
-  - Fields: `id` (uuid = `auth.users.id`), `username`, `display_name`, `avatar_url`, `bio`, `avatar_path`, `role` (`'user'`|`'editor'`|`'admin'`), `submissions_count`.
-- Related user tables (all RLS-enabled): `favorites`, `playlist_progress`, `user_follows`, `user_social_accounts`, `comments`, `notifications`.
-- Use `@supabase/supabase-js` `supabase.auth.*` for session management (already installed via `services/catalogSource.ts`).
-- Expose a shared singleton Supabase client from `services/supabase.ts` (create this file; do NOT re-create it inside components).
-- For frontend auth, use `supabase.auth.onAuthStateChange` and React Context — do not store JWT in localStorage manually.
-- Required env vars (already used): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
-- Migrations go via `mcp_supabase_apply_migration` — never edit production schema by hand.
-- See [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md) for full rules.
+## Specialized Reviewer
 
-## Common Pitfalls
+For Supabase integration changes, use:
 
-- Changing id formats breaks route navigation and playlist joins.
-- Moving provider logic into UI components causes regressions.
-- Forgetting deterministic playlist ordering causes UI flicker.
-- Never create a second `SupabaseClient` instance — always import from `services/supabase.ts`.
-- Do not read `auth.users` directly from frontend; use `public.profiles` via RLS.
-- Role escalation is server-side only (`fix_role_escalation_trigger_use_auth_role` migration); never let frontend write `profiles.role`.
-
-## Customization Files
-
-- Agent reviewer for Supabase changes:
-  - [.github/agents/supabase-integration-reviewer.agent.md](.github/agents/supabase-integration-reviewer.agent.md)
-- File-scoped instructions:
-  - [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
-  - [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
-  - [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md)
+- [.github/agents/supabase-integration-reviewer.agent.md](.github/agents/supabase-integration-reviewer.agent.md)
