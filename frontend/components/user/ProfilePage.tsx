@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../services/supabase';
+import EditorVideoSuggestionPanel from './EditorVideoSuggestionPanel';
 
 interface Props {
   onBack: () => void;
@@ -75,6 +76,7 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
 
   const avatarUrl = profile.avatar_url ?? null;
   const roleKey = ROLE_LABELS[profile.role] ?? 'auth.userBadge';
+  const canSuggestVideos = profile.role === 'editor';
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
@@ -175,6 +177,8 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
               </ul>
             )}
           </div>
+
+          {canSuggestVideos && <EditorVideoSuggestionPanel t={t} />}
         </div>
       </div>
     </div>

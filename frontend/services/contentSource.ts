@@ -1,16 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ContentPage } from '../types';
-
-let _supabase: SupabaseClient | null = null;
-
-function getSupabaseClient(): SupabaseClient {
-  if (_supabase) return _supabase;
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) throw new Error('[contentSource] VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are required');
-  _supabase = createClient(url, key);
-  return _supabase;
-}
+import { supabase } from './supabase';
 
 /**
  * Load a single institutional content page by slug.
@@ -18,7 +7,6 @@ function getSupabaseClient(): SupabaseClient {
  */
 export async function loadContentPage(slug: string): Promise<ContentPage | null> {
   try {
-    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('content_pages')
       .select('slug, title_pt, title_en, body_pt, body_en, published')
