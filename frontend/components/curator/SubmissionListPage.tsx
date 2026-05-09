@@ -71,11 +71,11 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-4">
+    <div className="facodi-page">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('curator.mySubmissions.title')}</h1>
+          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-2">{t('curator.mySubmissions.title')}</h1>
           <p className="text-slate-600">
             {locale === 'pt' 
               ? `${total} ${total === 1 ? 'submissão' : 'submissões'}`
@@ -84,8 +84,8 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
         </div>
 
         {/* Filter */}
-        <div className="bg-white stark-border p-6 rounded-lg mb-8">
-          <label className="block text-sm font-semibold text-slate-700 mb-3">
+        <div className="stark-border bg-white p-6 mb-8">
+          <label className="facodi-label mb-3">
             {t('curator.mySubmissions.filter')}
           </label>
           <div className="flex flex-wrap gap-2">
@@ -96,10 +96,10 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                   setFilter(status);
                   setPage(0);
                 }}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 transition-all ${
                   filter === status
-                    ? 'bg-primary text-black stark-border'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
+                    : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
                 }`}
               >
                 {status === 'all' 
@@ -116,7 +116,7 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
             <p className="text-slate-600">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
           </div>
         ) : submissions.length === 0 ? (
-          <div className="bg-white stark-border p-12 rounded-lg text-center">
+          <div className="stark-border bg-white p-12 text-center">
             <p className="text-slate-600">{t('curator.mySubmissions.empty')}</p>
           </div>
         ) : (
@@ -125,7 +125,7 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
               {submissions.map((submission) => (
                 <div
                   key={submission.id}
-                  className={`bg-white stark-border p-6 rounded-lg border-l-4 ${statusColors[submission.status]}`}
+                  className={`stark-border bg-white p-6 border-l-4 ${statusColors[submission.status]}`}
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
@@ -139,17 +139,17 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
 
                       <div className="flex flex-wrap gap-3 text-xs mb-3">
                         {submission.content_type && (
-                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                          <span className="stark-border bg-brand-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
                             {submission.content_type}
                           </span>
                         )}
                         {submission.course_id && (
-                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                          <span className="stark-border bg-brand-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
                             {locale === 'pt' ? 'Curso' : 'Course'}: {submission.course_id}
                           </span>
                         )}
                         {submission.unit_id && (
-                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                          <span className="stark-border bg-brand-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
                             {locale === 'pt' ? 'Unidade' : 'Unit'}: {submission.unit_id}
                           </span>
                         )}
@@ -162,7 +162,7 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                     </div>
 
                     <div className="text-right">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${statusTextColors[submission.status]}`}>
+                      <span className={`stark-border inline-block px-3 py-1 text-[9px] font-black uppercase tracking-widest ${statusTextColors[submission.status]}`}>
                         {t(`curator.mySubmissions.status.${submission.status}`)}
                       </span>
 
@@ -196,7 +196,7 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                 <button
                   onClick={() => setPage(Math.max(0, page - 1))}
                   disabled={page === 0}
-                  className="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="facodi-btn facodi-btn-secondary"
                 >
                   {locale === 'pt' ? 'Anterior' : 'Previous'}
                 </button>
@@ -205,10 +205,10 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                   <button
                     key={i}
                     onClick={() => setPage(i)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    className={`px-4 py-2 facodi-btn ${
                       page === i
-                        ? 'bg-primary text-black stark-border'
-                        : 'border border-slate-300 hover:bg-slate-50'
+                        ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
+                        : 'stark-border hover:bg-brand-muted'
                     }`}
                   >
                     {i + 1}
@@ -218,7 +218,7 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                 <button
                   onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                   disabled={page >= totalPages - 1}
-                  className="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="facodi-btn facodi-btn-secondary"
                 >
                   {locale === 'pt' ? 'Próxima' : 'Next'}
                 </button>

@@ -144,7 +144,7 @@ export default function StudentHistoryPage({
               return (
                 <div
                   key={idx}
-                  className="flex items-start gap-4 py-4 px-4 hover:bg-brand-muted rounded transition-colors last:border-b-0 border-b"
+                  className="flex items-start gap-4 py-4 px-4 hover:bg-brand-muted transition-colors last:border-b-0 border-b"
                 >
                   <div className="flex items-center justify-center w-12 h-12 bg-brand-primary text-white rounded-full flex-shrink-0 mt-0.5">
                     <span className="material-symbols-outlined text-lg">

@@ -138,13 +138,13 @@ export default function StudentProgressPage({
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div className="p-4 bg-brand-muted rounded">
+                  <div className="p-4 bg-brand-muted stark-border">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
                       Status
                     </p>
                     <p className="text-lg font-bold">{enrollment.status}</p>
                   </div>
-                  <div className="p-4 bg-brand-muted rounded">
+                  <div className="p-4 bg-brand-muted stark-border">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
                       Inscrito
                     </p>
@@ -155,7 +155,7 @@ export default function StudentProgressPage({
                       }
                     </p>
                   </div>
-                  <div className="p-4 bg-brand-muted rounded">
+                  <div className="p-4 bg-brand-muted stark-border">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
                       Iniciado
                     </p>
@@ -166,7 +166,7 @@ export default function StudentProgressPage({
                       }
                     </p>
                   </div>
-                  <div className="p-4 bg-brand-muted rounded">
+                  <div className="p-4 bg-brand-muted stark-border">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
                       Completado
                     </p>

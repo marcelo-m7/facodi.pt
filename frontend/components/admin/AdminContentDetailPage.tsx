@@ -178,7 +178,7 @@ const AdminContentDetailPage: React.FC<AdminContentDetailPageProps> = ({ submiss
               <textarea className="w-full stark-border px-3 py-2" rows={3} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Resumo" />
               <input className="w-full stark-border px-3 py-2" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topico" />
               <textarea className="w-full stark-border px-3 py-2" rows={3} value={pedagogicalReason} onChange={(e) => setPedagogicalReason(e.target.value)} placeholder="Justificativa pedagogica" />
-              <button disabled={saving} onClick={saveMetadata} className="bg-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40">
+              <button disabled={saving} onClick={saveMetadata} className="bg-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40 hover:shadow-[4px_4px_0px_0px_rgba(239,255,0,1)] transition-all">
                 Salvar Metadados
               </button>
             </div>
@@ -187,7 +187,7 @@ const AdminContentDetailPage: React.FC<AdminContentDetailPageProps> = ({ submiss
 
         <aside className="w-full lg:w-80 shrink-0">
           <div className="stark-border p-8 bg-black text-white space-y-3">
-            <button disabled={saving} onClick={approve} className="w-full bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40">Aprovar</button>
+            <button disabled={saving} onClick={approve} className="w-full bg-primary stark-border text-black py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">Aprovar</button>
             <button disabled={saving} onClick={requestChanges} className="w-full bg-orange-500 text-white py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40">Solicitar Ajustes</button>
             <button disabled={saving} onClick={reject} className="w-full bg-red-600 text-white py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-40">Rejeitar</button>
           </div>

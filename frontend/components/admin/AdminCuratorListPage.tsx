@@ -102,7 +102,7 @@ const AdminCuratorListPage: React.FC<AdminCuratorListPageProps> = ({ onBack }) =
                 </div>
                 {row.status === 'pending' && (
                   <div className="flex gap-2">
-                    <button onClick={() => approve(row.id)} className="bg-primary px-4 py-2 text-[9px] font-black uppercase tracking-widest">Aprovar</button>
+                    <button onClick={() => approve(row.id)} className="bg-primary stark-border px-4 py-2 text-[9px] font-black uppercase tracking-widest hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">Aprovar</button>
                     <button onClick={() => reject(row.id)} className="stark-border px-4 py-2 text-[9px] font-black uppercase tracking-widest text-red-700">Rejeitar</button>
                   </div>
                 )}

@@ -94,7 +94,7 @@ export default function StudentMyCoursesPage({
           <p className="text-sm font-semibold mb-4">Você ainda não se inscreveu em nenhum curso.</p>
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-xs font-bold uppercase tracking-widest rounded hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-black text-xs font-bold uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             <span className="material-symbols-outlined">explore</span>
             Explorar Cursos
@@ -112,7 +112,7 @@ export default function StudentMyCoursesPage({
                 <h3 className="text-lg font-bold flex-1 group-hover:text-brand-primary transition-colors">
                   {enrollment.course_id}
                 </h3>
-                <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 stark-border ${
                   enrollment.status === 'active'
                     ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200'
                     : enrollment.status === 'completed'
@@ -146,7 +146,7 @@ export default function StudentMyCoursesPage({
               </div>
 
               <button
-                className="w-full py-2 px-4 bg-brand-primary text-white text-xs font-bold uppercase tracking-widest rounded hover:opacity-90 transition-opacity"
+                className="w-full py-2 px-4 bg-primary text-black text-xs font-bold uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectCourse(enrollment.course_id);
