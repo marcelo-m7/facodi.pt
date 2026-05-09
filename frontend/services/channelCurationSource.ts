@@ -167,24 +167,123 @@ const fallbackChannelVideos = (channelInput: string, brief: CurationBrief): Chan
   }));
 };
 
+const EDUCATIONAL_KEYWORDS = {
+  foundational: [
+    'intro',
+    'iniciacao',
+    'basico',
+    'fundamental',
+    'primeiros passos',
+    'para iniciantes',
+    'comeco',
+    'essencial',
+    'introducao',
+  ],
+  intermediate: [
+    'intermedio',
+    'intermediate',
+    'medio',
+    'desenvolvimento',
+    'aprofundamento',
+    'tecnicas',
+    'pratica',
+    'projeto',
+    'workflow',
+    'processo',
+  ],
+  advanced: [
+    'avancado',
+    'advanced',
+    'complexo',
+    'otimizacao',
+    'producao',
+    'professional',
+    'master',
+    'especializado',
+    'performance',
+  ],
+  expert: ['especialista', 'expert', 'mastery', 'dominio', 'investigacao', 'pesquisa'],
+};
+
+const TOPIC_KEYWORDS = {
+  design: ['design', 'visual', 'grafico', 'interface', 'ux', 'ui', 'branding', 'tipografia', 'comunicacao'],
+  drawing: ['desenho', 'drawing', 'sketch', 'illustration', 'arte', 'composicao', 'ilustracao'],
+  photography: ['fotografia', 'photography', 'light', 'camera', 'imagem', 'fotografico', 'foto'],
+  video: ['video', 'cinema', 'producao', 'filmagem', 'edicao', 'motion', 'animacao', 'filme'],
+  audio: ['audio', 'som', 'music', 'podcast', 'voz', 'sound design', 'musica'],
+  web: ['web', 'html', 'css', 'javascript', 'site', 'wordpress', 'desarrollo web', 'frontend', 'backend'],
+  marketing: ['marketing', 'social media', 'seo', 'publicidade', 'branding', 'campanha', 'redes sociais'],
+  business: ['negocio', 'empreendedorismo', 'business', 'startup', 'gestao', 'vendas', 'empreendimento'],
+};
+
 const inferDifficulty = (text: string): VideoAnalysis['difficulty'] => {
   const lower = text.toLowerCase();
-  if (lower.includes('introducao') || lower.includes('basico') || lower.includes('basic')) return 'foundational';
-  if (lower.includes('avancado') || lower.includes('advanced')) return 'advanced';
-  if (lower.includes('especialista') || lower.includes('expert')) return 'expert';
+  for (const level of ['expert', 'advanced', 'intermediate', 'foundational'] as const) {
+    if (EDUCATIONAL_KEYWORDS[level].some((keyword) => lower.includes(keyword))) {
+      return level;
+    }
+  }
   return 'intermediate';
 };
 
+const inferTopic = (text: string): string => {
+  const lower = text.toLowerCase();
+  for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+    if (keywords.some((keyword) => lower.includes(keyword))) {
+      return topic;
+    }
+  }
+  const words = lower.split(/[\s\-_]+/).filter((w) => w.length > 3);
+  return words[0] || 'conteudo';
+};
+
 const fallbackAnalyses = (videos: ChannelVideo[]): VideoAnalysis[] => {
-  return videos.map((video) => ({
-    videoId: String(video.id || ''),
-    summary: `Resumo pedagogico automatico para ${video.title}.`,
-    pedagogicalReason: 'Conteudo com potencial de apoio em trilhas de aprendizagem aberta.',
-    topic: video.title.split('-')[0]?.trim() || 'topico geral',
-    difficulty: inferDifficulty(video.title || ''),
-    tags: ['facodi', 'curadoria', 'youtube'],
-    isFallback: true,
-  }));
+  return videos.map((video) => {
+    const title = String(video.title || '');
+    const description = String(video.description || '');
+    const combined = `${title}. ${description}`.substring(0, 300);
+    const topic = inferTopic(title);
+    const difficulty = inferDifficulty(title);
+
+    return {
+      videoId: String(video.id || ''),
+      summary: combined || 'Vídeo coletado para curação educacional.',
+      pedagogicalReason: `Conteúdo sobre ${topic} em nível ${difficulty}. Potencial para integração em trilhas de aprendizagem aberta.`,
+      topic,
+      difficulty,
+      tags: ['facodi', 'youtube', topic].filter((t) => t),
+      isFallback: true,
+    };
+  });
+};
+
+const matchTopicToUnit = (topic: string): CurricularUnit | undefined => {
+  if (!topic || COURSE_UNITS.length === 0) return undefined;
+
+  const topicLower = topic.toLowerCase();
+  let bestMatch: { unit: CurricularUnit; score: number } | undefined;
+
+  for (const unit of COURSE_UNITS) {
+    const unitNameLower = (unit.name || '').toLowerCase();
+    const unitDescLower = (unit.description || '').toLowerCase();
+    const combined = `${unitNameLower} ${unitDescLower}`;
+
+    let score = 0;
+    if (unitNameLower.includes(topicLower)) score += 2;
+    if (combined.includes(topicLower)) score += 1;
+
+    // Also check if unit tags include the topic
+    const unitTags = (unit.tags || []).map((t) => t.toLowerCase());
+    if (unitTags.some((tag) => tag.includes(topicLower) || topicLower.includes(tag))) {
+      score += 1.5;
+    }
+
+    if (score > 0 && (!bestMatch || score > bestMatch.score)) {
+      bestMatch = { unit, score };
+    }
+  }
+
+  return bestMatch?.unit;
 };
 
 const fallbackSuggestions = (
@@ -194,20 +293,24 @@ const fallbackSuggestions = (
   const hasCatalog = COURSE_UNITS.length > 0;
 
   return videos.map((video, index) => {
-    const hasAnalysis = analyses.some((item) => item.videoId === video.id);
-    const unit = hasCatalog ? COURSE_UNITS[index % COURSE_UNITS.length] : undefined;
-    const playlist = unit
+    const analysis = analyses.find((item) => item.videoId === video.id);
+    const unit = analysis ? matchTopicToUnit(analysis.topic) : undefined;
+
+    // Fallback to round-robin if no topic match
+    const finalUnit = unit || (hasCatalog ? COURSE_UNITS[index % COURSE_UNITS.length] : undefined);
+
+    const playlist = finalUnit
       ? PLAYLISTS.find(
-          (item) => item.unit_code === unit.id || item.units.includes(unit.id),
+          (item) => item.unit_code === finalUnit.id || item.units.includes(finalUnit.id),
         )
       : undefined;
 
     return {
       videoId: video.id,
-      courseId: unit?.courseId,
-      unitId: unit?.id,
+      courseId: finalUnit?.courseId,
+      unitId: finalUnit?.id,
       playlistId: playlist?.id,
-      confidence: hasAnalysis ? 0.72 : 0.4,
+      confidence: analysis ? 0.72 : 0.4,
       isFallback: true,
     };
   });
