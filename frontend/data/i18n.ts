@@ -3,6 +3,7 @@ export type Locale = 'pt' | 'en';
 type TranslationDict = Record<string, string>;
 
 const pt: TranslationDict = {
+  'nav.blog': 'Blog',
   'nav.home': 'Início',
   'nav.courses': 'Cursos',
   'nav.units': 'Unidades',
@@ -219,10 +220,16 @@ const pt: TranslationDict = {
   'videos.open': 'Abrir vídeo',
   'videos.back': 'Voltar para vídeos',
   'videos.related': 'Vídeos relacionados',
-  'videos.upNext': 'Na playlist'
+  'videos.upNext': 'Na playlist',
+  'blog.title': 'Blog',
+  'blog.readMore': 'Ler artigo',
+  'blog.backToList': 'Voltar ao blog',
+  'blog.empty': 'Nenhum artigo publicado ainda.',
+  'blog.by': 'por'
 };
 
 const en: TranslationDict = {
+  'nav.blog': 'Blog',
   'nav.home': 'Home',
   'nav.courses': 'Courses',
   'nav.units': 'Units',
@@ -439,7 +446,12 @@ const en: TranslationDict = {
   'videos.open': 'Open video',
   'videos.back': 'Back to videos',
   'videos.related': 'Related videos',
-  'videos.upNext': 'In playlist'
+  'videos.upNext': 'In playlist',
+  'blog.title': 'Blog',
+  'blog.readMore': 'Read article',
+  'blog.backToList': 'Back to blog',
+  'blog.empty': 'No published articles yet.',
+  'blog.by': 'by'
 };
 
 export const translations: Record<Locale, TranslationDict> = { pt, en };

@@ -24,7 +24,9 @@ type View =
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
-  | 'curator-admin-review';
+  | 'curator-admin-review'
+  | 'blog'
+  | 'blog-post';
 
 interface Props {
   children: React.ReactNode;
@@ -153,6 +155,9 @@ const Layout: React.FC<Props> = ({
                 Painel Admin
               </button>
             )}
+            <button onClick={() => navGo('blog')} aria-current={isActive('blog', ['blog-post']) ? 'page' : undefined} className={navCls('blog', ['blog-post'])}>
+              {t('nav.blog')}
+            </button>
             <button onClick={() => pageGo('manifesto')} className="transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500 hover:text-black hover:bg-brand-muted">
               Manifesto
             </button>
@@ -234,6 +239,7 @@ const Layout: React.FC<Props> = ({
             { view: 'courses' as View, label: t('nav.courses'), icon: 'school' },
             { view: 'repository' as View, label: t('nav.units'), icon: 'grid_view' },
             { view: 'dashboard' as View, label: t('nav.progress'), icon: 'dashboard' },
+            { view: 'blog' as View, label: t('nav.blog'), icon: 'article' },
             ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library' }] : []),
             ...(user ? [{ view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload' }] : []),
             ...(user ? [{ view: 'curator-apply' as View, label: 'Ser Curador', icon: 'edit_note' }] : []),

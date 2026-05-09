@@ -28,6 +28,8 @@ const CuratorApplicationPage = React.lazy(() => import('./components/curator/Cur
 const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
 const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
 const AdminReviewDashboard = React.lazy(() => import('./components/curator/AdminReviewDashboard').then(m => ({ default: m.AdminReviewDashboard })));
+const BlogListPage = React.lazy(() => import('./components/blog/BlogListPage'));
+const BlogPostPage = React.lazy(() => import('./components/blog/BlogPostPage'));
 
 type View =
   | 'home'
@@ -50,7 +52,9 @@ type View =
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
-  | 'curator-admin-review';
+  | 'curator-admin-review'
+  | 'blog'
+  | 'blog-post';
 
 const App: React.FC = () => {
   const { user } = useAuth();
@@ -61,6 +65,7 @@ const App: React.FC = () => {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
+  const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
   const [isDark, setIsDark] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -82,7 +87,7 @@ const App: React.FC = () => {
 
   const t = useMemo(() => createTranslator(locale), [locale]);
 
-  const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null, videoId?: string | null) => {
+  const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null, videoId?: string | null, blogSlug?: string | null) => {
     let path = '/';
     if (view === 'courses') path = '/courses';
     if (view === 'repository') path = '/courses/units';
@@ -103,11 +108,25 @@ const App: React.FC = () => {
     if (view === 'curator-submit') path = '/curator/submit';
     if (view === 'curator-submissions') path = '/curator/submissions';
     if (view === 'curator-admin-review') path = '/curator/admin-review';
+    if (view === 'blog') path = '/blog';
+    if (view === 'blog-post' && blogSlug) path = `/blog/${blogSlug}`;
     window.history.pushState({}, '', path);
   };
 
   const syncViewWithLocation = () => {
     const path = window.location.pathname;
+    if (path.startsWith('/blog/')) {
+      const blogSlug = path.replace('/blog/', '').split('/')[0];
+      if (blogSlug) {
+        setSelectedBlogSlug(blogSlug);
+        setCurrentView('blog-post');
+        return;
+      }
+    }
+    if (path === '/blog') {
+      setCurrentView('blog');
+      return;
+    }
     if (path.startsWith('/curator/')) {
       if (path === '/curator/apply') {
         setCurrentView('curator-apply');
@@ -283,6 +302,8 @@ const App: React.FC = () => {
       'student-my-courses': `Meus Cursos — ${BASE}`,
       'student-progress': `Meu Progresso — ${BASE}`,
       'student-history': `Histórico — ${BASE}`,
+      blog: `Blog — ${BASE}`,
+      'blog-post': `Artigo — ${BASE}`,
     };
     const selectedUnitForTitle = units.find((u) => u.id === selectedUnitId) || null;
     const selectedLessonForTitle = units.find((u) => u.id === selectedLessonId) || null;
@@ -309,7 +330,7 @@ const App: React.FC = () => {
     } else {
       document.title = map[currentView] ?? BASE;
     }
-  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
+  }, [currentView, selectedBlogSlug, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
 
   // Dynamic SEO meta tags for SPA routes
   useEffect(() => {
@@ -468,6 +489,16 @@ const App: React.FC = () => {
         title: 'Painel de Revisão - FACODI',
         description: 'Painel administrativo para revisão de candidaturas e conteúdo.',
       },
+      blog: {
+        path: '/blog',
+        title: 'Blog - FACODI',
+        description: 'Artigos sobre tecnologia, educacao aberta e comunidade.',
+      },
+      'blog-post': {
+        path: selectedBlogSlug ? `/blog/${selectedBlogSlug}` : '/blog',
+        title: 'Artigo - FACODI',
+        description: 'Leitura completa de artigo do blog FACODI.',
+      },
     };
 
     const { path, title, description } = viewMeta[currentView];
@@ -491,7 +522,7 @@ const App: React.FC = () => {
     setMeta('meta[property="og:url"]', fullUrl);
     setMeta('meta[name="twitter:title"]', title);
     setMeta('meta[name="twitter:description"]', description);
-  }, [currentView, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
+  }, [currentView, selectedBlogSlug, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
@@ -609,7 +640,36 @@ const App: React.FC = () => {
     updateRoute('video-detail', undefined, undefined, id);
   };
 
+  const handleBlogSelect = (slug: string) => {
+    setSelectedBlogSlug(slug);
+    setCurrentView('blog-post');
+    updateRoute('blog-post', undefined, undefined, undefined, slug);
+  };
+
   const renderContent = () => {
+    if (currentView === 'blog') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <BlogListPage locale={locale} onSelectPost={handleBlogSelect} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'blog-post' && selectedBlogSlug) {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <BlogPostPage
+            slug={selectedBlogSlug}
+            locale={locale}
+            onBack={() => {
+              setCurrentView('blog');
+              updateRoute('blog');
+            }}
+          />
+        </Suspense>
+      );
+    }
+
     if (currentView === 'curator-apply') {
       return (
         <Suspense fallback={lazyFallback}>
