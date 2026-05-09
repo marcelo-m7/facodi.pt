@@ -31,4 +31,4 @@ applyTo: "{services/catalogSource.ts,types.ts,data/playlists.ts,App.tsx,componen
 
 - Confirm route views still resolve units by id.
 - Confirm playlist screens still navigate correctly from playlist units to lesson/unit views.
-- Confirm source switch (`mock`, `odoo`, `supabase`) does not break payload shape returned by `loadCatalogData()`.
+- Confirm source switch (`mock`, `supabase`) does not break payload shape returned by `loadCatalogData()`.

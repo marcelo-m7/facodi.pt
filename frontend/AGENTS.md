@@ -38,19 +38,10 @@ pnpm exec playwright install
 
 ## Data Source Modes
 
-- `VITE_DATA_SOURCE=mock|odoo|supabase`.
+- `VITE_DATA_SOURCE=mock|supabase`.
 - Supabase runtime model is public-only for catalog reads.
 - Required in supabase mode: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
 - Never expose service role keys in frontend code.
-
-## Odoo → Supabase Sync
-
-Odoo instance: `https://edu-facodi.odoo.com` (DB: `edu-facodi`).
-Key models: `slide.channel` (courses), `slide.slide` (lessons), `slide.channel.partner` (enrollments).
-Current sync in `loadCatalogData()` reads only `enroll='public'` — to sync **all enrollments**, remove the filter.
-Full sync workflow (Odoo read → Postman collection → Supabase migration) is documented in:
-- [.github/skills/odoo-supabase-sync/SKILL.md](.github/skills/odoo-supabase-sync/SKILL.md)
-- [.github/instructions/odoo-api.instructions.md](.github/instructions/odoo-api.instructions.md)
 
 ## Contract Invariants
 
@@ -90,6 +81,3 @@ Key facts:
   - [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
   - [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
   - [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md)
-  - [.github/instructions/odoo-api.instructions.md](.github/instructions/odoo-api.instructions.md)
-- Skills:
-  - [.github/skills/odoo-supabase-sync/SKILL.md](.github/skills/odoo-supabase-sync/SKILL.md) — full Odoo→Supabase sync pipeline with Postman collection
