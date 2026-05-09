@@ -448,6 +448,26 @@ const App: React.FC = () => {
         title: 'Meu Perfil - FACODI',
         description: 'Perfil do utilizador na FACODI com favoritos e progresso de estudo.',
       },
+      'curator-apply': {
+        path: '/curator/apply',
+        title: 'Candidatura de Curador - FACODI',
+        description: 'Candidute-se para ser curador de conteúdo na FACODI.',
+      },
+      'curator-submit': {
+        path: '/curator/submit',
+        title: 'Enviar Conteúdo - FACODI',
+        description: 'Envie conteúdo para curação e inclusão nos cursos da FACODI.',
+      },
+      'curator-submissions': {
+        path: '/curator/submissions',
+        title: 'Minhas Submissões - FACODI',
+        description: 'Visualize e acompanhe suas submissões de conteúdo na FACODI.',
+      },
+      'curator-admin-review': {
+        path: '/curator/admin-review',
+        title: 'Painel de Revisão - FACODI',
+        description: 'Painel administrativo para revisão de candidaturas e conteúdo.',
+      },
     };
 
     const { path, title, description } = viewMeta[currentView];

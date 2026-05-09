@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getAdminQueue, getSubmissionCountByStatus } from '../../services/contentSubmissionSource';
 import { listApplications } from '../../services/curatorApplicationSource';
-import { createTranslator } from '../../data/i18n';
+import { createTranslator, type Locale } from '../../data/i18n';
 import type { ContentSubmission, EditorApplication } from '../../types';
 
 interface AdminReviewDashboardProps {
-  locale?: 'pt' | 'en';
+  locale?: Locale;
 }
 
 export const AdminReviewDashboard: React.FC<AdminReviewDashboardProps> = ({ locale = 'pt' }) => {
-  const t = createTranslator(locale);
+  const t = createTranslator(locale as Locale);
 
   const [activeTab, setActiveTab] = useState<'submissions' | 'applications'>('submissions');
   const [submissions, setSubmissions] = useState<ContentSubmission[]>([]);

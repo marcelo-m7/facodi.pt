@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { submitContent, getMySubmissions } from '../../services/contentSubmissionSource';
 import { parseYouTubeVideoId } from '../../services/videoSuggestionSource';
-import { createTranslator } from '../../data/i18n';
+import { createTranslator, type Locale } from '../../data/i18n';
 import type { ContentSubmission } from '../../types';
 
 interface FormData {
@@ -20,11 +20,11 @@ interface FormData {
 }
 
 interface ContentSubmissionPageProps {
-  locale?: 'pt' | 'en';
+  locale?: Locale;
 }
 
 export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ locale = 'pt' }) => {
-  const t = createTranslator(locale);
+  const t = createTranslator(locale as Locale);
   const { profile } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({

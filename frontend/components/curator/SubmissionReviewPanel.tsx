@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getSubmissionDetail, updateSubmissionStatus, editSubmissionMetadata } from '../../services/contentSubmissionSource';
-import { createTranslator } from '../../data/i18n';
+import { createTranslator, type Locale } from '../../data/i18n';
 import type { ContentSubmission } from '../../types';
 
 interface SubmissionReviewPanelProps {
   submissionId: string;
-  locale?: 'pt' | 'en';
+  locale?: Locale;
   onClose?: () => void;
 }
 
@@ -14,7 +14,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
   locale = 'pt',
   onClose,
 }) => {
-  const t = createTranslator(locale);
+  const t = createTranslator(locale as Locale);
 
   const [submission, setSubmission] = useState<ContentSubmission | null>(null);
   const [loading, setLoading] = useState(true);

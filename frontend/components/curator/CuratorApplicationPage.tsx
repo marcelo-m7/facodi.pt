@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { submitCuratorApplication, getUserApplication } from '../../services/curatorApplicationSource';
-import { createTranslator } from '../../data/i18n';
-import type { EditorApplication } from '../../../types';
+import { createTranslator, type Locale } from '../../data/i18n';
+import type { EditorApplication } from '../../types';
 
 interface FormData {
   fullName: string;
@@ -18,11 +18,11 @@ interface FormData {
 }
 
 interface CuratorApplicationPageProps {
-  locale?: 'pt' | 'en';
+  locale?: Locale;
 }
 
 export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ locale = 'pt' }) => {
-  const t = createTranslator(locale);
+  const t = createTranslator(locale as Locale);
   const { profile } = useAuth();
   
   const [formData, setFormData] = useState<FormData>({

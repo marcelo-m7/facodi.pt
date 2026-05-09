@@ -262,6 +262,106 @@ export type Database = {
         }
         Relationships: []
       }
+      content_submissions: {
+        Row: {
+          additional_notes: string | null
+          assigned_to: string | null
+          author_email: string
+          author_id: string
+          author_name: string
+          content_type: string
+          course_id: string | null
+          created_at: string
+          id: string
+          pedagogical_reason: string | null
+          rejection_reason: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          suggested_title: string
+          summary: string | null
+          tags: string[] | null
+          topic: string | null
+          unit_id: string | null
+          updated_at: string
+          url: string | null
+          youtube_video_id: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          assigned_to?: string | null
+          author_email: string
+          author_id: string
+          author_name: string
+          content_type: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          pedagogical_reason?: string | null
+          rejection_reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status: string
+          suggested_title: string
+          summary?: string | null
+          tags?: string[] | null
+          topic?: string | null
+          unit_id?: string | null
+          updated_at?: string
+          url?: string | null
+          youtube_video_id?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          assigned_to?: string | null
+          author_email?: string
+          author_id?: string
+          author_name?: string
+          content_type?: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          pedagogical_reason?: string | null
+          rejection_reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_title?: string
+          summary?: string | null
+          tags?: string[] | null
+          topic?: string | null
+          unit_id?: string | null
+          updated_at?: string
+          url?: string | null
+          youtube_video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_submissions_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_submissions_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           code: string

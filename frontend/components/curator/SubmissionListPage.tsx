@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getMySubmissions } from '../../services/contentSubmissionSource';
-import { createTranslator } from '../../data/i18n';
+import { createTranslator, type Locale } from '../../data/i18n';
 import type { ContentSubmission } from '../../types';
 
 interface SubmissionListPageProps {
-  locale?: 'pt' | 'en';
+  locale?: Locale;
 }
 
 export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale = 'pt' }) => {
-  const t = createTranslator(locale);
+  const t = createTranslator(locale as Locale);
 
   const [submissions, setSubmissions] = useState<ContentSubmission[]>([]);
   const [loading, setLoading] = useState(true);
