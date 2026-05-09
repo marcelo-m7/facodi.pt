@@ -67,7 +67,7 @@ const Layout: React.FC<Props> = ({
   const projectLinks = [
     { slug: 'manifesto', label: 'Manifesto', icon: 'flag' },
     { slug: 'sobre', label: 'Sobre a FACODI', icon: 'school' },
-    { slug: 'comunidade', label: 'Comunidade Corvanis', icon: 'groups' },
+    { slug: 'comunidade', label: 'Comunidade Open2', icon: 'groups' },
     { slug: 'roadmap', label: 'Roadmap', icon: 'route' },
     { slug: 'como-contribuir', label: 'Como Contribuir', icon: 'volunteer_activism' },
   ];

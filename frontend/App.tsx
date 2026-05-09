@@ -361,7 +361,7 @@ const App: React.FC = () => {
         'sobre-marcelo': 'Marcelo Santos',
         'sobre-ualg': 'Universidade do Algarve',
         'sobre-open2': 'Open2 Technology',
-        comunidade: 'Comunidade Corvanis',
+        comunidade: 'Comunidade Open2',
         roadmap: 'Roadmap',
         'modelo-academico': 'Modelo Académico',
         infraestrutura: 'Infraestrutura',
@@ -403,7 +403,7 @@ const App: React.FC = () => {
         description: 'Como o ecossistema Open2 Technology sustenta a evolucao tecnica da FACODI.',
       },
       comunidade: {
-        title: 'Comunidade Corvanis - FACODI',
+        title: 'Comunidade Open2 - FACODI',
         description: 'Descubra como participar da comunidade que constroi e cura a FACODI.',
       },
       roadmap: {
