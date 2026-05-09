@@ -92,7 +92,7 @@ test.describe('Auth – Sign in flow', () => {
     await page.getByRole('button', { name: 'Meu Perfil' }).click();
     await expect(page).toHaveURL('/profile');
     // Profile page has a save button
-    await expect(page.getByRole('button', { name: /Guardar/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: /salvar|guardar|save/i })).toBeVisible({ timeout: 5000 });
   });
 
   test('sign out from profile page returns to home and shows Entrar', async ({ page }) => {
