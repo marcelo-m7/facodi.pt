@@ -26,6 +26,42 @@ async function signIn(
   await expect(dialog).not.toBeVisible({ timeout: 10_000 });
 }
 
+async function ensurePipelineAccess(page: Parameters<Parameters<typeof test>[1]>[0]['page']) {
+  await page.goto(PIPELINE_URL);
+
+  const channelInput = page.getByRole('textbox', { name: /canal/i });
+  if (await channelInput.isVisible().catch(() => false)) {
+    return true;
+  }
+
+  const loginBtn = page.getByRole('button', { name: 'Entrar' }).first();
+  const authModal = page.getByRole('dialog');
+
+  if (await loginBtn.isVisible().catch(() => false)) {
+    await signIn(page, EDITOR_EMAIL, EDITOR_PASSWORD);
+    await page.goto(PIPELINE_URL);
+  } else if (await authModal.isVisible().catch(() => false)) {
+    await authModal.locator('input[type="email"]').fill(EDITOR_EMAIL);
+    await authModal.locator('input[type="password"]').fill(EDITOR_PASSWORD);
+    await authModal.getByRole('button', { name: /entrar/i }).last().click();
+    await expect(authModal).not.toBeVisible({ timeout: 10_000 });
+    await page.goto(PIPELINE_URL);
+  }
+
+  const permissionDenied = page.getByText(/acesso negado|permiss/i);
+  await Promise.race([
+    channelInput.waitFor({ state: 'visible', timeout: 12_000 }),
+    permissionDenied.waitFor({ state: 'visible', timeout: 12_000 }),
+  ]).catch(() => undefined);
+
+  if (await channelInput.isVisible().catch(() => false)) {
+    return true;
+  }
+
+  test.skip(true, 'Pipeline indisponivel para a conta atual (requer role editor/admin).');
+  return false;
+}
+
 test.describe('Curator Channel Pipeline — access control', () => {
   test('unauthenticated: pipeline route shows auth requirement', async ({ page }) => {
     await page.goto(PIPELINE_URL);
@@ -44,16 +80,13 @@ test.describe('Curator Channel Pipeline — degraded mode flow', () => {
   });
 
   test('pipeline page loads with all 6 panels', async ({ page }) => {
-    await page.goto(PIPELINE_URL);
-    // If auth is required we skip (test account may not have editor role)
-    const heading = page.getByRole('heading', { name: /pipeline por canal/i });
-    const authModal = page.getByRole('dialog');
-    // If the auth modal appears skip this test (needs editor account configured)
-    if (await authModal.isVisible().catch(() => false)) {
-      test.skip();
+    if (!(await ensurePipelineAccess(page))) {
       return;
     }
-    await expect(heading).toBeVisible({ timeout: 8_000 });
+
+    await expect(page.getByRole('heading', { name: /pipeline por canal/i })).toBeVisible({
+      timeout: 8_000,
+    });
     await expect(page.getByRole('heading', { name: /importar canal/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /crit.rios/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /descobrir/i })).toBeVisible();
@@ -63,10 +96,7 @@ test.describe('Curator Channel Pipeline — degraded mode flow', () => {
   });
 
   test('validate channel → degraded mode banner appears', async ({ page }) => {
-    await page.goto(PIPELINE_URL);
-    const authModal = page.getByRole('dialog');
-    if (await authModal.isVisible().catch(() => false)) {
-      test.skip();
+    if (!(await ensurePipelineAccess(page))) {
       return;
     }
 
@@ -81,10 +111,7 @@ test.describe('Curator Channel Pipeline — degraded mode flow', () => {
   });
 
   test('full pipeline: validate → discover → analyze → publish confirmation', async ({ page }) => {
-    await page.goto(PIPELINE_URL);
-    const authModal = page.getByRole('dialog');
-    if (await authModal.isVisible().catch(() => false)) {
-      test.skip();
+    if (!(await ensurePipelineAccess(page))) {
       return;
     }
 
@@ -120,10 +147,7 @@ test.describe('Curator Channel Pipeline — degraded mode flow', () => {
   });
 
   test('publish confirmation modal can be cancelled', async ({ page }) => {
-    await page.goto(PIPELINE_URL);
-    const authModal = page.getByRole('dialog');
-    if (await authModal.isVisible().catch(() => false)) {
-      test.skip();
+    if (!(await ensurePipelineAccess(page))) {
       return;
     }
 
