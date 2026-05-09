@@ -10,6 +10,8 @@ import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './services/supabase';
+import RequireAuth from './components/auth/RequireAuth';
+import PermissionDenied from './components/auth/PermissionDenied';
 
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 const CourseDetail = React.lazy(() => import('./components/CourseDetail'));
@@ -28,6 +30,10 @@ const CuratorApplicationPage = React.lazy(() => import('./components/curator/Cur
 const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
 const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
 const AdminReviewDashboard = React.lazy(() => import('./components/curator/AdminReviewDashboard').then(m => ({ default: m.AdminReviewDashboard })));
+const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
+const AdminContentListPage = React.lazy(() => import('./components/admin/AdminContentListPage'));
+const AdminContentDetailPage = React.lazy(() => import('./components/admin/AdminContentDetailPage'));
+const AdminCuratorListPage = React.lazy(() => import('./components/admin/AdminCuratorListPage'));
 const BlogListPage = React.lazy(() => import('./components/blog/BlogListPage'));
 const BlogPostPage = React.lazy(() => import('./components/blog/BlogPostPage'));
 
@@ -53,17 +59,22 @@ type View =
   | 'curator-submit'
   | 'curator-submissions'
   | 'curator-admin-review'
+  | 'admin-dashboard'
+  | 'admin-contents'
+  | 'admin-content-detail'
+  | 'admin-curators'
   | 'blog'
   | 'blog-post';
 
 const App: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [selectedAdminSubmissionId, setSelectedAdminSubmissionId] = useState<string | null>(null);
   const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
   const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
@@ -108,6 +119,10 @@ const App: React.FC = () => {
     if (view === 'curator-submit') path = '/curator/submit';
     if (view === 'curator-submissions') path = '/curator/submissions';
     if (view === 'curator-admin-review') path = '/curator/admin-review';
+    if (view === 'admin-dashboard') path = '/admin';
+    if (view === 'admin-contents') path = '/admin/conteudos';
+    if (view === 'admin-content-detail' && unitId) path = `/admin/conteudos/${unitId}`;
+    if (view === 'admin-curators') path = '/admin/curadores';
     if (view === 'blog') path = '/blog';
     if (view === 'blog-post' && blogSlug) path = `/blog/${blogSlug}`;
     window.history.pushState({}, '', path);
@@ -142,6 +157,28 @@ const App: React.FC = () => {
       }
       if (path === '/curator/admin-review') {
         setCurrentView('curator-admin-review');
+        return;
+      }
+    }
+    if (path.startsWith('/admin')) {
+      if (path === '/admin') {
+        setCurrentView('admin-dashboard');
+        return;
+      }
+      if (path === '/admin/conteudos') {
+        setCurrentView('admin-contents');
+        return;
+      }
+      if (path.startsWith('/admin/conteudos/')) {
+        const submissionId = path.replace('/admin/conteudos/', '').split('/')[0];
+        if (submissionId) {
+          setSelectedAdminSubmissionId(submissionId);
+          setCurrentView('admin-content-detail');
+          return;
+        }
+      }
+      if (path === '/admin/curadores') {
+        setCurrentView('admin-curators');
         return;
       }
     }
@@ -302,6 +339,10 @@ const App: React.FC = () => {
       'student-my-courses': `Meus Cursos — ${BASE}`,
       'student-progress': `Meu Progresso — ${BASE}`,
       'student-history': `Histórico — ${BASE}`,
+      'admin-dashboard': `Administracao — ${BASE}`,
+      'admin-contents': `Revisao de Conteudos — ${BASE}`,
+      'admin-content-detail': `Conteudo em Revisao — ${BASE}`,
+      'admin-curators': `Curadores — ${BASE}`,
       blog: `Blog — ${BASE}`,
       'blog-post': `Artigo — ${BASE}`,
     };
@@ -330,7 +371,7 @@ const App: React.FC = () => {
     } else {
       document.title = map[currentView] ?? BASE;
     }
-  }, [currentView, selectedBlogSlug, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
+  }, [currentView, selectedAdminSubmissionId, selectedBlogSlug, selectedPageSlug, selectedUnitId, selectedLessonId, selectedVideoId, units]);
 
   // Dynamic SEO meta tags for SPA routes
   useEffect(() => {
@@ -489,6 +530,26 @@ const App: React.FC = () => {
         title: 'Painel de Revisão - FACODI',
         description: 'Painel administrativo para revisão de candidaturas e conteúdo.',
       },
+      'admin-dashboard': {
+        path: '/admin',
+        title: 'Administracao - FACODI',
+        description: 'Area administrativa central para revisao e moderacao de conteudos.',
+      },
+      'admin-contents': {
+        path: '/admin/conteudos',
+        title: 'Revisao de Conteudos - FACODI',
+        description: 'Lista de conteudos para aprovacao, rejeicao e solicitacao de ajustes.',
+      },
+      'admin-content-detail': {
+        path: selectedAdminSubmissionId ? `/admin/conteudos/${selectedAdminSubmissionId}` : '/admin/conteudos',
+        title: 'Conteudo em Revisao - FACODI',
+        description: 'Detalhes completos de conteudo submetido com acoes de moderacao.',
+      },
+      'admin-curators': {
+        path: '/admin/curadores',
+        title: 'Curadores Pendentes - FACODI',
+        description: 'Gestao de candidaturas de curadores com aprovacao e rejeicao.',
+      },
       blog: {
         path: '/blog',
         title: 'Blog - FACODI',
@@ -640,6 +701,12 @@ const App: React.FC = () => {
     updateRoute('video-detail', undefined, undefined, id);
   };
 
+  const handleAdminSubmissionSelect = (id: string) => {
+    setSelectedAdminSubmissionId(id);
+    setCurrentView('admin-content-detail');
+    updateRoute('admin-content-detail', id);
+  };
+
   const handleBlogSelect = (slug: string) => {
     setSelectedBlogSlug(slug);
     setCurrentView('blog-post');
@@ -673,7 +740,9 @@ const App: React.FC = () => {
     if (currentView === 'curator-apply') {
       return (
         <Suspense fallback={lazyFallback}>
-          <CuratorApplicationPage locale={locale} />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <CuratorApplicationPage locale={locale} />
+          </RequireAuth>
         </Suspense>
       );
     }
@@ -681,7 +750,9 @@ const App: React.FC = () => {
     if (currentView === 'curator-submit') {
       return (
         <Suspense fallback={lazyFallback}>
-          <ContentSubmissionPage locale={locale} />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <ContentSubmissionPage locale={locale} />
+          </RequireAuth>
         </Suspense>
       );
     }
@@ -689,15 +760,101 @@ const App: React.FC = () => {
     if (currentView === 'curator-submissions') {
       return (
         <Suspense fallback={lazyFallback}>
-          <SubmissionListPage locale={locale} />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <SubmissionListPage locale={locale} />
+          </RequireAuth>
         </Suspense>
       );
     }
 
     if (currentView === 'curator-admin-review') {
+      if (!user) {
+        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
+      }
+      if (profile?.role !== 'admin') {
+        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Administrador" />;
+      }
       return (
         <Suspense fallback={lazyFallback}>
           <AdminReviewDashboard locale={locale} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'admin-dashboard') {
+      if (!user) {
+        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
+      }
+      if (profile?.role !== 'admin') {
+        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Administrador" />;
+      }
+      return (
+        <Suspense fallback={lazyFallback}>
+          <AdminDashboard
+            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+            onNavigate={(view) => {
+              if (view === 'admin-contents') {
+                setCurrentView('admin-contents');
+                updateRoute('admin-contents');
+              } else if (view === 'admin-curators') {
+                setCurrentView('admin-curators');
+                updateRoute('admin-curators');
+              } else {
+                setCurrentView('curator-admin-review');
+                updateRoute('curator-admin-review');
+              }
+            }}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'admin-contents') {
+      if (!user) {
+        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
+      }
+      if (profile?.role !== 'admin') {
+        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Administrador" />;
+      }
+      return (
+        <Suspense fallback={lazyFallback}>
+          <AdminContentListPage
+            onBack={() => { setCurrentView('admin-dashboard'); updateRoute('admin-dashboard'); }}
+            onOpenSubmission={handleAdminSubmissionSelect}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'admin-content-detail' && selectedAdminSubmissionId) {
+      if (!user) {
+        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
+      }
+      if (profile?.role !== 'admin') {
+        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Administrador" />;
+      }
+      return (
+        <Suspense fallback={lazyFallback}>
+          <AdminContentDetailPage
+            submissionId={selectedAdminSubmissionId}
+            onBack={() => { setCurrentView('admin-contents'); updateRoute('admin-contents'); }}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'admin-curators') {
+      if (!user) {
+        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
+      }
+      if (profile?.role !== 'admin') {
+        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Administrador" />;
+      }
+      return (
+        <Suspense fallback={lazyFallback}>
+          <AdminCuratorListPage
+            onBack={() => { setCurrentView('admin-dashboard'); updateRoute('admin-dashboard'); }}
+          />
         </Suspense>
       );
     }
@@ -716,12 +873,14 @@ const App: React.FC = () => {
     if (currentView === 'student-dashboard') {
       return (
         <Suspense fallback={lazyFallback}>
-          <StudentDashboard
-            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-            onSelectCourse={handleUnitSelect}
-            onSelectVideo={handleVideoSelect}
-            t={t}
-          />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <StudentDashboard
+              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+              onSelectCourse={handleUnitSelect}
+              onSelectVideo={handleVideoSelect}
+              t={t}
+            />
+          </RequireAuth>
         </Suspense>
       );
     }
@@ -729,11 +888,13 @@ const App: React.FC = () => {
     if (currentView === 'student-my-courses') {
       return (
         <Suspense fallback={lazyFallback}>
-          <StudentMyCoursesPage
-            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-            onSelectCourse={handleUnitSelect}
-            t={t}
-          />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <StudentMyCoursesPage
+              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+              onSelectCourse={handleUnitSelect}
+              t={t}
+            />
+          </RequireAuth>
         </Suspense>
       );
     }
@@ -741,10 +902,12 @@ const App: React.FC = () => {
     if (currentView === 'student-progress') {
       return (
         <Suspense fallback={lazyFallback}>
-          <StudentProgressPage
-            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-            t={t}
-          />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <StudentProgressPage
+              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+              t={t}
+            />
+          </RequireAuth>
         </Suspense>
       );
     }
@@ -752,10 +915,12 @@ const App: React.FC = () => {
     if (currentView === 'student-history') {
       return (
         <Suspense fallback={lazyFallback}>
-          <StudentHistoryPage
-            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-            t={t}
-          />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <StudentHistoryPage
+              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+              t={t}
+            />
+          </RequireAuth>
         </Suspense>
       );
     }
