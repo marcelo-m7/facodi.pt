@@ -20,7 +20,7 @@ const EditorialReviewPanel: React.FC<EditorialReviewPanelProps> = ({
   publishing,
   error,
   successMessage,
-  publishResults,
+  publishResults = [],
   onPublish,
 }) => {
   const succeeded = publishResults.filter((r) => r.success).length;
