@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from './supabase';
 import { COURSE_UNITS } from '../data/courses';
 import { DEGREES } from '../data/degrees';
 import { PLAYLISTS } from '../data/playlists';
@@ -24,19 +24,6 @@ export type CatalogPayload = {
 
 const DATA_SOURCE = (import.meta.env.VITE_DATA_SOURCE || 'mock').toLowerCase();
 
-// Supabase client (lazy-initialized only when VITE_DATA_SOURCE=supabase)
-let _supabase: SupabaseClient | null = null;
-
-function getSupabaseClient(): SupabaseClient {
-  if (_supabase) return _supabase;
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) {
-    throw new Error('[catalogSource:supabase] VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are required');
-  }
-  _supabase = createClient(url, key);
-  return _supabase;
-}
 
 const CATEGORY_MAP: Record<string, Category> = {
   communication: Category.COMMUNICATION,
@@ -58,7 +45,7 @@ const DIFFICULTY_MAP: Record<string, Difficulty> = {
 };
 
 async function loadSupabaseData(): Promise<CatalogPayload> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   // 1. Load courses from public schema
   const { data: coursesRaw, error: coursesErr } = await sb
@@ -89,6 +76,8 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
     };
   });
 
+  const validCourseIds = new Set(courses.map((course) => course.id));
+
   // 2. Load units from public schema
   const { data: unitsRaw, error: unitsErr } = await sb
     .from('units')
@@ -102,7 +91,13 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
     const courseRel = Array.isArray(row.courses) ? row.courses[0] : row.courses;
     const categoryRaw = String(row.category || meta.category || '').toLowerCase();
     const difficultyRaw = String(row.difficulty || meta.difficulty || '').toLowerCase();
-    const courseId: string = courseRel?.code ?? (meta.courseId as string) ?? 'UNKNOWN';
+    const relationCode = typeof courseRel?.code === 'string' ? courseRel.code : null;
+    const rawCourseId = typeof row.course_id === 'string' ? row.course_id : null;
+    const metaCourseId = typeof meta.courseId === 'string' ? meta.courseId : null;
+    const candidateCourseId = relationCode ?? rawCourseId ?? metaCourseId;
+    const courseId: string = candidateCourseId && validCourseIds.has(candidateCourseId)
+      ? candidateCourseId
+      : (relationCode ?? rawCourseId ?? metaCourseId ?? 'UNKNOWN');
     const category = CATEGORY_MAP[categoryRaw] ?? Category.COMPUTER_SCIENCE;
     const difficulty = DIFFICULTY_MAP[difficultyRaw] ?? Difficulty.FOUNDATIONAL;
     const semester = Number(row.semester) || Number(meta.semester) || 1;
@@ -253,6 +248,40 @@ async function callKw(
   }
 }
 
+async function searchReadAll(
+  model: string,
+  domain: unknown[],
+  fields: string[],
+  options?: { order?: string; pageSize?: number },
+): Promise<OdooRecord[]> {
+  const pageSize = options?.pageSize ?? 500;
+  const all: OdooRecord[] = [];
+  let offset = 0;
+
+  while (true) {
+    const page = await callKw(
+      model,
+      'search_read',
+      [domain],
+      {
+        fields,
+        limit: pageSize,
+        offset,
+        ...(options?.order ? { order: options.order } : {}),
+      },
+    );
+
+    if (!page.length) break;
+
+    all.push(...page);
+    offset += page.length;
+
+    if (page.length < pageSize) break;
+  }
+
+  return all;
+}
+
 const stripHtml = (input: string): string => input.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
 const normalizeCourseId = (channelId: number, channelName: string): string => {
@@ -377,7 +406,11 @@ const mapChannelToCourse = (record: OdooRecord): Course | null => {
     websiteUrl,
     curriculumVersion: curriculumVersion || undefined,
     contentLicense: contentLicense || undefined,
-  };
+    // Odoo sync metadata (used by syncOdooToSupabase, not rendered in UI)
+    _odooId: id,
+    _enroll: String(record.enroll || 'public'),
+    _membersCount: Number(record.members_count || 0),
+  } as Course & { _odooId: number; _enroll: string; _membersCount: number };
 };
 
 const mapSlideToUnit = (record: OdooRecord, channelMap: Map<number, Course>): CurricularUnit | null => {
@@ -463,22 +496,18 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
     }
 
 
-    // Fetch courses
-    const channelRecords = await callKw(
+    // Fetch ALL courses regardless of enrollment mode (public, invite, payment).
+    const channelRecords = await searchReadAll(
       'slide.channel',
-      'search_read',
-      [[['enroll', '=', 'public']]],
-      {
-        fields: [
-          'id', 'name', 'description', 'description_short', 'enroll',
-          'website_absolute_url', 'total_time',
-          'x_facodi_source_institution', 'x_facodi_curriculum_version',
-          'x_facodi_workload_hours', 'x_facodi_primary_language',
-          'x_facodi_content_license', 'x_facodi_project_name',
-        ],
-        limit: 200,
-        offset: 0,
-      },
+      [],
+      [
+        'id', 'name', 'description', 'description_short', 'enroll',
+        'members_count', 'website_absolute_url', 'total_time',
+        'x_facodi_source_institution', 'x_facodi_curriculum_version',
+        'x_facodi_workload_hours', 'x_facodi_primary_language',
+        'x_facodi_content_license', 'x_facodi_project_name',
+      ],
+      { pageSize: 500 },
     );
 
     if (!channelRecords || channelRecords.length === 0) {
@@ -518,23 +547,18 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       };
     }
 
-    // Fetch lessons
-    const slideRecords = await callKw(
+    // Fetch lessons with pagination to avoid truncation when catalog grows.
+    const slideRecords = await searchReadAll(
       'slide.slide',
-      'search_read',
-      [[['channel_id', 'in', channelIds]]],
-      {
-        fields: [
-          'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
-          'sequence', 'completion_time', 'is_preview', 'slide_category',
-          'is_category', 'website_absolute_url', 'video_url',
-          'x_facodi_unit_code', 'x_facodi_duration_minutes',
-          'x_facodi_source_institution', 'x_facodi_editorial_state',
-        ],
-        limit: 2000,
-        offset: 0,
-        order: 'channel_id asc, sequence asc, id asc',
-      },
+      [['channel_id', 'in', channelIds]],
+      [
+        'id', 'name', 'description', 'html_content', 'channel_id', 'category_id',
+        'sequence', 'completion_time', 'is_preview', 'slide_category',
+        'is_category', 'website_absolute_url', 'video_url',
+        'x_facodi_unit_code', 'x_facodi_duration_minutes',
+        'x_facodi_source_institution', 'x_facodi_editorial_state',
+      ],
+      { pageSize: 1000, order: 'channel_id asc, sequence asc, id asc' },
     );
 
     if (!slideRecords || slideRecords.length === 0) {
@@ -554,6 +578,19 @@ export async function loadCatalogData(): Promise<CatalogPayload> {
       .filter((unit): unit is CurricularUnit => Boolean(unit));
 
     const playlists = buildPlaylistsFromUnits(slideRecords, units);
+
+    // Best-effort visibility into enrollment volume for downstream Odoo->Supabase sync.
+    try {
+      const enrollmentRecords = await searchReadAll(
+        'slide.channel.partner',
+        [],
+        ['id', 'channel_id', 'partner_id', 'completion', 'completed_slides_count'],
+        { pageSize: 1000 },
+      );
+      console.info('[catalogSource:odoo] enrollment records loaded:', enrollmentRecords.length);
+    } catch (enrollmentError) {
+      console.warn('[catalogSource:odoo] enrollment snapshot skipped:', enrollmentError);
+    }
 
 
     return {

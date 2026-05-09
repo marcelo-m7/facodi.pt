@@ -12,12 +12,13 @@ interface Props {
   unit: CurricularUnit;
   allUnits: CurricularUnit[];
   playlists: Playlist[];
+  courseTitle?: string;
   onBack: () => void;
   onNavigate?: (id: string) => void;
   t: (key: string) => string;
 }
 
-const CourseDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNavigate, t }) => {
+const CourseDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle, onBack, onNavigate, t }) => {
   const [fetchedContent, setFetchedContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +75,9 @@ const CourseDetail: React.FC<Props> = ({ unit, allUnits, playlists, onBack, onNa
               <span className="text-[10px] font-black bg-primary text-black px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
                 {unit.id}
               </span>
+              {courseTitle && (
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">{courseTitle}</p>
+              )}
               <h1 className="text-4xl font-black uppercase tracking-tighter leading-tight mb-8">
                 {unit.name}
               </h1>

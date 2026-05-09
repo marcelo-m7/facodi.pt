@@ -8,6 +8,8 @@ import Courses from './components/Courses';
 import { Category, Course, CurricularUnit, FilterState, Playlist } from './types';
 import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
+import { useAuth } from './contexts/AuthContext';
+import { supabase } from './services/supabase';
 
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 const CourseDetail = React.lazy(() => import('./components/CourseDetail'));
@@ -16,6 +18,8 @@ const LessonDetail = React.lazy(() => import('./components/LessonDetail'));
 const InstitutionalPage = React.lazy(() => import('./components/InstitutionalPage'));
 const AINavigator = React.lazy(() => import('./components/AINavigator'));
 const VideoDetail = React.lazy(() => import('./components/videos/VideoDetail'));
+const AuthModal = React.lazy(() => import('./components/auth/AuthModal'));
+const ProfilePage = React.lazy(() => import('./components/user/ProfilePage'));
 
 type View =
   | 'home'
@@ -29,9 +33,12 @@ type View =
   | 'dashboard'
   | 'institutional-page'
   | 'videos'
-  | 'video-detail';
+  | 'video-detail'
+  | 'profile';
 
 const App: React.FC = () => {
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
@@ -70,6 +77,7 @@ const App: React.FC = () => {
     if (view === 'dashboard') path = '/dashboard';
     if (view === 'playlists') path = '/playlists';
     if (view === 'contributors') path = '/contributors';
+    if (view === 'profile') path = '/profile';
     if (view === 'institutional-page' && unitId) path = `/${unitId}`;
     window.history.pushState({}, '', path);
   };
@@ -124,6 +132,10 @@ const App: React.FC = () => {
     }
     if (path.startsWith('/contributors')) {
       setCurrentView('contributors');
+      return;
+    }
+    if (path === '/profile') {
+      setCurrentView('profile');
       return;
     }
     // Institutional pages: /manifesto, /sobre, /comunidade, /roadmap, /infraestrutura, /como-contribuir
@@ -347,6 +359,11 @@ const App: React.FC = () => {
         title: selectedPageSlug ? (slugMeta[selectedPageSlug]?.title || 'Pagina Institucional - FACODI') : 'FACODI',
         description: selectedPageSlug ? (slugMeta[selectedPageSlug]?.description || defaultDescription) : defaultDescription,
       },
+      profile: {
+        path: '/profile',
+        title: 'Meu Perfil - FACODI',
+        description: 'Perfil do utilizador na FACODI com favoritos e progresso de estudo.',
+      },
     };
 
     const { path, title, description } = viewMeta[currentView];
@@ -412,11 +429,25 @@ const App: React.FC = () => {
   );
 
   const toggleSave = (id: string) => {
-    const newSaved = savedUnitIds.includes(id) 
+    const newSaved = savedUnitIds.includes(id)
       ? savedUnitIds.filter(sid => sid !== id)
       : [...savedUnitIds, id];
     setSavedUnitIds(newSaved);
     localStorage.setItem('facodi_saved', JSON.stringify(newSaved));
+
+    // Sync to Supabase if logged in (unit_code = id for mock source, or unitCode field)
+    if (user) {
+      const unitCode = units.find(u => u.id === id)?.unitCode ?? id;
+      if (newSaved.includes(id)) {
+        supabase.from('unit_favorites').upsert({ user_id: user.id, unit_code: unitCode }, { onConflict: 'user_id,unit_code' }).then(({ error }) => {
+          if (error) console.warn('[toggleSave] upsert error:', error.message);
+        });
+      } else {
+        supabase.from('unit_favorites').delete().eq('user_id', user.id).eq('unit_code', unitCode).then(({ error }) => {
+          if (error) console.warn('[toggleSave] delete error:', error.message);
+        });
+      }
+    }
   };
 
   const categories = ['All', ...Object.values(Category)];
@@ -426,6 +457,11 @@ const App: React.FC = () => {
   const selectedUnit = useMemo(() => units.find(u => u.id === selectedUnitId) || null, [selectedUnitId, units]);
   const savedUnits = useMemo(() => units.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds, units]);
   const selectedLesson = useMemo(() => units.find(u => u.id === selectedLessonId) || null, [selectedLessonId, units]);
+  const coursesById = useMemo(() => new Map(courses.map((course) => [course.id, course])), [courses]);
+  const selectedCourse = useMemo(
+    () => (filters.courseId === 'All' ? null : (coursesById.get(filters.courseId) ?? null)),
+    [filters.courseId, coursesById],
+  );
 
   const filteredUnits = useMemo(() => {
     return units.filter(unit => {
@@ -470,6 +506,17 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
+    if (currentView === 'profile') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <ProfilePage
+            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+            t={t}
+          />
+        </Suspense>
+      );
+    }
+
     if (currentView === 'course-detail' && selectedUnit) {
       return (
         <Suspense fallback={lazyFallback}>
@@ -483,6 +530,7 @@ const App: React.FC = () => {
             }}
             onNavigate={handleUnitSelect}
             t={t}
+              courseTitle={coursesById.get(selectedUnit.courseId)?.title}
           />
         </Suspense>
       );
@@ -516,6 +564,7 @@ const App: React.FC = () => {
             }}
             onNavigate={handleLessonSelect}
             t={t}
+              courseTitle={coursesById.get(selectedLesson.courseId)?.title}
           />
         </Suspense>
       );
@@ -614,6 +663,15 @@ const App: React.FC = () => {
                       Explore {units.length} unidades de conhecimento.
                       <span className="ml-2 text-xs uppercase tracking-widest text-gray-400">Fonte: {catalogSource}</span>
                     </p>
+                    {selectedCourse && (
+                      <div className="mt-8 stark-border bg-brand-muted p-6">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-3">Curso selecionado</p>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">{selectedCourse.title}</h2>
+                        <p className="text-xs text-gray-600 mt-2">
+                          {filteredUnits.length} unidades associadas a {selectedCourse.id}.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="w-full lg:w-[480px] relative group">
                     <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-black text-2xl group-focus-within:text-primary transition-colors">search</span>
@@ -673,7 +731,11 @@ const App: React.FC = () => {
                           >
                             <span className="material-symbols-outlined text-2xl">{savedUnitIds.includes(unit.id) ? 'bookmark' : 'bookmark_add'}</span>
                           </button>
-                          <CourseCard unit={unit} onClick={handleLessonSelect} />
+                          <CourseCard
+                            unit={unit}
+                            onClick={handleLessonSelect}
+                            courseTitle={coursesById.get(unit.courseId)?.title}
+                          />
                         </div>
                       ))}
                     </div>
@@ -705,8 +767,14 @@ const App: React.FC = () => {
       isDark={isDark}
       onToggleTheme={() => setIsDark(prev => !prev)}
       t={t}
+      onOpenAuth={() => setShowAuthModal(true)}
     >
       {renderContent()}
+      {showAuthModal && (
+        <Suspense fallback={null}>
+          <AuthModal onClose={() => setShowAuthModal(false)} t={t} />
+        </Suspense>
+      )}
       {enableAiNavigator && (
         <Suspense fallback={null}>
           <AINavigator units={units} />
