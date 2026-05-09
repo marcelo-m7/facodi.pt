@@ -34,6 +34,7 @@ export interface VideoAnalysis {
   topic: string;
   difficulty: 'foundational' | 'intermediate' | 'advanced' | 'expert';
   tags: string[];
+  isFallback?: boolean;
 }
 
 export interface PlaylistSuggestion {
@@ -42,6 +43,7 @@ export interface PlaylistSuggestion {
   unitId?: string;
   playlistId?: string;
   confidence: number;
+  isFallback?: boolean;
 }
 
 export interface PublishPayloadItem {
@@ -179,6 +181,7 @@ const fallbackAnalyses = (videos: ChannelVideo[]): VideoAnalysis[] => {
     topic: video.title.split('-')[0]?.trim() || 'topico geral',
     difficulty: inferDifficulty(video.title || ''),
     tags: ['facodi', 'curadoria', 'youtube'],
+    isFallback: true,
   }));
 };
 
@@ -194,6 +197,7 @@ const fallbackSuggestions = (
       unitId: undefined,
       playlistId: undefined,
       confidence: hasAnalysis ? 0.72 : 0.4,
+      isFallback: true,
     };
   });
 };

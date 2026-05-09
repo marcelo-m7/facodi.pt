@@ -19,7 +19,7 @@ import CurationBriefPanel from './pipeline/CurationBriefPanel';
 import VideoDiscoveryPanel from './pipeline/VideoDiscoveryPanel';
 import AIAnalysisPanel from './pipeline/AIAnalysisPanel';
 import PlaylistMapper from './pipeline/PlaylistMapper';
-import EditorialReviewPanel from './pipeline/EditorialReviewPanel';
+import EditorialReviewPanel, { type PublishItemResult } from './pipeline/EditorialReviewPanel';
 import type { Locale } from '../../data/i18n';
 
 interface ChannelCurationPageProps {
@@ -45,6 +45,8 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [publishSuccess, setPublishSuccess] = useState<string | null>(null);
+  const [publishResults, setPublishResults] = useState<PublishItemResult[]>([]);
+  const [confirmPublish, setConfirmPublish] = useState(false);
   const [degradedModeMessage, setDegradedModeMessage] = useState<string | null>(null);
 
   const selectedVideos = useMemo(
@@ -116,8 +118,10 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
       setAnalyzing(true);
       const result = await analyzeVideoBatch(channel, selectedVideos, brief);
       setAnalyses(result);
-      const mapped = await generatePlaylistSuggestions(channel, selectedVideos, result);
-      setSuggestions(mapped);
+      if (result.length > 0) {
+        const mapped = await generatePlaylistSuggestions(channel, selectedVideos, result);
+        setSuggestions(mapped);
+      }
       syncFallbackMode();
     } catch (error) {
       setAnalysisError(error instanceof Error ? error.message : 'Falha na análise IA.');
@@ -134,6 +138,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
 
     setPublishError(null);
     setPublishSuccess(null);
+    setPublishResults([]);
 
     try {
       setPublishing(true);
@@ -147,24 +152,42 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
       const normalized = await publishCuratedVideos(items);
       syncFallbackMode();
 
-      // Compatibilidade: publicação final no fluxo existente de submissão
+      // Compatibilidade: publicação final no fluxo existente de submissão — per-item results
+      const results: PublishItemResult[] = [];
       for (const item of normalized) {
-        await submitContent({
-          content_type: 'video',
-          url: item.video.id ? `https://www.youtube.com/watch?v=${item.video.id}` : undefined,
-          youtube_video_id: item.video.id,
-          suggested_title: item.video.title,
-          summary: item.analysis?.summary || item.video.description || undefined,
-          course_id: item.suggestion?.courseId,
-          unit_id: item.suggestion?.unitId,
-          topic: item.analysis?.topic,
-          pedagogical_reason: item.analysis?.pedagogicalReason,
-          tags: item.analysis?.tags || item.video.tags || [],
-          additional_notes: 'Origem: pipeline de curadoria por canal (MVP).',
-        });
+        try {
+          await submitContent({
+            content_type: 'video',
+            url: item.video.id ? `https://www.youtube.com/watch?v=${item.video.id}` : undefined,
+            youtube_video_id: item.video.id,
+            suggested_title: item.video.title,
+            summary: item.analysis?.summary || item.video.description || undefined,
+            course_id: item.suggestion?.courseId,
+            unit_id: item.suggestion?.unitId,
+            topic: item.analysis?.topic,
+            pedagogical_reason: item.analysis?.pedagogicalReason,
+            tags: item.analysis?.tags || item.video.tags || [],
+            additional_notes: 'Origem: pipeline de curadoria por canal (MVP).',
+          });
+          results.push({ title: item.video.title, success: true });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'erro desconhecido';
+          results.push({ title: item.video.title, success: false, error: message });
+        }
       }
 
-      setPublishSuccess(`${normalized.length} vídeo(s) enviado(s) para revisão no fluxo atual.`);
+      setPublishResults(results);
+      const succeeded = results.filter((r) => r.success).length;
+      const failed = results.filter((r) => !r.success).length;
+      if (succeeded > 0) {
+        setPublishSuccess(
+          failed > 0
+            ? `${succeeded} de ${normalized.length} enviado(s); ${failed} falhou.`
+            : `${succeeded} vídeo(s) enviado(s) para revisão no fluxo atual.`,
+        );
+      } else {
+        setPublishError(`Todos os ${normalized.length} envios falharam.`);
+      }
     } catch (error) {
       setPublishError(error instanceof Error ? error.message : 'Falha ao publicar conteúdo curado.');
     } finally {
@@ -232,9 +255,52 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
           publishing={publishing}
           error={publishError}
           successMessage={publishSuccess}
-          onPublish={handlePublish}
+          publishResults={publishResults}
+          onPublish={() => setConfirmPublish(true)}
         />
       </div>
+
+      {confirmPublish && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-publish-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        >
+          <div className="bg-white stark-border max-w-sm w-full mx-4 p-6 space-y-4">
+            <h3 id="confirm-publish-title" className="text-[10px] font-black uppercase tracking-widest">
+              Confirmar publicação
+            </h3>
+            <p className="text-sm text-gray-700">
+              {selectedVideos.length} vídeo(s) serão enviados para revisão no fluxo atual.
+              {degradedModeMessage && (
+                <span className="block mt-1 text-amber-700 text-[11px]">
+                  ⚠ Modo degradado ativo — dados gerados por fallback local.
+                </span>
+              )}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmPublish(false)}
+                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest stark-border"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmPublish(false);
+                  handlePublish();
+                }}
+                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-primary text-black stark-border"
+              >
+                Publicar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -31,7 +31,14 @@ const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({ analyses, loading, er
       <div className="space-y-3 max-h-[320px] overflow-y-auto pr-2">
         {analyses.map((item) => (
           <article key={item.videoId} className="stark-border p-4 bg-white space-y-2">
-            <p className="text-xs font-black uppercase tracking-widest">{item.topic}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-black uppercase tracking-widest">{item.topic}</p>
+              {item.isFallback && (
+                <span className="text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 border border-amber-300">
+                  fallback
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-700">{item.summary}</p>
             <p className="text-[11px] text-gray-500">Dificuldade: {item.difficulty}</p>
             {!!item.tags.length && <p className="text-[11px] text-gray-500">Tags: {item.tags.join(', ')}</p>}

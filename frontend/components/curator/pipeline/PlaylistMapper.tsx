@@ -15,7 +15,14 @@ const PlaylistMapper: React.FC<PlaylistMapperProps> = ({ suggestions }) => {
         <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2">
           {suggestions.map((item) => (
             <div key={item.videoId} className="stark-border p-4 bg-white space-y-1">
-              <p className="text-[11px] font-black uppercase tracking-widest">Vídeo: {item.videoId}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] font-black uppercase tracking-widest">Vídeo: {item.videoId}</p>
+                {item.isFallback && (
+                  <span className="text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 border border-amber-300">
+                    fallback
+                  </span>
+                )}
+              </div>
               <p className="text-sm">Curso: {item.courseId || 'N/A'}</p>
               <p className="text-sm">Unidade: {item.unitId || 'N/A'}</p>
               <p className="text-sm">Playlist: {item.playlistId || 'N/A'}</p>
