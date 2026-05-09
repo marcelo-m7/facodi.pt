@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { CurricularUnit } from '../types';
+import { supabase } from '../services/supabase';
 
 interface AINavigatorProps {
   units: CurricularUnit[];
@@ -30,13 +30,6 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
     setIsLoading(true);
 
     try {
-      const geminiApiKey = import.meta.env.GEMINI_API_KEY || '';
-      if (!geminiApiKey) {
-        setMessages(prev => [...prev, { role: 'ai', text: 'Gemini API key ausente. Configure GEMINI_API_KEY no frontend/.env.local.' }]);
-        return;
-      }
-
-      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       const context = JSON.stringify(units.map(u => ({
         id: u.id,
         name: u.name,
@@ -45,17 +38,19 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
         desc: u.description
       })));
 
-      const prompt = `You are the FACODI Curriculum Assistant. You have access to the following courses from the LESTI degree: ${context}. 
-      Answer user questions about course relationships, suggestions for career paths (like Web Dev or Data Science), and curriculum flow. 
-      Keep answers concise and stark, in Portuguese or English as requested.
-      User says: ${userText}`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt
+      const { data, error } = await supabase.functions.invoke('ai-curriculum-navigator', {
+        body: {
+          query: userText,
+          context,
+        },
       });
 
-      setMessages(prev => [...prev, { role: 'ai', text: response.text || 'Desculpe, não consegui processar isso.' }]);
+      if (error) {
+        throw new Error(error.message || 'Falha ao contactar o servico de IA.');
+      }
+
+      const responseText = typeof data?.answer === 'string' ? data.answer : 'Desculpe, nao consegui processar isso.';
+      setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to the hub nodes.' }]);
     } finally {

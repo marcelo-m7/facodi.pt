@@ -1,5 +1,6 @@
 
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
 interface Props {
@@ -7,11 +8,17 @@ interface Props {
 }
 
 const MarkdownView: React.FC<Props> = ({ content }) => {
-  // Marked options for security and structure
+  // Render markdown to HTML and sanitize before injecting into DOM.
   const html = React.useMemo(() => {
-    return marked.parse(content, {
+    const rawHtml = marked.parse(content, {
       gfm: true,
       breaks: true,
+    });
+
+    return DOMPurify.sanitize(rawHtml, {
+      ALLOWED_URI_REGEXP: /^(https?:|mailto:|tel:|\/)/i,
+      FORBID_TAGS: ['script', 'style'],
+      FORBID_ATTR: ['onerror', 'onload', 'onclick'],
     });
   }, [content]);
 
