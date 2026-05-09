@@ -43,17 +43,44 @@ pnpm exec playwright install
 - Required in supabase mode: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
 - Never expose service role keys in frontend code.
 
+## Odoo → Supabase Sync
+
+Odoo instance: `https://edu-facodi.odoo.com` (DB: `edu-facodi`).
+Key models: `slide.channel` (courses), `slide.slide` (lessons), `slide.channel.partner` (enrollments).
+Current sync in `loadCatalogData()` reads only `enroll='public'` — to sync **all enrollments**, remove the filter.
+Full sync workflow (Odoo read → Postman collection → Supabase migration) is documented in:
+- [.github/skills/odoo-supabase-sync/SKILL.md](.github/skills/odoo-supabase-sync/SKILL.md)
+- [.github/instructions/odoo-api.instructions.md](.github/instructions/odoo-api.instructions.md)
+
 ## Contract Invariants
 
 - `Course.id` must remain stable and unique.
 - `CurricularUnit.courseId` must match an existing `Course.id`.
 - `Playlist.units` must remain `string[]` of valid unit ids.
 
+## User Authentication (in progress)
+
+Facodi uses **Supabase Auth** for user identity. The backend schema is already in place; frontend integration is the next phase.
+
+Key facts:
+- `public.profiles` is auto-created via `handle_new_user()` trigger on `auth.users` insert.
+  - Fields: `id` (uuid = `auth.users.id`), `username`, `display_name`, `avatar_url`, `bio`, `avatar_path`, `role` (`'user'`|`'editor'`|`'admin'`), `submissions_count`.
+- Related user tables (all RLS-enabled): `favorites`, `playlist_progress`, `user_follows`, `user_social_accounts`, `comments`, `notifications`.
+- Use `@supabase/supabase-js` `supabase.auth.*` for session management (already installed via `services/catalogSource.ts`).
+- Expose a shared singleton Supabase client from `services/supabase.ts` (create this file; do NOT re-create it inside components).
+- For frontend auth, use `supabase.auth.onAuthStateChange` and React Context — do not store JWT in localStorage manually.
+- Required env vars (already used): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+- Migrations go via `mcp_supabase_apply_migration` — never edit production schema by hand.
+- See [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md) for full rules.
+
 ## Common Pitfalls
 
 - Changing id formats breaks route navigation and playlist joins.
 - Moving provider logic into UI components causes regressions.
 - Forgetting deterministic playlist ordering causes UI flicker.
+- Never create a second `SupabaseClient` instance — always import from `services/supabase.ts`.
+- Do not read `auth.users` directly from frontend; use `public.profiles` via RLS.
+- Role escalation is server-side only (`fix_role_escalation_trigger_use_auth_role` migration); never let frontend write `profiles.role`.
 
 ## Customization Files
 
@@ -62,3 +89,7 @@ pnpm exec playwright install
 - File-scoped instructions:
   - [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
   - [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
+  - [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md)
+  - [.github/instructions/odoo-api.instructions.md](.github/instructions/odoo-api.instructions.md)
+- Skills:
+  - [.github/skills/odoo-supabase-sync/SKILL.md](.github/skills/odoo-supabase-sync/SKILL.md) — full Odoo→Supabase sync pipeline with Postman collection
