@@ -95,11 +95,13 @@ async function loadSupabaseData(): Promise<CatalogPayload> {
     const year = Number(row.year) || Number(meta.year) || 1;
     const durationLabel = row.duration || 'N/A';
 
+    const mockUnit = COURSE_UNITS.find(u => u.id === row.code);
+
     return {
       id: row.code,
       name: row.name,
-      description: row.summary || row.content || '',
-      content: row.content ?? undefined,
+      description: row.summary || row.content || mockUnit?.description || '',
+      content: row.content ?? mockUnit?.content ?? undefined,
       contentUrl: row.content_url ?? undefined,
       syllabusUrl: row.syllabus_url ?? undefined,
       ects: Number(row.ects) || 0,
