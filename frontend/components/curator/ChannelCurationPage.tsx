@@ -154,6 +154,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
 
       // Compatibilidade: publicação final no fluxo existente de submissão — per-item results
       const results: PublishItemResult[] = [];
+      let duplicateCount = 0;
       for (const item of normalized) {
         try {
           await submitContent({
@@ -172,6 +173,11 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
           results.push({ title: item.video.title, success: true });
         } catch (err) {
           const message = err instanceof Error ? err.message : 'erro desconhecido';
+          if (message === 'submission_duplicate') {
+            duplicateCount += 1;
+            results.push({ title: item.video.title, success: true });
+            continue;
+          }
           results.push({ title: item.video.title, success: false, error: message });
         }
       }
@@ -180,10 +186,12 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
       const succeeded = results.filter((r) => r.success).length;
       const failed = results.filter((r) => !r.success).length;
       if (succeeded > 0) {
+        const duplicateSuffix =
+          duplicateCount > 0 ? ` (${duplicateCount} já existente(s), sem duplicar envio).` : '';
         setPublishSuccess(
           failed > 0
-            ? `${succeeded} de ${normalized.length} enviado(s); ${failed} falhou.`
-            : `${succeeded} vídeo(s) enviado(s) para revisão no fluxo atual.`,
+            ? `${succeeded} de ${normalized.length} processado(s); ${failed} falhou.${duplicateSuffix}`
+            : `${succeeded} vídeo(s) processado(s) para revisão no fluxo atual.${duplicateSuffix}`,
         );
       } else {
         setPublishError(`Todos os ${normalized.length} envios falharam.`);
