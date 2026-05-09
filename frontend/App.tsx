@@ -38,6 +38,7 @@ const AdminContentDetailPage = React.lazy(() => import('./components/admin/Admin
 const AdminCuratorListPage = React.lazy(() => import('./components/admin/AdminCuratorListPage'));
 const BlogListPage = React.lazy(() => import('./components/blog/BlogListPage'));
 const BlogPostPage = React.lazy(() => import('./components/blog/BlogPostPage'));
+const ChannelCurationPage = React.lazy(() => import('./components/ChannelCurationPage'));
 
 type View =
   | 'home'
@@ -61,6 +62,7 @@ type View =
   | 'curator-submit'
   | 'curator-submissions'
   | 'curator-admin-review'
+  | 'curator-channel-curation'
   | 'admin-dashboard'
   | 'admin-contents'
   | 'admin-content-detail'
@@ -121,6 +123,7 @@ const App: React.FC = () => {
     if (view === 'curator-submit') path = '/curator/submit';
     if (view === 'curator-submissions') path = '/curator/submissions';
     if (view === 'curator-admin-review') path = '/curator/admin-review';
+    if (view === 'curator-channel-curation') path = '/curator/channel-curation';
     if (view === 'admin-dashboard') path = '/admin';
     if (view === 'admin-contents') path = '/admin/conteudos';
     if (view === 'admin-content-detail' && unitId) path = `/admin/conteudos/${unitId}`;
@@ -159,6 +162,10 @@ const App: React.FC = () => {
       }
       if (path === '/curator/admin-review') {
         setCurrentView('curator-admin-review');
+        return;
+      }
+      if (path === '/curator/channel-curation') {
+        setCurrentView('curator-channel-curation');
         return;
       }
     }
@@ -761,6 +768,16 @@ const App: React.FC = () => {
       return (
         <Suspense fallback={lazyFallback}>
           <AdminReviewDashboard locale={locale} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'curator-channel-curation') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <ChannelCurationPage locale={locale} />
+          </RequireAuth>
         </Suspense>
       );
     }
