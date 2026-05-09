@@ -1,4 +1,6 @@
 import { supabase } from './supabase';
+import { COURSE_UNITS } from '../data/courses';
+import { PLAYLISTS } from '../data/playlists';
 
 export interface ChannelIdentity {
   channelId: string;
@@ -189,13 +191,22 @@ const fallbackSuggestions = (
   videos: ChannelVideo[],
   analyses: VideoAnalysis[],
 ): PlaylistSuggestion[] => {
-  return videos.map((video) => {
+  const hasCatalog = COURSE_UNITS.length > 0;
+
+  return videos.map((video, index) => {
     const hasAnalysis = analyses.some((item) => item.videoId === video.id);
+    const unit = hasCatalog ? COURSE_UNITS[index % COURSE_UNITS.length] : undefined;
+    const playlist = unit
+      ? PLAYLISTS.find(
+          (item) => item.unit_code === unit.id || item.units.includes(unit.id),
+        )
+      : undefined;
+
     return {
       videoId: video.id,
-      courseId: undefined,
-      unitId: undefined,
-      playlistId: undefined,
+      courseId: unit?.courseId,
+      unitId: unit?.id,
+      playlistId: playlist?.id,
       confidence: hasAnalysis ? 0.72 : 0.4,
       isFallback: true,
     };
