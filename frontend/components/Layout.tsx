@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { Locale } from '../data/i18n';
 import { useAuth } from '../contexts/AuthContext';
+import DevelopmentBadge from './DevelopmentBadge';
+import DevelopmentDisclaimer from './DevelopmentDisclaimer';
+import { useDevelopmentNotice } from '../hooks/useDevelopmentNotice';
 
 type View =
   | 'home'
@@ -60,6 +63,7 @@ const Layout: React.FC<Props> = ({
   onOpenAuth,
 }) => {
   const { user, profile } = useAuth();
+  const { isOpen: isDevelopmentOpen, isReady: isDevelopmentReady, closeNotice, openNotice } = useDevelopmentNotice();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const CONTENT_SUBMIT_URL = 'https://tube.open2.tech';
@@ -319,6 +323,22 @@ const Layout: React.FC<Props> = ({
       <main id="main-content" className="flex-grow pt-16 md:pt-20">
         {children}
       </main>
+
+      <DevelopmentBadge
+        label={t('development.badge')}
+        onClick={openNotice}
+      />
+
+      <DevelopmentDisclaimer
+        isOpen={isDevelopmentReady && isDevelopmentOpen}
+        title={t('development.title')}
+        body={t('development.body')}
+        signedMessage={t('development.message')}
+        signature={t('development.signature')}
+        institutionalLine={t('development.institutional')}
+        closeLabel={t('development.close')}
+        onClose={() => closeNotice(true)}
+      />
 
       <footer className="bg-white border-t-2 border-black pt-20 pb-10 mt-20">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
