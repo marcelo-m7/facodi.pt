@@ -20,6 +20,14 @@ const AINavigator = React.lazy(() => import('./components/AINavigator'));
 const VideoDetail = React.lazy(() => import('./components/videos/VideoDetail'));
 const AuthModal = React.lazy(() => import('./components/auth/AuthModal'));
 const ProfilePage = React.lazy(() => import('./components/user/ProfilePage'));
+const StudentDashboard = React.lazy(() => import('./components/student/StudentDashboard'));
+const StudentMyCoursesPage = React.lazy(() => import('./components/student/StudentMyCoursesPage'));
+const StudentProgressPage = React.lazy(() => import('./components/student/StudentProgressPage'));
+const StudentHistoryPage = React.lazy(() => import('./components/student/StudentHistoryPage'));
+const CuratorApplicationPage = React.lazy(() => import('./components/curator/CuratorApplicationPage').then(m => ({ default: m.CuratorApplicationPage })));
+const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
+const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
+const AdminReviewDashboard = React.lazy(() => import('./components/curator/AdminReviewDashboard').then(m => ({ default: m.AdminReviewDashboard })));
 
 type View =
   | 'home'
@@ -34,7 +42,15 @@ type View =
   | 'institutional-page'
   | 'videos'
   | 'video-detail'
-  | 'profile';
+  | 'profile'
+  | 'student-dashboard'
+  | 'student-my-courses'
+  | 'student-progress'
+  | 'student-history'
+  | 'curator-apply'
+  | 'curator-submit'
+  | 'curator-submissions'
+  | 'curator-admin-review';
 
 const App: React.FC = () => {
   const { user } = useAuth();
@@ -79,11 +95,55 @@ const App: React.FC = () => {
     if (view === 'contributors') path = '/contributors';
     if (view === 'profile') path = '/profile';
     if (view === 'institutional-page' && unitId) path = `/${unitId}`;
+    if (view === 'student-dashboard') path = '/student/dashboard';
+    if (view === 'student-my-courses') path = '/student/my-courses';
+    if (view === 'student-progress') path = '/student/progress';
+    if (view === 'student-history') path = '/student/history';
+    if (view === 'curator-apply') path = '/curator/apply';
+    if (view === 'curator-submit') path = '/curator/submit';
+    if (view === 'curator-submissions') path = '/curator/submissions';
+    if (view === 'curator-admin-review') path = '/curator/admin-review';
     window.history.pushState({}, '', path);
   };
 
   const syncViewWithLocation = () => {
     const path = window.location.pathname;
+    if (path.startsWith('/curator/')) {
+      if (path === '/curator/apply') {
+        setCurrentView('curator-apply');
+        return;
+      }
+      if (path === '/curator/submit') {
+        setCurrentView('curator-submit');
+        return;
+      }
+      if (path === '/curator/submissions') {
+        setCurrentView('curator-submissions');
+        return;
+      }
+      if (path === '/curator/admin-review') {
+        setCurrentView('curator-admin-review');
+        return;
+      }
+    }
+    if (path.startsWith('/student/')) {
+      if (path === '/student/dashboard') {
+        setCurrentView('student-dashboard');
+        return;
+      }
+      if (path === '/student/my-courses') {
+        setCurrentView('student-my-courses');
+        return;
+      }
+      if (path === '/student/progress') {
+        setCurrentView('student-progress');
+        return;
+      }
+      if (path === '/student/history') {
+        setCurrentView('student-history');
+        return;
+      }
+    }
     if (path.startsWith('/videos/')) {
       const videoId = path.replace('/videos/', '').split('/')[0];
       if (videoId) {
@@ -219,6 +279,10 @@ const App: React.FC = () => {
       playlists: `Playlists — ${BASE}`,
       videos: `Videos — ${BASE}`,
       contributors: `Contribuidores — ${BASE}`,
+      'student-dashboard': `Meus Cursos — ${BASE}`,
+      'student-my-courses': `Meus Cursos — ${BASE}`,
+      'student-progress': `Meu Progresso — ${BASE}`,
+      'student-history': `Histórico — ${BASE}`,
     };
     const selectedUnitForTitle = units.find((u) => u.id === selectedUnitId) || null;
     const selectedLessonForTitle = units.find((u) => u.id === selectedLessonId) || null;
@@ -353,6 +417,26 @@ const App: React.FC = () => {
         path: '/dashboard',
         title: 'Meu Progresso - FACODI',
         description: 'Acompanhe unidades guardadas e progresso de estudo na FACODI.',
+      },
+      'student-dashboard': {
+        path: '/student/dashboard',
+        title: 'Meus Cursos - FACODI',
+        description: 'Acompanhe seus cursos, progresso e conteudo recomendado na FACODI.',
+      },
+      'student-my-courses': {
+        path: '/student/my-courses',
+        title: 'Meus Cursos - FACODI',
+        description: 'Gerencia seus cursos inscritos, veja progresso e continue aprendendo.',
+      },
+      'student-progress': {
+        path: '/student/progress',
+        title: 'Meu Progresso - FACODI',
+        description: 'Visualize seu progresso detalhado por curso e unidade curricular.',
+      },
+      'student-history': {
+        path: '/student/history',
+        title: 'Histórico - FACODI',
+        description: 'Revise seu histórico de atividades de aprendizagem e videos assistidos.',
       },
       'institutional-page': {
         path: selectedPageSlug ? `/${selectedPageSlug}` : '/',
@@ -506,10 +590,89 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
+    if (currentView === 'curator-apply') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <CuratorApplicationPage locale={locale} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'curator-submit') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <ContentSubmissionPage locale={locale} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'curator-submissions') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <SubmissionListPage locale={locale} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'curator-admin-review') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <AdminReviewDashboard locale={locale} />
+        </Suspense>
+      );
+    }
+
     if (currentView === 'profile') {
       return (
         <Suspense fallback={lazyFallback}>
           <ProfilePage
+            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+            t={t}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'student-dashboard') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <StudentDashboard
+            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+            onSelectCourse={handleUnitSelect}
+            onSelectVideo={handleVideoSelect}
+            t={t}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'student-my-courses') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <StudentMyCoursesPage
+            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+            onSelectCourse={handleUnitSelect}
+            t={t}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'student-progress') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <StudentProgressPage
+            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+            t={t}
+          />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'student-history') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <StudentHistoryPage
             onBack={() => { setCurrentView('home'); updateRoute('home'); }}
             t={t}
           />

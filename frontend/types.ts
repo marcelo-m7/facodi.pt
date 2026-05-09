@@ -136,3 +136,51 @@ export interface FilterState {
   year: number | 'All';
   semester: number | 'All';
 }
+
+export interface EditorApplication {
+  id: string;
+  user_id?: string;
+  email: string;
+  full_name: string;
+  specialty_area?: string | null;
+  experience_summary?: string | null;
+  relevant_links?: string[] | null;
+  availability?: string | null;
+  motivation?: string | null;
+  portfolio_url?: string | null;
+  guidelines_accepted: boolean;
+  consent_privacy: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  source_page: string;
+  review_notes?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContentSubmission {
+  id: string;
+  content_type: 'video' | 'article' | 'interactive' | 'other';
+  url?: string | null;
+  youtube_video_id?: string | null;
+  suggested_title: string;
+  summary?: string | null;
+  course_id?: string | null;
+  unit_id?: string | null;
+  topic?: string | null;
+  pedagogical_reason?: string | null;
+  tags: string[];
+  additional_notes?: string | null;
+  author_id?: string | null;
+  author_email?: string | null;
+  author_name?: string | null;
+  status: 'pending' | 'submitted' | 'in_review' | 'approved' | 'rejected' | 'needs_changes' | 'published';
+  review_notes?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  assigned_to?: string | null;
+  rejection_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
