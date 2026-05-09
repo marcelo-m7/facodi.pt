@@ -55,6 +55,10 @@ export interface PipelineFallbackState {
   stages: string[];
 }
 
+const INVOKE_TIMEOUT_MS = 15_000;
+const INVOKE_MAX_RETRIES = 2;
+const INVOKE_BACKOFF_BASE_MS = 400;
+
 const fallbackState: PipelineFallbackState = {
   used: false,
   stages: [],
@@ -83,8 +87,38 @@ const shouldUseLocalFallback = (message: string): boolean => {
     normalized.includes('failed to send a request to the edge function') ||
     normalized.includes('fetch') ||
     normalized.includes('network') ||
-    normalized.includes('cors')
+    normalized.includes('cors') ||
+    normalized.includes('timeout')
   );
+};
+
+const shouldRetryInvoke = (message: string): boolean => {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes('failed to send a request to the edge function') ||
+    normalized.includes('fetch') ||
+    normalized.includes('network') ||
+    normalized.includes('timeout')
+  );
+};
+
+const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, functionName: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`edge_function_timeout:${functionName}`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 };
 
 const normalizeChannelInput = (channelInput: string): string => {
@@ -173,11 +207,35 @@ const fallbackPublishPayload = (items: PublishPayloadItem[]): PublishPayloadItem
 };
 
 const invoke = async <T>(functionName: string, body: Record<string, unknown>): Promise<T> => {
-  const { data, error } = await supabase.functions.invoke(functionName, { body });
-  if (error) {
-    throw new Error(error.message || `edge_function_error:${functionName}`);
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= INVOKE_MAX_RETRIES; attempt += 1) {
+    try {
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke(functionName, { body }),
+        INVOKE_TIMEOUT_MS,
+        functionName,
+      );
+
+      if (error) {
+        throw new Error(error.message || `edge_function_error:${functionName}`);
+      }
+
+      return data as T;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown_error';
+      lastError = error instanceof Error ? error : new Error(message);
+
+      if (attempt >= INVOKE_MAX_RETRIES || !shouldRetryInvoke(message)) {
+        break;
+      }
+
+      const backoffMs = INVOKE_BACKOFF_BASE_MS * 2 ** attempt;
+      await wait(backoffMs);
+    }
   }
-  return data as T;
+
+  throw (lastError ?? new Error(`edge_function_error:${functionName}`));
 };
 
 export const fetchYouTubeChannel = async (channelInput: string): Promise<ChannelIdentity> => {
