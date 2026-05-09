@@ -1,26 +1,28 @@
 // deno-lint-ignore-file no-explicit-any
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+import {
+  corsHeaders,
+  enforceRateLimit,
+  ensurePostMethod,
+  HttpError,
+  json,
+  requireEditorOrAdmin,
+  toErrorResponse,
+} from '../_shared/pipelineSecurity.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-
-  const authHeader = req.headers.get('authorization') || req.headers.get('Authorization') || '';
-  if (!authHeader.startsWith('Bearer ')) return json({ error: 'unauthorized' }, 401);
 
   try {
+    ensurePostMethod(req);
+    const auth = await requireEditorOrAdmin(req);
+    enforceRateLimit(`publish_curated_videos:${auth.userId}`, 6, 60_000);
+
     const { items } = await req.json();
     if (!Array.isArray(items) || items.length === 0) {
-      return json({ error: 'items_required' }, 400);
+      throw new HttpError(400, 'items_required', 'At least one item is required.');
+    }
+    if (items.length > 50) {
+      throw new HttpError(400, 'items_limit_exceeded', 'Maximum of 50 items per publish request.');
     }
 
     // Non-destructive MVP: normalize payload and delegate actual DB publication to existing frontend submit flow.
@@ -32,6 +34,6 @@ Deno.serve(async (req) => {
 
     return json(normalized);
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : 'unexpected_error' }, 400);
+    return toErrorResponse(error);
   }
 });

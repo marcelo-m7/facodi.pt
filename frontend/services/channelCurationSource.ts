@@ -50,6 +50,33 @@ export interface PublishPayloadItem {
   suggestion?: PlaylistSuggestion;
 }
 
+export interface PipelineFallbackState {
+  used: boolean;
+  stages: string[];
+}
+
+const fallbackState: PipelineFallbackState = {
+  used: false,
+  stages: [],
+};
+
+const markFallbackUsage = (stage: string): void => {
+  fallbackState.used = true;
+  if (!fallbackState.stages.includes(stage)) {
+    fallbackState.stages.push(stage);
+  }
+};
+
+export const resetPipelineFallbackState = (): void => {
+  fallbackState.used = false;
+  fallbackState.stages = [];
+};
+
+export const getPipelineFallbackState = (): PipelineFallbackState => ({
+  used: fallbackState.used,
+  stages: [...fallbackState.stages],
+});
+
 const shouldUseLocalFallback = (message: string): boolean => {
   const normalized = message.toLowerCase();
   return (
@@ -159,6 +186,7 @@ export const fetchYouTubeChannel = async (channelInput: string): Promise<Channel
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown_error';
     if (shouldUseLocalFallback(message)) {
+      markFallbackUsage('fetch_youtube_channel');
       return fallbackChannelIdentity(channelInput);
     }
     throw error;
@@ -174,6 +202,7 @@ export const listChannelVideos = async (
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown_error';
     if (shouldUseLocalFallback(message)) {
+      markFallbackUsage('list_channel_videos');
       return fallbackChannelVideos(channelInput, brief);
     }
     throw error;
@@ -190,6 +219,7 @@ export const analyzeVideoBatch = async (
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown_error';
     if (shouldUseLocalFallback(message)) {
+      markFallbackUsage('analyze_video_batch');
       return fallbackAnalyses(videos);
     }
     throw error;
@@ -210,6 +240,7 @@ export const generatePlaylistSuggestions = async (
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown_error';
     if (shouldUseLocalFallback(message)) {
+      markFallbackUsage('generate_playlist_suggestions');
       return fallbackSuggestions(videos, analyses);
     }
     throw error;
@@ -222,6 +253,7 @@ export const publishCuratedVideos = async (items: PublishPayloadItem[]): Promise
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown_error';
     if (shouldUseLocalFallback(message)) {
+      markFallbackUsage('publish_curated_videos');
       return fallbackPublishPayload(items);
     }
     throw error;

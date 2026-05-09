@@ -1,26 +1,28 @@
 // deno-lint-ignore-file no-explicit-any
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+import {
+  corsHeaders,
+  enforceRateLimit,
+  ensurePostMethod,
+  HttpError,
+  json,
+  requireEditorOrAdmin,
+  toErrorResponse,
+} from '../_shared/pipelineSecurity.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-
-  const authHeader = req.headers.get('authorization') || req.headers.get('Authorization') || '';
-  if (!authHeader.startsWith('Bearer ')) return json({ error: 'unauthorized' }, 401);
 
   try {
+    ensurePostMethod(req);
+    const auth = await requireEditorOrAdmin(req);
+    enforceRateLimit(`generate_playlist_suggestions:${auth.userId}`, 10, 60_000);
+
     const { videos, analyses } = await req.json();
     if (!Array.isArray(videos) || !Array.isArray(analyses)) {
-      return json({ error: 'videos_and_analyses_required' }, 400);
+      throw new HttpError(400, 'videos_and_analyses_required', 'videos and analyses are required arrays.');
+    }
+    if (videos.length > 50 || analyses.length > 50) {
+      throw new HttpError(400, 'batch_limit_exceeded', 'Maximum of 50 videos/analyses per request.');
     }
 
     const suggestions = videos.map((video: any) => {
@@ -37,6 +39,6 @@ Deno.serve(async (req) => {
 
     return json(suggestions);
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : 'unexpected_error' }, 400);
+    return toErrorResponse(error);
   }
 });
