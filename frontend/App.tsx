@@ -32,16 +32,17 @@ const CuratorApplicationPage = React.lazy(() => import('./components/curator/Cur
 const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
 const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
 const AdminReviewDashboard = React.lazy(() => import('./components/curator/AdminReviewDashboard').then(m => ({ default: m.AdminReviewDashboard })));
+const ChannelCurationPage = React.lazy(() => import('./components/ChannelCurationPage'));
 const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
 const AdminContentListPage = React.lazy(() => import('./components/admin/AdminContentListPage'));
 const AdminContentDetailPage = React.lazy(() => import('./components/admin/AdminContentDetailPage'));
 const AdminCuratorListPage = React.lazy(() => import('./components/admin/AdminCuratorListPage'));
 const BlogListPage = React.lazy(() => import('./components/blog/BlogListPage'));
 const BlogPostPage = React.lazy(() => import('./components/blog/BlogPostPage'));
-const ChannelCurationPage = React.lazy(() => import('./components/ChannelCurationPage'));
 
 type View =
   | 'home'
+  | 'not-found'
   | 'courses'
   | 'repository'
   | 'paths'
@@ -61,6 +62,7 @@ type View =
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
+  | 'curator-channel-pipeline'
   | 'curator-admin-review'
   | 'curator-channel-curation'
   | 'admin-dashboard'
@@ -122,6 +124,7 @@ const App: React.FC = () => {
     if (view === 'curator-apply') path = '/curator/apply';
     if (view === 'curator-submit') path = '/curator/submit';
     if (view === 'curator-submissions') path = '/curator/submissions';
+    if (view === 'curator-channel-pipeline') path = '/curator/channel-pipeline';
     if (view === 'curator-admin-review') path = '/curator/admin-review';
     if (view === 'curator-channel-curation') path = '/curator/channel-curation';
     if (view === 'admin-dashboard') path = '/admin';
@@ -158,6 +161,10 @@ const App: React.FC = () => {
       }
       if (path === '/curator/submissions') {
         setCurrentView('curator-submissions');
+        return;
+      }
+      if (path === '/curator/channel-pipeline') {
+        setCurrentView('curator-channel-pipeline');
         return;
       }
       if (path === '/curator/admin-review') {
@@ -271,7 +278,11 @@ const App: React.FC = () => {
       setCurrentView('institutional-page');
       return;
     }
-    setCurrentView('home');
+    if (path === '/' || path === '') {
+      setCurrentView('home');
+      return;
+    }
+    setCurrentView('not-found');
   };
 
   useEffect(() => {
@@ -310,6 +321,30 @@ const App: React.FC = () => {
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
   }, [units]);
+
+  useEffect(() => {
+    const privateViews = new Set<View>([
+      'dashboard',
+      'student-dashboard',
+      'student-my-courses',
+      'student-progress',
+      'student-history',
+      'curator-apply',
+      'curator-submit',
+      'curator-submissions',
+      'curator-channel-pipeline',
+      'curator-admin-review',
+      'admin-dashboard',
+      'admin-contents',
+      'admin-content-detail',
+      'admin-curators',
+    ]);
+
+    if (!user && privateViews.has(currentView)) {
+      setCurrentView('home');
+      updateRoute('home');
+    }
+  }, [user, currentView]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -351,6 +386,7 @@ const App: React.FC = () => {
       'curator-apply',
       'curator-submit',
       'curator-submissions',
+      'curator-channel-pipeline',
       'curator-admin-review',
       'admin-dashboard',
       'admin-contents',
@@ -532,6 +568,10 @@ const App: React.FC = () => {
       path = '/curator/submissions';
       title = 'Minhas submissoes | FACODI';
       description = 'Area privada para acompanhar o status das submissoes.';
+    } else if (currentView === 'curator-channel-pipeline') {
+      path = '/curator/channel-pipeline';
+      title = 'Pipeline de curadoria por canal | FACODI';
+      description = 'Area editorial privada para importar canais do YouTube, analisar videos com IA e publicar no fluxo atual de revisao.';
     } else if (currentView === 'curator-admin-review') {
       path = '/curator/admin-review';
       title = 'Revisao administrativa | FACODI';
@@ -758,6 +798,20 @@ const App: React.FC = () => {
       );
     }
 
+    if (currentView === 'curator-channel-pipeline') {
+      if (!user) {
+        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
+      }
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Editor ou Administrador" />;
+      }
+      return (
+        <Suspense fallback={lazyFallback}>
+          <ChannelCurationPage locale={locale} />
+        </Suspense>
+      );
+    }
+
     if (currentView === 'curator-admin-review') {
       if (!user) {
         return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
@@ -863,11 +917,34 @@ const App: React.FC = () => {
     if (currentView === 'profile') {
       return (
         <Suspense fallback={lazyFallback}>
-          <ProfilePage
-            onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-            t={t}
-          />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <ProfilePage
+              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
+              t={t}
+            />
+          </RequireAuth>
         </Suspense>
+      );
+    }
+
+    if (currentView === 'not-found') {
+      return (
+        <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
+          <div className="stark-border p-10 bg-brand-muted">
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-500 mb-4">404</p>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">Página não encontrada</h2>
+            <p className="text-sm text-gray-600 mb-8">A rota solicitada não existe ou foi movida.</p>
+            <button
+              onClick={() => {
+                setCurrentView('home');
+                updateRoute('home');
+              }}
+              className="bg-primary text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            >
+              Voltar ao início
+            </button>
+          </div>
+        </section>
       );
     }
 

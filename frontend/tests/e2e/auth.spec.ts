@@ -92,7 +92,7 @@ test.describe('Auth – Sign in flow', () => {
     await page.getByRole('button', { name: 'Meu Perfil' }).click();
     await expect(page).toHaveURL('/profile');
     // Profile page has a save button
-    await expect(page.getByRole('button', { name: /Guardar/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: /salvar|guardar|save/i })).toBeVisible({ timeout: 5000 });
   });
 
   test('sign out from profile page returns to home and shows Entrar', async ({ page }) => {
@@ -140,9 +140,11 @@ test.describe('Auth – Profile page', () => {
     await expect(page.getByText(/favorit/i).first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('navigating to /profile without auth shows session-not-found message', async ({ page: unauthPage }) => {
-    // Fresh page without login — app renders the profile page but shows gated content
-    await unauthPage.goto('/profile');
-    await expect(unauthPage.getByText(/Sessão não encontrada/i)).toBeVisible({ timeout: 5000 });
+});
+
+test.describe('Auth – Profile page (unauthenticated)', () => {
+  test('navigating to /profile without auth opens auth prompt', async ({ page }) => {
+    await page.goto('/profile');
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
   });
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface RequireAuthProps {
@@ -8,6 +8,14 @@ interface RequireAuthProps {
 
 const RequireAuth: React.FC<RequireAuthProps> = ({ children, onOpenAuth }) => {
   const { user, isLoading } = useAuth();
+  const didAutoOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading && !user && onOpenAuth && !didAutoOpenRef.current) {
+      didAutoOpenRef.current = true;
+      onOpenAuth();
+    }
+  }, [isLoading, user, onOpenAuth]);
 
   if (isLoading) {
     return (

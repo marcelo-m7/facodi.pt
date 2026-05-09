@@ -42,9 +42,17 @@ export interface SubmissionFilters {
  */
 export async function submitContent(data: SubmitContentData): Promise<ContentSubmission | null> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('auth_required');
+    // Prefer locally restored session user to avoid unnecessary remote auth roundtrip.
+    // Fallback to getUser when session is not available.
+    const { data: { session } } = await supabase.auth.getSession();
+    let user = session?.user ?? null;
+
+    if (!user) {
+      const { data: { user: fetchedUser }, error: authError } = await supabase.auth.getUser();
+      if (authError || !fetchedUser) {
+        throw new Error('auth_required');
+      }
+      user = fetchedUser;
     }
 
     // Get user profile for author_name and author_email
@@ -102,6 +110,10 @@ export async function submitContent(data: SubmitContentData): Promise<ContentSub
 
     return mapContentSubmissionRow(newSubmission);
   } catch (error) {
+    if (error instanceof Error && error.message === 'submission_duplicate') {
+      console.warn('submitContent duplicate ignored for existing active submission');
+      throw error;
+    }
     console.error('submitContent error:', error);
     throw error;
   }

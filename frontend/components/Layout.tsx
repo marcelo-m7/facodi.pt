@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { Locale } from '../data/i18n';
 import { useAuth } from '../contexts/AuthContext';
+import DevelopmentBadge from './DevelopmentBadge';
+import DevelopmentDisclaimer from './DevelopmentDisclaimer';
+import { useDevelopmentNotice } from '../hooks/useDevelopmentNotice';
 
 type View =
   | 'home'
@@ -24,6 +27,7 @@ type View =
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
+  | 'curator-channel-pipeline'
   | 'curator-admin-review'
   | 'admin-dashboard'
   | 'admin-contents'
@@ -60,6 +64,7 @@ const Layout: React.FC<Props> = ({
   onOpenAuth,
 }) => {
   const { user, profile } = useAuth();
+  const { isOpen: isDevelopmentOpen, isReady: isDevelopmentReady, closeNotice, openNotice } = useDevelopmentNotice();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const CONTENT_SUBMIT_URL = 'https://tube.open2.tech';
@@ -122,14 +127,14 @@ const Layout: React.FC<Props> = ({
       </a>
 
       <header className={`fixed top-0 w-full z-50 h-16 md:h-20 transition-all ${isScrolled ? 'bg-white/95 backdrop-blur stark-border-b shadow-[0_4px_0_0_rgba(0,0,0,0.06)]' : 'bg-white stark-border-b'}`}>
-        <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between gap-3">
           {/* Logo */}
           <button onClick={() => navGo('home')} aria-label="FACODI — Página inicial" className="flex items-center gap-2 shrink-0">
             <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">FACODI</span>
           </button>
 
           {/* Desktop nav */}
-          <nav aria-label="Navegação principal" className="hidden md:flex items-center gap-5 lg:gap-8">
+          <nav aria-label="Navegação principal" className="hidden md:flex flex-1 min-w-0 items-center gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap">
             <button onClick={() => navGo('home')} aria-current={isActive('home') ? 'page' : undefined} className={navCls('home')}>{t('nav.home')}</button>
             <button onClick={() => navGo('courses')} aria-current={isActive('courses') ? 'page' : undefined} className={navCls('courses')}>{t('nav.courses')}</button>
             <button onClick={() => navGo('repository')} aria-current={isActive('repository', ['course-detail', 'lesson-detail']) ? 'page' : undefined} className={navCls('repository', ['course-detail', 'lesson-detail'])}>{t('nav.units')}</button>
@@ -144,6 +149,11 @@ const Layout: React.FC<Props> = ({
                 Meus Cursos
               </button>
             )}
+            {user && (
+              <button onClick={() => navGo('profile')} aria-current={isActive('profile') ? 'page' : undefined} className={navCls('profile')}>
+                {t('nav.profile')}
+              </button>
+            )}
             {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
               <button onClick={() => navGo('curator-submit')} aria-current={isActive('curator-submit', ['curator-submissions']) ? 'page' : undefined} className={navCls('curator-submit', ['curator-submissions'])}>
                 Enviar Conteúdo
@@ -152,6 +162,11 @@ const Layout: React.FC<Props> = ({
             {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
               <button onClick={() => navGo('curator-submissions')} aria-current={isActive('curator-submissions') ? 'page' : undefined} className={navCls('curator-submissions')}>
                 Minhas Sugestões
+              </button>
+            )}
+            {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
+              <button onClick={() => navGo('curator-channel-pipeline')} aria-current={isActive('curator-channel-pipeline') ? 'page' : undefined} className={navCls('curator-channel-pipeline')}>
+                Pipeline de Canal
               </button>
             )}
             {user && profile?.role === 'user' && (
@@ -173,7 +188,7 @@ const Layout: React.FC<Props> = ({
           </nav>
 
           {/* Desktop right */}
-          <div className="hidden md:flex items-center gap-3 lg:gap-4">
+          <div className="hidden md:flex items-center gap-3 lg:gap-4 shrink-0">
             <div className="hidden lg:flex items-center gap-2 border border-black/10 px-3 py-1.5 text-[10px] font-bold uppercase">
               <label htmlFor="facodi-language" className="sr-only">{t('nav.languageLabel')}</label>
               <select id="facodi-language" value={locale} onChange={(e) => onLocaleChange(e.target.value as Locale)} className="bg-transparent outline-none cursor-pointer">
@@ -181,14 +196,14 @@ const Layout: React.FC<Props> = ({
                 <option value="en">EN</option>
               </select>
             </div>
-            <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all">
+            <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-11 h-11 flex items-center justify-center hover:bg-brand-muted transition-all">
               <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
             </button>
             {user ? (
               <button
                 onClick={() => navGo('profile')}
-                aria-label={t('nav.profile')}
-                className={`stark-border w-9 h-9 flex items-center justify-center hover:bg-brand-muted transition-all overflow-hidden ${isActive('profile') ? 'bg-primary' : ''}`}
+                aria-label="Atalho de perfil"
+                className={`stark-border w-11 h-11 flex items-center justify-center hover:bg-brand-muted transition-all overflow-hidden ${isActive('profile') ? 'bg-primary' : ''}`}
                 title={profile?.display_name ?? profile?.username ?? t('nav.profile')}
               >
                 {profile?.avatar_url ? (
@@ -205,7 +220,7 @@ const Layout: React.FC<Props> = ({
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="stark-border px-4 h-9 text-[10px] font-black uppercase tracking-widest hover:bg-brand-muted transition-all"
+                className="stark-border px-4 h-11 text-[10px] font-black uppercase tracking-widest hover:bg-brand-muted transition-all"
               >
                 {t('nav.login')}
               </button>
@@ -214,7 +229,7 @@ const Layout: React.FC<Props> = ({
 
           {/* Mobile: bookmark + hamburger */}
           <div className="flex md:hidden items-center gap-2">
-            <button onClick={() => navGo('dashboard')} aria-label="Meu progresso" className="relative w-9 h-9 flex items-center justify-center">
+            <button onClick={() => navGo('dashboard')} aria-label="Meu progresso" className="relative w-11 h-11 flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">bookmark</span>
               {savedCount > 0 && (
                 <span className="absolute top-0 right-0 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
@@ -238,11 +253,12 @@ const Layout: React.FC<Props> = ({
       <nav
         id="mobile-menu"
         aria-label="Menu mobile"
-        className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        aria-hidden={!mobileOpen}
+        className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden transition-transform duration-300 ${mobileOpen ? 'translate-x-0 visible' : 'translate-x-full invisible pointer-events-none'}`}
       >
         <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
           <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
-          <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-9 h-9 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
+          <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-11 h-11 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
             <span className="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -257,6 +273,7 @@ const Layout: React.FC<Props> = ({
             ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submissions' as View, label: 'Minhas Sugestões', icon: 'schedule' }] : []),
+            ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-channel-pipeline' as View, label: 'Pipeline de Canal', icon: 'smart_display' }] : []),
             ...(user && profile?.role === 'user' ? [{ view: 'curator-apply' as View, label: 'Ser Curador', icon: 'edit_note' }] : []),
             ...(user && profile?.role === 'admin' ? [{ view: 'admin-dashboard' as View, label: 'Painel Admin', icon: 'admin_panel_settings' }] : []),
           ] as { view: View; label: string; icon: string }[]).map(({ view, label, icon }) => (
@@ -319,6 +336,22 @@ const Layout: React.FC<Props> = ({
       <main id="main-content" className="flex-grow pt-16 md:pt-20">
         {children}
       </main>
+
+      <DevelopmentBadge
+        label={t('development.badge')}
+        onClick={openNotice}
+      />
+
+      <DevelopmentDisclaimer
+        isOpen={isDevelopmentReady && isDevelopmentOpen}
+        title={t('development.title')}
+        body={t('development.body')}
+        signedMessage={t('development.message')}
+        signature={t('development.signature')}
+        institutionalLine={t('development.institutional')}
+        closeLabel={t('development.close')}
+        onClose={() => closeNotice(true)}
+      />
 
       <footer className="bg-white border-t-2 border-black pt-20 pb-10 mt-20">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">

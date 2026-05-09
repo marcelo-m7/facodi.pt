@@ -46,7 +46,7 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, is
             </div>
           </div>
         </div>
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12">
           {courses.map(course => {
             const unitCount = units.filter(unit => unit.courseId === course.id).length;
             return (
