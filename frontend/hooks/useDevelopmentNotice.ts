@@ -9,12 +9,11 @@ export const useDevelopmentNotice = () => {
   useEffect(() => {
     try {
       const seen = localStorage.getItem(STORAGE_KEY) === '1';
-      setIsOpen(false);
       if (!seen) {
-        localStorage.setItem(STORAGE_KEY, '1');
+        setIsOpen(true);
       }
     } catch {
-      setIsOpen(false);
+      // no-op if storage is unavailable
     }
     setIsReady(true);
   }, []);
