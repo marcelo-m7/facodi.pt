@@ -20,10 +20,6 @@ type View =
   | 'videos'
   | 'video-detail'
   | 'profile'
-  | 'student-dashboard'
-  | 'student-my-courses'
-  | 'student-progress'
-  | 'student-history'
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
@@ -41,7 +37,9 @@ interface Props {
   currentView: View;
   onViewChange: (view: View) => void;
   onNavigatePage?: (slug: string) => void;
-  savedCount: number;
+  onNavigateLegal?: (document: 'privacy-policy' | 'terms-of-service' | 'cookie-policy') => void;
+  onOpenCookiePreferences?: () => void;
+  allowPreferenceStorage?: boolean;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
   isDark: boolean;
@@ -55,7 +53,9 @@ const Layout: React.FC<Props> = ({
   currentView,
   onViewChange,
   onNavigatePage,
-  savedCount,
+  onNavigateLegal,
+  onOpenCookiePreferences,
+  allowPreferenceStorage = true,
   locale,
   onLocaleChange,
   isDark,
@@ -64,7 +64,7 @@ const Layout: React.FC<Props> = ({
   onOpenAuth,
 }) => {
   const { user, profile } = useAuth();
-  const { isOpen: isDevelopmentOpen, isReady: isDevelopmentReady, closeNotice, openNotice } = useDevelopmentNotice();
+  const { isOpen: isDevelopmentOpen, isReady: isDevelopmentReady, closeNotice, openNotice } = useDevelopmentNotice(allowPreferenceStorage);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const CONTENT_SUBMIT_URL = 'https://tube.open2.tech';
@@ -140,15 +140,7 @@ const Layout: React.FC<Props> = ({
             <button onClick={() => navGo('repository')} aria-current={isActive('repository', ['course-detail', 'lesson-detail']) ? 'page' : undefined} className={navCls('repository', ['course-detail', 'lesson-detail'])}>{t('nav.units')}</button>
             <button onClick={() => navGo('dashboard')} aria-current={isActive('dashboard') ? 'page' : undefined} className={`relative ${navCls('dashboard')}`}>
               {t('nav.progress')}
-              {savedCount > 0 && (
-                <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
-              )}
             </button>
-            {user && (
-              <button onClick={() => navGo('student-dashboard')} aria-current={isActive('student-dashboard', ['student-my-courses', 'student-progress', 'student-history']) ? 'page' : undefined} className={navCls('student-dashboard', ['student-my-courses', 'student-progress', 'student-history'])}>
-                Meus Cursos
-              </button>
-            )}
             {user && (
               <button onClick={() => navGo('profile')} aria-current={isActive('profile') ? 'page' : undefined} className={navCls('profile')}>
                 {t('nav.profile')}
@@ -230,10 +222,7 @@ const Layout: React.FC<Props> = ({
           {/* Mobile: bookmark + hamburger */}
           <div className="flex md:hidden items-center gap-2">
             <button onClick={() => navGo('dashboard')} aria-label="Meu progresso" className="relative w-11 h-11 flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">bookmark</span>
-              {savedCount > 0 && (
-                <span className="absolute top-0 right-0 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
-              )}
+              <span className="material-symbols-outlined text-xl">dashboard</span>
             </button>
             <button onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileOpen} aria-controls="mobile-menu" className="w-10 h-10 flex items-center justify-center stark-border hover:bg-brand-muted transition-all text-black dark:text-white">
               <span className="relative block w-5 h-4" aria-hidden="true">
@@ -270,7 +259,6 @@ const Layout: React.FC<Props> = ({
             { view: 'repository' as View, label: t('nav.units'), icon: 'grid_view' },
             { view: 'dashboard' as View, label: t('nav.progress'), icon: 'dashboard' },
             { view: 'blog' as View, label: t('nav.blog'), icon: 'article' },
-            ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submissions' as View, label: 'Minhas Sugestões', icon: 'schedule' }] : []),
             ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-channel-pipeline' as View, label: 'Pipeline de Canal', icon: 'smart_display' }] : []),
@@ -431,8 +419,11 @@ const Layout: React.FC<Props> = ({
               <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
                 <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
                 <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
-                <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
-                <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
+                <button onClick={() => onNavigateLegal?.('privacy-policy')} className="hover:text-primary">PRIVACIDADE</button>
+                <button onClick={() => onNavigateLegal?.('terms-of-service')} className="hover:text-primary">TERMOS</button>
+                <button onClick={() => onNavigateLegal?.('cookie-policy')} className="hover:text-primary">COOKIES</button>
+                <button onClick={onOpenCookiePreferences} className="hover:text-primary">PREFERENCIAS DE COOKIES</button>
+                {user && <button onClick={() => onViewChange('profile')} className="hover:text-primary">ELIMINAR CONTA</button>}
                 <details className="cursor-pointer">
                   <summary className="hover:text-primary">AVISO LEGAL</summary>
                   <div className="mt-4 text-[8px] font-medium leading-relaxed p-4 bg-gray-50 stark-border max-w-2xl">

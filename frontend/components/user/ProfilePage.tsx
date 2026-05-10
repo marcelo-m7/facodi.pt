@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../services/supabase';
 import EditorVideoSuggestionPanel from './EditorVideoSuggestionPanel';
+import { deleteMyAccount, logAccountDeletionAttempt } from '../../services/accountDeletionService';
 
 interface Props {
   onBack: () => void;
@@ -30,6 +31,11 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
   const [favLoading, setFavLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     setDisplayName(profile?.display_name ?? '');
@@ -80,6 +86,49 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setDeleteError(null);
+
+    if (confirmText.trim().toUpperCase() !== 'DELETE') {
+      setDeleteError('Digite DELETE para confirmar.');
+      return;
+    }
+
+    if (user.email && !confirmPassword) {
+      setDeleteError('Insira a sua senha atual para confirmar.');
+      return;
+    }
+
+    setIsDeleting(true);
+    await logAccountDeletionAttempt(user.id, 'requested');
+
+    try {
+      if (user.email && confirmPassword) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: confirmPassword,
+        });
+        if (signInError) {
+          setDeleteError('Falha na reautenticacao. Verifique a senha e tente novamente.');
+          await logAccountDeletionAttempt(user.id, 'failed', 'reauthentication_failed');
+          setIsDeleting(false);
+          return;
+        }
+      }
+
+      await deleteMyAccount();
+      await logAccountDeletionAttempt(user.id, 'completed');
+      await signOut();
+      onBack();
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Erro ao eliminar conta.');
+      await logAccountDeletionAttempt(user.id, 'failed', 'delete_rpc_failed');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16">
@@ -117,11 +166,11 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
         <div className="lg:col-span-4 flex flex-col gap-8">
           <div className="stark-border p-8 flex flex-col items-center gap-4 bg-brand-muted">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={profile.display_name ?? 'Avatar'} className="w-24 h-24 rounded-full stark-border object-cover" referrerPolicy="no-referrer" />
+              <img src={avatarUrl} alt={resolvedProfile.display_name ?? 'Avatar'} className="w-24 h-24 rounded-full stark-border object-cover" referrerPolicy="no-referrer" />
             ) : (
               <div className="w-24 h-24 rounded-full stark-border bg-primary flex items-center justify-center">
                 <span className="text-4xl font-black text-black select-none">
-                  {(profile.display_name ?? profile.username ?? '?')[0].toUpperCase()}
+                  {(resolvedProfile.display_name ?? resolvedProfile.username ?? '?')[0].toUpperCase()}
                 </span>
               </div>
             )}
@@ -143,6 +192,13 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
             {isSigningOut ? 'A sair...' : t('nav.logout')}
           </button>
           {signOutError && <p className="text-[10px] font-bold uppercase text-red-600">{signOutError}</p>}
+
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="w-full stark-border py-3 text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-700 hover:bg-red-100 transition-all"
+          >
+            Delete My Account Permanently
+          </button>
         </div>
 
         {/* Right: edit form + favorites */}
@@ -210,6 +266,61 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
           {canSuggestVideos && <EditorVideoSuggestionPanel t={t} />}
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-account-title">
+          <div className="w-full max-w-xl bg-white stark-border p-6 flex flex-col gap-4">
+            <h2 id="delete-account-title" className="text-lg font-black uppercase tracking-wide">Delete My Account Permanently</h2>
+            <p className="text-sm text-gray-700">
+              Deleting your account is permanent and cannot be undone. Your personal data, progress, and associated content may be permanently removed.
+            </p>
+
+            <label className="flex flex-col gap-2 text-sm font-bold">
+              Type DELETE to confirm
+              <input
+                type="text"
+                value={confirmText}
+                onChange={(event) => setConfirmText(event.target.value)}
+                className="stark-border px-3 py-2"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2 text-sm font-bold">
+              Current password
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="stark-border px-3 py-2"
+              />
+            </label>
+
+            {deleteError && <p className="text-xs font-bold text-red-600">{deleteError}</p>}
+
+            <div className="flex flex-col md:flex-row gap-3">
+              <button
+                onClick={() => {
+                  if (isDeleting) return;
+                  setShowDeleteModal(false);
+                  setDeleteError(null);
+                  setConfirmText('');
+                  setConfirmPassword('');
+                }}
+                className="stark-border px-4 py-3 text-[10px] font-black uppercase tracking-widest"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="stark-border bg-red-600 text-white px-4 py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-60"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete My Account Permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

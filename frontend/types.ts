@@ -131,7 +131,6 @@ export interface FilterState {
   category: Category | 'All';
   difficulty: Difficulty | 'All';
   search: string;
-  onlySaved: boolean;
   courseId: string | 'All';
   year: number | 'All';
   semester: number | 'All';
@@ -183,4 +182,29 @@ export interface ContentSubmission {
   rejection_reason?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export type CookieConsentCategory = 'necessary' | 'analytics' | 'marketing' | 'preferences';
+
+export interface CookieConsentPreferences {
+  necessary: true;
+  analytics: boolean;
+  marketing: boolean;
+  preferences: boolean;
+}
+
+export interface ConsentAuditPayload {
+  version: string;
+  timestamp: string;
+  source: string;
+  preferences: CookieConsentPreferences;
+  userId?: string | null;
+}
+
+export interface LegalAcceptanceRecord {
+  acceptedAt: string;
+  termsVersion: string;
+  privacyVersion: string;
+  marketingOptIn: boolean;
+  userId?: string | null;
 }
