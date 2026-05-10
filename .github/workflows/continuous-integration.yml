@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
+      - monorepo
       - dev-features
   pull_request:
     branches:
-      - main
+      - *
 
 concurrency:
   group: ci-${{ github.ref }}
