@@ -279,17 +279,17 @@ const Layout: React.FC<Props> = ({
               <option value="en">English</option>
             </select>
           </div>
-          <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
+          <button onClick={onToggleTheme} className="facodi-btn facodi-btn-secondary facodi-btn-full flex items-center gap-3">
             <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
             {isDark ? 'Modo claro' : 'Modo escuro'}
           </button>
           {user ? (
-            <button onClick={() => { navGo('profile'); }} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
+            <button onClick={() => { navGo('profile'); }} className="facodi-btn facodi-btn-secondary facodi-btn-full flex items-center gap-3">
               <span className="material-symbols-outlined text-base">account_circle</span>
               {t('nav.profile')}
             </button>
           ) : (
-            <button onClick={() => { setMobileOpen(false); onOpenAuth(); }} className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border w-full">
+            <button onClick={() => { setMobileOpen(false); onOpenAuth(); }} className="facodi-btn facodi-btn-primary facodi-btn-full">
               {t('nav.login')}
             </button>
           )}
@@ -297,9 +297,9 @@ const Layout: React.FC<Props> = ({
             href={CONTENT_SUBMIT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-white text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:bg-brand-muted transition-all w-full text-center"
+            className="facodi-btn facodi-btn-secondary facodi-btn-full text-center"
           >
-            Enviar Conteudo
+            Enviar Conteúdo
           </a>
         </div>
       </nav>
@@ -359,7 +359,10 @@ const Layout: React.FC<Props> = ({
               <h5 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-8">NAVEGAÇÃO</h5>
               <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest">
                 <li><button onClick={() => onViewChange('home')} className="hover:text-primary">Início</button></li>
-                <li><button onClick={() => onViewChange('repository')} className="hover:text-primary">Cursos</button></li>
+                <li><button onClick={() => onViewChange('courses')} className="hover:text-primary">Cursos</button></li>
+                <li><button onClick={() => onViewChange('repository')} className="hover:text-primary">Unidades</button></li>
+                <li><button onClick={() => onViewChange('blog')} className="hover:text-primary">Blog</button></li>
+                <li><button onClick={() => onNavigatePage?.('manifesto')} className="hover:text-primary">Manifesto</button></li>
               </ul>
             </div>
 
@@ -369,7 +372,7 @@ const Layout: React.FC<Props> = ({
                 <li><button onClick={() => onNavigatePage?.('manifesto')} className="hover:text-primary">Manifesto</button></li>
                 <li><button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">Sobre a FACODI</button></li>
                 <li><button onClick={() => onNavigatePage?.('comunidade')} className="hover:text-primary">Comunidade</button></li>
-                <li><a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">Enviar Conteudo</a></li>
+                <li><a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">Enviar Conteúdo</a></li>
                 <li><a href="https://open2.tech" className="hover:text-primary">Open2 Technology</a></li>
                 <li><a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Contacto Open2</a></li>
               </ul>
@@ -400,7 +403,7 @@ const Layout: React.FC<Props> = ({
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
               <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
-                <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
+                <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEÚDO</a>
                 <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
                 <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
                 <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
