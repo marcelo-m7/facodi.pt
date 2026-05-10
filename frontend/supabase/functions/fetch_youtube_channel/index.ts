@@ -4,7 +4,7 @@ import {
   ensurePostMethod,
   HttpError,
   json,
-  requireEditorOrAdmin,
+  requireAuthenticated,
   toErrorResponse,
 } from '../_shared/pipelineSecurity.ts';
 
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
   try {
     ensurePostMethod(req);
-    const auth = await requireEditorOrAdmin(req);
+      const auth = await requireAuthenticated(req);
     enforceRateLimit(`fetch_youtube_channel:${auth.userId}`, 30, 60_000);
 
     const { channelInput } = await req.json();

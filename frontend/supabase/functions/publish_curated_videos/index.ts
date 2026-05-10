@@ -5,7 +5,7 @@ import {
   ensurePostMethod,
   HttpError,
   json,
-  requireEditorOrAdmin,
+  requireAuthenticated,
   toErrorResponse,
 } from '../_shared/pipelineSecurity.ts';
 
@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
 
   try {
     ensurePostMethod(req);
-    const auth = await requireEditorOrAdmin(req);
+      const auth = await requireAuthenticated(req);
     enforceRateLimit(`publish_curated_videos:${auth.userId}`, 6, 60_000);
 
     const { items } = await req.json();
