@@ -44,3 +44,38 @@ jobs:
           pip install mypy ruff
           mypy src/codoo --ignore-missing-imports || true
           ruff check src/
+
+
+  frontend-tests:
+    name: Frontend Unit + E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: frontend
+
+      - name: Run frontend unit tests with coverage thresholds
+        run: pnpm test:unit:coverage
+        working-directory: frontend
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+        working-directory: frontend
+
+      - name: Run frontend E2E smoke/regression
+        run: pnpm test:e2e
+        working-directory: frontend
