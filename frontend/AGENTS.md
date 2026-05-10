@@ -16,6 +16,11 @@ pnpm install
 pnpm dev
 pnpm build
 pnpm test:e2e
+```
+
+Optional security command (only if script exists in your branch):
+
+```bash
 pnpm security:check-rls
 ```
 
@@ -42,6 +47,19 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 - Use `loadCatalogData()` as the single catalog entrypoint.
 - Preserve mock fallback when live providers fail.
 
+## Runtime And Data-Source Rules
+
+- `VITE_DATA_SOURCE=mock|supabase` controls runtime source selection.
+- Keep fallback behavior: if Supabase catalog fetch fails, return mock data.
+- Keep source-specific error logs explicit (for example `[catalogSource:supabase]`).
+
+## E2E Testing Notes
+
+- E2E tests live in [tests/e2e/](tests/e2e/).
+- Install browsers on fresh machines with `pnpm exec playwright install`.
+- Keep catalog ordering deterministic to avoid flaky navigation/UI assertions.
+- Prefer running `pnpm test:e2e` after route, navigation, or view-state changes.
+
 ## Critical Data Contracts
 
 - `Course.id` stays stable and unique.
@@ -61,6 +79,8 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 - ID format changes break routing and joins.
 - Provider logic leaking into components causes coupling and regressions.
 - Parallel data entrypoints drift; keep integration centralized.
+- Non-deterministic unit/playlist ordering causes UI flicker and test instability.
+- Running `pnpm security:check-rls` fails when the backing script is absent.
 
 ## Specialized Reviewer
 
