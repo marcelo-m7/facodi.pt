@@ -32,7 +32,7 @@ const CuratorApplicationPage = React.lazy(() => import('./components/curator/Cur
 const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
 const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
 const AdminReviewDashboard = React.lazy(() => import('./components/curator/AdminReviewDashboard').then(m => ({ default: m.AdminReviewDashboard })));
-const ChannelCurationPage = React.lazy(() => import('./components/ChannelCurationPage'));
+const ChannelCurationPage = React.lazy(() => import('./components/curator/ChannelCurationPage').then(m => ({ default: m.ChannelCurationPage })));
 const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
 const AdminContentListPage = React.lazy(() => import('./components/admin/AdminContentListPage'));
 const AdminContentDetailPage = React.lazy(() => import('./components/admin/AdminContentDetailPage'));

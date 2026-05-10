@@ -83,6 +83,23 @@ const Layout: React.FC<Props> = ({
   const navCls = (view: View, extra?: View[]) =>
     `transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 ${isActive(view, extra) ? 'text-black bg-primary stark-border' : 'text-gray-500 hover:text-black hover:bg-brand-muted'}`;
 
+  // Items de navegação unificados — mesma lista para desktop e mobile
+  const navItems: { view: View; label: string; icon: string; active?: View[] }[] = [
+    { view: 'home', label: t('nav.home'), icon: 'home' },
+    { view: 'courses', label: t('nav.courses'), icon: 'school' },
+    { view: 'repository', label: t('nav.units'), icon: 'grid_view', active: ['course-detail', 'lesson-detail'] },
+    { view: 'dashboard', label: t('nav.progress'), icon: 'dashboard' },
+    { view: 'blog', label: t('nav.blog'), icon: 'article', active: ['blog-post'] },
+    ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library', active: ['student-my-courses', 'student-progress', 'student-history'] as View[] }] : []),
+    ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [
+      { view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload', active: ['curator-submissions'] as View[] },
+      { view: 'curator-submissions' as View, label: 'Minhas Sugestões', icon: 'schedule' },
+      { view: 'curator-channel-pipeline' as View, label: 'Pipeline de Canal', icon: 'smart_display' },
+    ] : []),
+    ...(user && profile?.role === 'user' ? [{ view: 'curator-apply' as View, label: 'Ser Curador', icon: 'edit_note' }] : []),
+    ...(user && profile?.role === 'admin' ? [{ view: 'admin-dashboard' as View, label: 'Painel Admin', icon: 'admin_panel_settings', active: ['admin-contents', 'admin-content-detail', 'admin-curators', 'curator-admin-review'] as View[] }] : []),
+  ];
+
   // Prevent body scroll when drawer is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
@@ -135,53 +152,19 @@ const Layout: React.FC<Props> = ({
 
           {/* Desktop nav */}
           <nav aria-label="Navegação principal" className="hidden md:flex flex-1 min-w-0 items-center gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap">
-            <button onClick={() => navGo('home')} aria-current={isActive('home') ? 'page' : undefined} className={navCls('home')}>{t('nav.home')}</button>
-            <button onClick={() => navGo('courses')} aria-current={isActive('courses') ? 'page' : undefined} className={navCls('courses')}>{t('nav.courses')}</button>
-            <button onClick={() => navGo('repository')} aria-current={isActive('repository', ['course-detail', 'lesson-detail']) ? 'page' : undefined} className={navCls('repository', ['course-detail', 'lesson-detail'])}>{t('nav.units')}</button>
-            <button onClick={() => navGo('dashboard')} aria-current={isActive('dashboard') ? 'page' : undefined} className={`relative ${navCls('dashboard')}`}>
-              {t('nav.progress')}
-              {savedCount > 0 && (
-                <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
-              )}
-            </button>
-            {user && (
-              <button onClick={() => navGo('student-dashboard')} aria-current={isActive('student-dashboard', ['student-my-courses', 'student-progress', 'student-history']) ? 'page' : undefined} className={navCls('student-dashboard', ['student-my-courses', 'student-progress', 'student-history'])}>
-                Meus Cursos
+            {navItems.map(({ view, label, active }) => (
+              <button
+                key={view}
+                onClick={() => navGo(view)}
+                aria-current={isActive(view, active) ? 'page' : undefined}
+                className={view === 'dashboard' ? `relative ${navCls('dashboard')}` : navCls(view, active)}
+              >
+                {label}
+                {view === 'dashboard' && savedCount > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
+                )}
               </button>
-            )}
-            {user && (
-              <button onClick={() => navGo('profile')} aria-current={isActive('profile') ? 'page' : undefined} className={navCls('profile')}>
-                {t('nav.profile')}
-              </button>
-            )}
-            {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
-              <button onClick={() => navGo('curator-submit')} aria-current={isActive('curator-submit', ['curator-submissions']) ? 'page' : undefined} className={navCls('curator-submit', ['curator-submissions'])}>
-                Enviar Conteúdo
-              </button>
-            )}
-            {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
-              <button onClick={() => navGo('curator-submissions')} aria-current={isActive('curator-submissions') ? 'page' : undefined} className={navCls('curator-submissions')}>
-                Minhas Sugestões
-              </button>
-            )}
-            {user && (profile?.role === 'editor' || profile?.role === 'admin') && (
-              <button onClick={() => navGo('curator-channel-pipeline')} aria-current={isActive('curator-channel-pipeline') ? 'page' : undefined} className={navCls('curator-channel-pipeline')}>
-                Pipeline de Canal
-              </button>
-            )}
-            {user && profile?.role === 'user' && (
-              <button onClick={() => navGo('curator-apply')} aria-current={isActive('curator-apply') ? 'page' : undefined} className={navCls('curator-apply')}>
-                Ser Curador
-              </button>
-            )}
-            {user && profile?.role === 'admin' && (
-              <button onClick={() => navGo('admin-dashboard')} aria-current={isActive('admin-dashboard', ['admin-contents', 'admin-content-detail', 'admin-curators', 'curator-admin-review']) ? 'page' : undefined} className={navCls('admin-dashboard', ['admin-contents', 'admin-content-detail', 'admin-curators', 'curator-admin-review'])}>
-                Painel Admin
-              </button>
-            )}
-            <button onClick={() => navGo('blog')} aria-current={isActive('blog', ['blog-post']) ? 'page' : undefined} className={navCls('blog', ['blog-post'])}>
-              {t('nav.blog')}
-            </button>
+            ))}
             <button onClick={() => pageGo('manifesto')} className="transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500 hover:text-black hover:bg-brand-muted">
               Manifesto
             </button>
@@ -264,23 +247,11 @@ const Layout: React.FC<Props> = ({
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-1">
           <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">Navegar</p>
-          {([
-            { view: 'home' as View, label: t('nav.home'), icon: 'home' },
-            { view: 'courses' as View, label: t('nav.courses'), icon: 'school' },
-            { view: 'repository' as View, label: t('nav.units'), icon: 'grid_view' },
-            { view: 'dashboard' as View, label: t('nav.progress'), icon: 'dashboard' },
-            { view: 'blog' as View, label: t('nav.blog'), icon: 'article' },
-            ...(user ? [{ view: 'student-dashboard' as View, label: 'Meus Cursos', icon: 'video_library' }] : []),
-            ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submit' as View, label: 'Enviar Conteúdo', icon: 'upload' }] : []),
-            ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-submissions' as View, label: 'Minhas Sugestões', icon: 'schedule' }] : []),
-            ...(user && (profile?.role === 'editor' || profile?.role === 'admin') ? [{ view: 'curator-channel-pipeline' as View, label: 'Pipeline de Canal', icon: 'smart_display' }] : []),
-            ...(user && profile?.role === 'user' ? [{ view: 'curator-apply' as View, label: 'Ser Curador', icon: 'edit_note' }] : []),
-            ...(user && profile?.role === 'admin' ? [{ view: 'admin-dashboard' as View, label: 'Painel Admin', icon: 'admin_panel_settings' }] : []),
-          ] as { view: View; label: string; icon: string }[]).map(({ view, label, icon }) => (
+          {navItems.map(({ view, label, icon, active }) => (
             <button
               key={view}
               onClick={() => navGo(view)}
-              className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-between ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}
+              className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-between ${isActive(view, active) ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}
             >
               <span>{label}</span>
               <span className="material-symbols-outlined text-lg">{icon}</span>
