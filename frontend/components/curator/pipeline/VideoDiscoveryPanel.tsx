@@ -32,7 +32,7 @@ const VideoCard: React.FC<{
           type="checkbox"
           checked={isSelected}
           onChange={onToggle}
-          className="mt-1 w-4 h-4"
+          className="mt-1 w-5 h-5 border border-black cursor-pointer accent-yellow-400"
         />
         
         {/* Thumbnail */}
@@ -107,7 +107,7 @@ const VideoDiscoveryPanel: React.FC<VideoDiscoveryPanelProps> = ({
           type="button"
           onClick={onLoad}
           disabled={loading}
-          className="stark-border px-4 py-2 text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+          className="facodi-btn facodi-btn-secondary"
         >
           {loading ? 'Buscando...' : 'Buscar vídeos'}
         </button>

@@ -36,7 +36,7 @@ const ChannelImportPanel: React.FC<ChannelImportPanelProps> = ({
         type="button"
         onClick={onValidate}
         disabled={loading || !channelInput.trim()}
-        className="bg-primary text-black px-5 py-3 text-[10px] font-black uppercase tracking-widest stark-border disabled:opacity-50"
+        className="facodi-btn facodi-btn-primary facodi-btn-full"
       >
         {loading ? 'Validando...' : 'Validar canal'}
       </button>

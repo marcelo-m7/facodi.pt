@@ -275,8 +275,8 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
           aria-labelledby="confirm-publish-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
         >
-          <div className="bg-white stark-border max-w-sm w-full mx-4 p-6 space-y-4">
-            <h3 id="confirm-publish-title" className="text-[10px] font-black uppercase tracking-widest">
+          <div className="facodi-card max-w-sm w-full mx-4 space-y-4">
+            <h3 id="confirm-publish-title" className="facodi-label m-0">
               Confirmar publicação
             </h3>
             <p className="text-sm text-gray-700">
@@ -291,7 +291,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
               <button
                 type="button"
                 onClick={() => setConfirmPublish(false)}
-                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest stark-border"
+                className="facodi-btn facodi-btn-secondary"
               >
                 Cancelar
               </button>
@@ -301,7 +301,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
                   setConfirmPublish(false);
                   handlePublish();
                 }}
-                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-primary text-black stark-border"
+                className="facodi-btn facodi-btn-primary"
               >
                 Publicar
               </button>

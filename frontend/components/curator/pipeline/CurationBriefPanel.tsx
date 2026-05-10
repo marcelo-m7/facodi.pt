@@ -55,13 +55,14 @@ const CurationBriefPanel: React.FC<CurationBriefPanelProps> = ({ brief, onChange
           />
         </div>
       </div>
-      <label className="flex items-center gap-3 text-sm font-medium">
+      <label className="flex items-center gap-3 cursor-pointer">
         <input
           type="checkbox"
           checked={brief.includeShorts ?? false}
           onChange={(event) => onChange({ ...brief, includeShorts: event.target.checked })}
+          className="w-5 h-5 border border-black cursor-pointer accent-yellow-400"
         />
-        Incluir Shorts
+        <span className="facodi-label m-0">Incluir Shorts</span>
       </label>
     </div>
   );

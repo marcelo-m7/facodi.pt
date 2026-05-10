@@ -82,7 +82,7 @@ const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({ analyses, loading, er
           type="button"
           onClick={onAnalyze}
           disabled={loading}
-          className="bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 stark-border hover:bg-gray-900"
+          className="facodi-btn facodi-btn-secondary"
         >
           {loading ? '⏳ Analisando...' : '🤖 Executar análise'}
         </button>
