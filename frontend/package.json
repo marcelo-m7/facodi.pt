@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "security:check-rls": "./scripts/check-rls.sh"
+    "security:check-rls": "./scripts/check-rls.sh",
+    "test:unit": "vitest run ./services/env.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
@@ -23,6 +24,7 @@
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vitest": "^2.1.8"
   }
 }
