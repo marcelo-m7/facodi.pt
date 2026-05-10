@@ -301,7 +301,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
                   setConfirmPublish(false);
                   handlePublish();
                 }}
-                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-primary text-black stark-border"
+                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest facodi-primary-surface stark-border"
               >
                 Publicar
               </button>

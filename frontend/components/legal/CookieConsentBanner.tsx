@@ -47,7 +47,7 @@ const CookieConsentBanner: React.FC<Props> = ({ locale, onAcceptAll, onRejectNon
           <button
             type="button"
             onClick={onAcceptAll}
-            className="bg-primary text-black px-4 py-3 text-[11px] font-black uppercase tracking-widest stark-border"
+            className="facodi-primary-surface px-4 py-3 text-[11px] font-black uppercase tracking-widest stark-border"
           >
             {text.acceptAll}
           </button>

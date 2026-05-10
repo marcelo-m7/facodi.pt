@@ -199,7 +199,7 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
 
           {/* Lesson Title & Metadata */}
           <div className="mb-16">
-            <span className="text-[10px] font-black bg-primary text-black px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
+            <span className="text-[10px] font-black facodi-primary-surface px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
               {unit.courseId}
             </span>
             {courseTitle && (

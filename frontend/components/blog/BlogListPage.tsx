@@ -33,7 +33,7 @@ const BlogListPage: React.FC<BlogListPageProps> = ({ locale, onSelectPost }) => 
           {posts.map((post) => (
             <article key={post.slug} className="stark-border bg-white p-8 flex flex-col gap-5">
               <div className="flex flex-wrap gap-2">
-                <span className="bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+                <span className="facodi-primary-surface px-3 py-1 text-[10px] font-black uppercase tracking-widest">
                   {post.category}
                 </span>
                 <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500">
@@ -63,7 +63,7 @@ const BlogListPage: React.FC<BlogListPageProps> = ({ locale, onSelectPost }) => 
               <button
                 type="button"
                 onClick={() => onSelectPost(post.slug)}
-                className="mt-2 inline-flex items-center justify-center stark-border px-5 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all"
+                className="mt-2 inline-flex items-center justify-center stark-border px-5 py-3 text-[10px] font-black uppercase tracking-widest facodi-hover-primary-ink transition-all"
               >
                 {t('blog.readMore')}
               </button>

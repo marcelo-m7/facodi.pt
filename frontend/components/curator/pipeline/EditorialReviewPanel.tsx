@@ -55,7 +55,7 @@ const EditorialReviewPanel: React.FC<EditorialReviewPanelProps> = ({
         type="button"
         onClick={onPublish}
         disabled={publishing || selectedCount === 0}
-        className="bg-primary text-black px-5 py-3 text-[10px] font-black uppercase tracking-widest stark-border disabled:opacity-50"
+        className="facodi-primary-surface px-5 py-3 text-[10px] font-black uppercase tracking-widest stark-border disabled:opacity-50"
       >
         {publishing ? 'Publicando...' : 'Publicar no pipeline atual'}
       </button>

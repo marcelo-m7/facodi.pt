@@ -131,7 +131,7 @@ const CookiePreferencesModal: React.FC<Props> = ({ locale, initialPreferences, o
           <button
             type="button"
             onClick={() => onSave({ ...preferences, necessary: true })}
-            className="stark-border bg-primary px-4 py-3 text-[10px] uppercase font-black tracking-widest"
+            className="stark-border facodi-primary-surface px-4 py-3 text-[10px] uppercase font-black tracking-widest"
           >
             {text.save}
           </button>

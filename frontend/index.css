@@ -178,6 +178,45 @@ body {
   color: #050505;
 }
 
+/* Unified contrast pattern: yellow surface always uses black foreground. */
+.facodi-primary-surface {
+  background: var(--color-neon);
+  color: #050505;
+}
+
+.dark .facodi-primary-surface {
+  color: #050505;
+}
+
+.facodi-hover-primary-ink:hover,
+.facodi-hover-primary-ink:focus-visible {
+  background: var(--color-neon);
+  color: #050505;
+}
+
+.dark .facodi-hover-primary-ink:hover,
+.dark .facodi-hover-primary-ink:focus-visible {
+  color: #050505;
+}
+
+.facodi-prose-primary-links a {
+  color: #050505;
+  text-decoration-color: var(--color-neon);
+  text-decoration-thickness: 4px;
+  text-underline-offset: 4px;
+}
+
+.facodi-prose-primary-links a:hover,
+.facodi-prose-primary-links a:focus-visible {
+  background: var(--color-neon);
+  color: #050505;
+}
+
+.dark .facodi-prose-primary-links a:hover,
+.dark .facodi-prose-primary-links a:focus-visible {
+  color: #050505;
+}
+
 .facodi-nav-link {
   border: 1px solid transparent;
   font-size: 0.625rem;

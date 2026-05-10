@@ -178,7 +178,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="bg-primary stark-border px-3 py-1 flex items-center gap-2">
+                  <div className="facodi-primary-surface stark-border px-3 py-1 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">grid_view</span>
                     <span className="text-[10px] font-black">
                       {units.filter(unit => unit.courseId === course.id).length} {t('home.courseCardFootSuffix')}
@@ -225,7 +225,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
           </p>
           <button
             onClick={() => onNavigatePage?.('manifesto')}
-            className="text-[10px] font-black uppercase tracking-[0.3em] underline decoration-primary decoration-4 underline-offset-8 hover:bg-primary transition-all"
+            className="facodi-hover-primary-ink text-[10px] font-black uppercase tracking-[0.3em] underline decoration-primary decoration-4 underline-offset-8 transition-all"
           >
             {t('home.readManifesto')}
           </button>
@@ -244,7 +244,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
               <div className="bg-black text-white px-4 py-3 stark-border text-center">
                 <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.ualg.badge')}</p>
               </div>
-              <div className="bg-primary text-black px-4 py-3 stark-border text-center">
+              <div className="facodi-primary-surface px-4 py-3 stark-border text-center">
                 <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.education.badge')}</p>
               </div>
             </div>
@@ -292,7 +292,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
           <div className="flex flex-wrap justify-center gap-6">
             <button 
               onClick={onExplore}
-              className="bg-primary text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="facodi-primary-surface px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               {t('home.ctaPrimary')}
             </button>

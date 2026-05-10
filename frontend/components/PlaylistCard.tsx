@@ -12,7 +12,7 @@ const PlaylistCard: React.FC<Props> = ({ playlist, onSelect }) => {
     <div className="stark-border facodi-card-interactive bg-white group transition-all duration-300 overflow-hidden shadow-[0_2px_0_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.14)]">
       <div className="p-8">
         <div className="flex justify-between items-center mb-10">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] bg-primary text-black px-3 py-1.5 stark-border">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] facodi-primary-surface px-3 py-1.5 stark-border">
             Playlist
           </span>
           <span className="text-[10px] font-bold text-gray-500 group-hover:text-black transition-colors uppercase">

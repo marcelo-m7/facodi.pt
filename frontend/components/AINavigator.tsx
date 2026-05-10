@@ -77,7 +77,7 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] p-4 text-sm font-medium rounded-lg ${
                   m.role === 'user'
-                    ? 'bg-primary text-black'
+                    ? 'facodi-primary-surface'
                     : 'facodi-card border-l-4 border-primary'
                 }`}>
                   {m.text}
@@ -107,7 +107,7 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
       ) : (
         <button 
           onClick={() => setIsOpen(true)}
-          className="w-16 h-16 bg-black text-white stark-border flex items-center justify-center hover:bg-primary hover:text-black transition-all shadow-[10px_10px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="w-16 h-16 bg-black text-white stark-border flex items-center justify-center facodi-hover-primary-ink transition-all shadow-[10px_10px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
         >
           <span className="material-symbols-outlined text-3xl">smart_toy</span>
         </button>

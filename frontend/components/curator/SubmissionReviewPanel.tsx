@@ -339,7 +339,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
                 <button
                   onClick={handleSaveMetadata}
                   disabled={updating}
-                  className="flex-1 bg-primary text-black py-2 font-bold stark-border rounded-lg hover:shadow-lg transition-shadow disabled:opacity-50"
+                  className="flex-1 facodi-primary-surface py-2 font-bold stark-border rounded-lg hover:shadow-lg transition-shadow disabled:opacity-50"
                 >
                   {updating ? (locale === 'pt' ? 'Salvando...' : 'Saving...') : (locale === 'pt' ? 'Salvar' : 'Save')}
                 </button>
@@ -389,7 +389,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
                     </label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {submission.tags.map((tag) => (
-                        <span key={tag} className="bg-primary text-black px-2 py-1 rounded text-xs font-semibold">
+                        <span key={tag} className="facodi-primary-surface px-2 py-1 rounded text-xs font-semibold">
                           {tag}
                         </span>
                       ))}

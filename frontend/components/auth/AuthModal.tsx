@@ -151,13 +151,13 @@ const AuthModal: React.FC<Props> = ({ onClose, t, locale, onNavigateLegal, onAcc
         <div className="flex stark-border-b">
           <button
             onClick={() => { setTab('signin'); reset(); }}
-            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signin' ? 'bg-primary text-black stark-border-r' : 'text-gray-400 hover:bg-brand-muted'}`}
+            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signin' ? 'facodi-primary-surface stark-border-r' : 'text-gray-400 hover:bg-brand-muted'}`}
           >
             {t('nav.login')}
           </button>
           <button
             onClick={() => { setTab('signup'); reset(); }}
-            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signup' ? 'bg-primary text-black' : 'text-gray-400 hover:bg-brand-muted'}`}
+            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signup' ? 'facodi-primary-surface' : 'text-gray-400 hover:bg-brand-muted'}`}
           >
             {t('auth.signUp')}
           </button>
@@ -233,7 +233,7 @@ const AuthModal: React.FC<Props> = ({ onClose, t, locale, onNavigateLegal, onAcc
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="facodi-primary-surface py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading && <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>}
             {tab === 'signin' ? t('nav.login') : t('auth.signUp')}

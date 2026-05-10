@@ -59,7 +59,7 @@ const CourseCard: React.FC<Props> = ({ unit, onClick, courseTitle }) => {
             <p className="text-xs font-bold uppercase">{unit.ects} ECTS</p>
           </div>
           <div className="flex items-end justify-end">
-            <span className="material-symbols-outlined text-lg bg-primary p-1.5 stark-border group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
+            <span className="material-symbols-outlined text-lg facodi-primary-surface p-1.5 stark-border group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
               arrow_forward
             </span>
           </div>

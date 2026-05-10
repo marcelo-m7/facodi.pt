@@ -71,7 +71,7 @@ const DevelopmentDisclaimer: React.FC<DevelopmentDisclaimerProps> = ({
             type="button"
             onClick={onClose}
             autoFocus
-            className="bg-primary text-black px-5 py-2.5 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="facodi-primary-surface px-5 py-2.5 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             {closeLabel}
           </button>

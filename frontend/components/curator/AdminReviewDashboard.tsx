@@ -127,7 +127,7 @@ export const AdminReviewDashboard: React.FC<AdminReviewDashboardProps> = ({ loca
                     onClick={() => setSubmissionFilter('')}
                     className={`px-3 py-2 transition-all ${
                       submissionFilter === ''
-                        ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
+                        ? 'facodi-primary-surface stark-border text-[9px] font-black uppercase tracking-widest'
                         : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
                     }`}
                   >
@@ -139,7 +139,7 @@ export const AdminReviewDashboard: React.FC<AdminReviewDashboardProps> = ({ loca
                       onClick={() => setSubmissionFilter(status)}
                       className={`px-3 py-2 transition-all ${
                         submissionFilter === status
-                          ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
+                          ? 'facodi-primary-surface stark-border text-[9px] font-black uppercase tracking-widest'
                           : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
                       }`}
                     >
@@ -215,7 +215,7 @@ export const AdminReviewDashboard: React.FC<AdminReviewDashboardProps> = ({ loca
                     onClick={() => setAppFilter('')}
                     className={`px-3 py-2 transition-all ${
                       appFilter === ''
-                        ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
+                        ? 'facodi-primary-surface stark-border text-[9px] font-black uppercase tracking-widest'
                         : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
                     }`}
                   >
@@ -227,7 +227,7 @@ export const AdminReviewDashboard: React.FC<AdminReviewDashboardProps> = ({ loca
                       onClick={() => setAppFilter(status)}
                       className={`px-3 py-2 transition-all ${
                         appFilter === status
-                          ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
+                          ? 'facodi-primary-surface stark-border text-[9px] font-black uppercase tracking-widest'
                           : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
                       }`}
                     >

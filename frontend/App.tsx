@@ -907,7 +907,7 @@ const App: React.FC = () => {
                 setCurrentView('home');
                 updateRoute('home');
               }}
-              className="bg-primary text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="facodi-primary-surface px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               Voltar ao início
             </button>
@@ -1097,8 +1097,8 @@ const App: React.FC = () => {
                     <div>
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Curso</h3>
                       <div className="flex flex-wrap lg:flex-col gap-1">
-                        <button onClick={() => setFilters(f => ({ ...f, courseId: 'All' }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === 'All' ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>Todos</button>
-                        {courses.map(d => <button key={d.id} onClick={() => setFilters(f => ({ ...f, courseId: d.id }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === d.id ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{d.id}</button>)}
+                        <button onClick={() => setFilters(f => ({ ...f, courseId: 'All' }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === 'All' ? 'facodi-primary-surface stark-border' : 'text-gray-400 hover:text-black'}`}>Todos</button>
+                        {courses.map(d => <button key={d.id} onClick={() => setFilters(f => ({ ...f, courseId: d.id }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === d.id ? 'facodi-primary-surface stark-border' : 'text-gray-400 hover:text-black'}`}>{d.id}</button>)}
                       </div>
                     </div>
                     <div>
@@ -1115,7 +1115,7 @@ const App: React.FC = () => {
                     <div>
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Área</h3>
                       <div className="flex flex-wrap lg:flex-col gap-1">
-                        {categories.map(cat => <button key={cat} onClick={() => setFilters(f => ({ ...f, category: cat as any }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.category === cat ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{cat}</button>)}
+                        {categories.map(cat => <button key={cat} onClick={() => setFilters(f => ({ ...f, category: cat as any }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.category === cat ? 'facodi-primary-surface stark-border' : 'text-gray-400 hover:text-black'}`}>{cat}</button>)}
                       </div>
                     </div>
                     <button onClick={clearFilters} className="w-full stark-border py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1">Limpar Filtros</button>
@@ -1138,7 +1138,7 @@ const App: React.FC = () => {
                   ) : (
                     <div className="stark-border bg-brand-muted p-20 text-center">
                       <p className="text-xl font-bold uppercase tracking-tight mb-4 opacity-40">Nenhum resultado nos nós de dados.</p>
-                      <button onClick={clearFilters} className="text-white bg-black px-10 py-4 font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-black transition-all">Resetar Filtros</button>
+                      <button onClick={clearFilters} className="text-white bg-black px-10 py-4 font-black uppercase text-[10px] tracking-widest facodi-hover-primary-ink transition-all">Resetar Filtros</button>
                     </div>
                   )}
                 </section>

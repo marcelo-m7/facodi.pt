@@ -152,6 +152,18 @@
         .dark .stark-border-r { border-right-color: #f4f4f5; }
         .dark .bg-white { background-color: #050505 !important; }
         .dark .text-black { color: #f4f4f5 !important; }
+        /* Keep readable contrast when primary yellow backgrounds are used in dark mode. */
+        .dark .bg-primary,
+        .dark .bg-primary *,
+        .dark [class*="hover:bg-primary"]:hover,
+        .dark [class*="hover:bg-primary"]:hover *,
+        .dark [class*="focus:bg-primary"]:focus,
+        .dark [class*="focus:bg-primary"]:focus *,
+        .dark [class*="active:bg-primary"]:active,
+        .dark [class*="active:bg-primary"]:active * {
+            color: #050505 !important;
+        }
+        .dark .prose a:hover { color: #050505 !important; }
         .dark .text-gray-400 { color: #d4d4d8 !important; }
         .dark .text-gray-500 { color: #a1a1aa !important; }
         .dark .bg-brand-muted { background-color: #121212 !important; }

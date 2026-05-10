@@ -23,7 +23,7 @@ const VideoCard: React.FC<Props> = ({ video, onSelect }) => {
       </div>
       <div className="p-6">
         <div className="flex justify-between items-start gap-4 mb-4">
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] bg-primary text-black px-3 py-1.5 stark-border">
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] facodi-primary-surface px-3 py-1.5 stark-border">
             YouTube
           </span>
           {video.category?.name && (
