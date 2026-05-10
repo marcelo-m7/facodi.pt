@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "react-ui-patterns": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-ui-patterns/SKILL.md",
+      "computedHash": "6cf16ff01d66cf827c99ea0fdd215e6f2a62b1999737baabc4a85fb8e28adf94"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
