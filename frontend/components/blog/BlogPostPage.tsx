@@ -15,13 +15,13 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ slug, locale, onBack }) => 
 
   if (!post) {
     return (
-      <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <div className="stark-border bg-brand-muted p-10 text-center">
-          <h1 className="text-3xl font-black uppercase tracking-tight">Artigo nao encontrado</h1>
+      <section className="facodi-page max-w-[1600px] mx-auto">
+        <div className="facodi-card text-center py-12">
+          <h1 className="text-3xl font-bold mb-8">Artigo não encontrado</h1>
           <button
             type="button"
             onClick={onBack}
-            className="mt-6 stark-border px-5 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all"
+            className="facodi-btn facodi-btn-secondary"
           >
             {t('blog.backToList')}
           </button>
@@ -31,40 +31,41 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ slug, locale, onBack }) => 
   }
 
   return (
-    <article className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
+    <article className="facodi-page max-w-[1600px] mx-auto">
       <button
         type="button"
         onClick={onBack}
-        className="mb-8 stark-border px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all"
+        className="facodi-nav-link mb-12 inline-flex items-center gap-2"
       >
+        <span className="material-symbols-outlined">arrow_back</span>
         {t('blog.backToList')}
       </button>
 
-      <header className="stark-border bg-white p-8 lg:p-12 mb-10">
-        <div className="flex flex-wrap gap-2 mb-6">
-          <span className="bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+      <header className="facodi-card p-8 lg:p-12 mb-10">
+        <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+          <span className="facodi-badge facodi-badge-neon">
             {post.category}
           </span>
-          <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+          <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
             {new Date(post.date).toLocaleDateString(locale === 'pt' ? 'pt-PT' : 'en-US')}
           </span>
         </div>
 
-        <h1 className="text-4xl lg:text-6xl font-black tracking-tighter uppercase leading-[0.95]">
+        <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight leading-[0.95] mb-6">
           {post.title}
         </h1>
 
-        <p className="mt-4 text-gray-600 text-lg">{post.excerpt}</p>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">{post.excerpt}</p>
 
-        <p className="mt-6 text-sm text-gray-500 font-medium">
-          {t('blog.by')} {post.author}
+        <p className="text-base text-gray-600 dark:text-gray-400 font-medium mb-6">
+          {t('blog.by')} <strong>{post.author}</strong>
         </p>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           {post.tags.map((tag) => (
             <span
               key={tag}
-              className="border border-black/15 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-600"
+              className="facodi-badge facodi-badge-secondary"
             >
               {tag}
             </span>
@@ -72,7 +73,7 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ slug, locale, onBack }) => 
         </div>
       </header>
 
-      <div className="stark-border bg-white p-8 lg:p-12">
+      <div className="facodi-card p-8 lg:p-12">
         <MarkdownView content={post.content} />
       </div>
     </article>
