@@ -14,6 +14,7 @@ import RequireAuth from './components/auth/RequireAuth';
 import PermissionDenied from './components/auth/PermissionDenied';
 import SEOHead from './components/SEOHead';
 import { getPostBySlug } from './data/blogPosts';
+import { fromPath, toPath, type View } from './app/router/routes';
 
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 const CourseDetail = React.lazy(() => import('./components/CourseDetail'));
@@ -39,38 +40,6 @@ const AdminContentDetailPage = React.lazy(() => import('./components/admin/Admin
 const AdminCuratorListPage = React.lazy(() => import('./components/admin/AdminCuratorListPage'));
 const BlogListPage = React.lazy(() => import('./components/blog/BlogListPage'));
 const BlogPostPage = React.lazy(() => import('./components/blog/BlogPostPage'));
-
-type View =
-  | 'home'
-  | 'not-found'
-  | 'courses'
-  | 'repository'
-  | 'paths'
-  | 'contributors'
-  | 'course-detail'
-  | 'lesson-detail'
-  | 'playlists'
-  | 'dashboard'
-  | 'institutional-page'
-  | 'videos'
-  | 'video-detail'
-  | 'profile'
-  | 'student-dashboard'
-  | 'student-my-courses'
-  | 'student-progress'
-  | 'student-history'
-  | 'curator-apply'
-  | 'curator-submit'
-  | 'curator-submissions'
-  | 'curator-channel-pipeline'
-  | 'curator-admin-review'
-  | 'curator-channel-curation'
-  | 'admin-dashboard'
-  | 'admin-contents'
-  | 'admin-content-detail'
-  | 'admin-curators'
-  | 'blog'
-  | 'blog-post';
 
 const App: React.FC = () => {
   const { user, profile } = useAuth();
@@ -105,184 +74,66 @@ const App: React.FC = () => {
   const t = useMemo(() => createTranslator(locale), [locale]);
 
   const updateRoute = (view: View, unitId?: string | null, lessonId?: string | null, videoId?: string | null, blogSlug?: string | null) => {
-    let path = '/';
-    if (view === 'courses') path = '/courses';
-    if (view === 'repository') path = '/courses/units';
-    if (view === 'course-detail' && unitId) path = `/courses/units/${unitId}`;
-    if (view === 'lesson-detail' && lessonId) path = `/lessons/${lessonId}`;
-    if (view === 'videos') path = '/videos';
-    if (view === 'video-detail' && videoId) path = `/videos/${videoId}`;
-    if (view === 'dashboard') path = '/dashboard';
-    if (view === 'playlists') path = '/playlists';
-    if (view === 'contributors') path = '/contributors';
-    if (view === 'profile') path = '/profile';
-    if (view === 'institutional-page' && unitId) path = `/${unitId}`;
-    if (view === 'student-dashboard') path = '/student/dashboard';
-    if (view === 'student-my-courses') path = '/student/my-courses';
-    if (view === 'student-progress') path = '/student/progress';
-    if (view === 'student-history') path = '/student/history';
-    if (view === 'curator-apply') path = '/curator/apply';
-    if (view === 'curator-submit') path = '/curator/submit';
-    if (view === 'curator-submissions') path = '/curator/submissions';
-    if (view === 'curator-channel-pipeline') path = '/curator/channel-pipeline';
-    if (view === 'curator-admin-review') path = '/curator/admin-review';
-    if (view === 'curator-channel-curation') path = '/curator/channel-curation';
-    if (view === 'admin-dashboard') path = '/admin';
-    if (view === 'admin-contents') path = '/admin/conteudos';
-    if (view === 'admin-content-detail' && unitId) path = `/admin/conteudos/${unitId}`;
-    if (view === 'admin-curators') path = '/admin/curadores';
-    if (view === 'blog') path = '/blog';
-    if (view === 'blog-post' && blogSlug) path = `/blog/${blogSlug}`;
-    window.history.pushState({}, '', path);
+    window.history.pushState({}, '', toPath(view, {
+      unitId,
+      lessonId,
+      videoId,
+      blogSlug,
+      pageSlug: unitId,
+      submissionId: unitId,
+    }));
   };
 
   const syncViewWithLocation = () => {
-    const path = window.location.pathname;
-    if (path.startsWith('/blog/')) {
-      const blogSlug = path.replace('/blog/', '').split('/')[0];
-      if (blogSlug) {
-        setSelectedBlogSlug(blogSlug);
-        setCurrentView('blog-post');
-        return;
-      }
-    }
-    if (path === '/blog') {
-      setCurrentView('blog');
+    const { view, params } = fromPath(window.location.pathname);
+
+    if (view === 'blog-post' && params?.blogSlug) {
+      setSelectedBlogSlug(params.blogSlug);
+      setCurrentView('blog-post');
       return;
     }
-    if (path.startsWith('/curator/')) {
-      if (path === '/curator/apply') {
-        setCurrentView('curator-apply');
-        return;
-      }
-      if (path === '/curator/submit') {
-        setCurrentView('curator-submit');
-        return;
-      }
-      if (path === '/curator/submissions') {
-        setCurrentView('curator-submissions');
-        return;
-      }
-      if (path === '/curator/channel-pipeline') {
-        setCurrentView('curator-channel-pipeline');
-        return;
-      }
-      if (path === '/curator/admin-review') {
-        setCurrentView('curator-admin-review');
-        return;
-      }
-      if (path === '/curator/channel-curation') {
-        setCurrentView('curator-channel-curation');
-        return;
-      }
-    }
-    if (path.startsWith('/admin')) {
-      if (path === '/admin') {
-        setCurrentView('admin-dashboard');
-        return;
-      }
-      if (path === '/admin/conteudos') {
-        setCurrentView('admin-contents');
-        return;
-      }
-      if (path.startsWith('/admin/conteudos/')) {
-        const submissionId = path.replace('/admin/conteudos/', '').split('/')[0];
-        if (submissionId) {
-          setSelectedAdminSubmissionId(submissionId);
-          setCurrentView('admin-content-detail');
-          return;
-        }
-      }
-      if (path === '/admin/curadores') {
-        setCurrentView('admin-curators');
-        return;
-      }
-    }
-    if (path.startsWith('/student/')) {
-      if (path === '/student/dashboard') {
-        setCurrentView('student-dashboard');
-        return;
-      }
-      if (path === '/student/my-courses') {
-        setCurrentView('student-my-courses');
-        return;
-      }
-      if (path === '/student/progress') {
-        setCurrentView('student-progress');
-        return;
-      }
-      if (path === '/student/history') {
-        setCurrentView('student-history');
-        return;
-      }
-    }
-    if (path.startsWith('/videos/')) {
-      const videoId = path.replace('/videos/', '').split('/')[0];
-      if (videoId) {
-        setSelectedVideoId(videoId);
-        setCurrentView('video-detail');
-        return;
-      }
-    }
-    if (path.startsWith('/videos')) {
-      setCurrentView('videos');
+
+    if (view === 'admin-content-detail' && params?.submissionId) {
+      setSelectedAdminSubmissionId(params.submissionId);
+      setCurrentView('admin-content-detail');
       return;
     }
-    if (path.startsWith('/lessons/')) {
-      const lessonId = path.replace('/lessons/', '').split('/')[0];
-      const lessonExists = units.some(unit => unit.id === lessonId);
+
+    if (view === 'video-detail' && params?.videoId) {
+      setSelectedVideoId(params.videoId);
+      setCurrentView('video-detail');
+      return;
+    }
+
+    if (view === 'lesson-detail' && params?.lessonId) {
+      const lessonExists = units.some(unit => unit.id === params.lessonId);
       if (lessonExists) {
-        setSelectedLessonId(lessonId);
+        setSelectedLessonId(params.lessonId);
         setCurrentView('lesson-detail');
         return;
       }
+      setCurrentView('not-found');
+      return;
     }
-    if (path.startsWith('/courses/units/')) {
-      const unitId = path.replace('/courses/units/', '').split('/')[0];
-      const unitExists = units.some(unit => unit.id === unitId);
+
+    if (view === 'course-detail' && params?.unitId) {
+      const unitExists = units.some(unit => unit.id === params.unitId);
       if (unitExists) {
-        setSelectedUnitId(unitId);
+        setSelectedUnitId(params.unitId);
         setCurrentView('course-detail');
         return;
       }
-    }
-    if (path.startsWith('/courses/units')) {
-      setCurrentView('repository');
+      setCurrentView('not-found');
       return;
     }
-    if (path.startsWith('/courses')) {
-      setCurrentView('courses');
-      return;
-    }
-    if (path.startsWith('/dashboard')) {
-      setCurrentView('dashboard');
-      return;
-    }
-    if (path.startsWith('/playlists')) {
-      setCurrentView('playlists');
-      return;
-    }
-    if (path.startsWith('/contributors')) {
-      setCurrentView('contributors');
-      return;
-    }
-    if (path === '/profile') {
-      setCurrentView('profile');
-      return;
-    }
-    // Institutional pages: /manifesto, /sobre, /comunidade, /roadmap, /infraestrutura, /como-contribuir
-    const INSTITUTIONAL_SLUGS = ['manifesto', 'sobre', 'comunidade', 'roadmap', 'infraestrutura', 'como-contribuir', 'sobre-marcelo', 'sobre-ualg', 'sobre-open2', 'modelo-academico'];
-    const slug = path.replace('/', '');
-    if (INSTITUTIONAL_SLUGS.includes(slug)) {
-      setSelectedPageSlug(slug);
+
+    if (view === 'institutional-page' && params?.pageSlug) {
+      setSelectedPageSlug(params.pageSlug);
       setCurrentView('institutional-page');
       return;
     }
-    if (path === '/' || path === '') {
-      setCurrentView('home');
-      return;
-    }
-    setCurrentView('not-found');
+
+    setCurrentView(view);
   };
 
   useEffect(() => {
