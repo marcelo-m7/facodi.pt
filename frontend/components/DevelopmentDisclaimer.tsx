@@ -77,14 +77,6 @@ const DevelopmentDisclaimer: React.FC<DevelopmentDisclaimerProps> = ({
           </button>
         </div>
       </div>
-      <button
-        type="button"
-        aria-label={closeLabel}
-        className="sr-only"
-        onClick={onClose}
-      >
-        {closeLabel}
-      </button>
     </div>
   );
 };
