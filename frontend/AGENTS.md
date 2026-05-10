@@ -18,6 +18,16 @@ pnpm build
 pnpm test:e2e
 ```
 
+Fast verification profiles:
+
+```bash
+# quick safety check for scoped code edits
+pnpm test:unit
+
+# full regression check for route/view-state updates
+pnpm build && pnpm test:e2e
+```
+
 Optional security command (only if script exists in your branch):
 
 ```bash
@@ -60,6 +70,20 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 - Keep catalog ordering deterministic to avoid flaky navigation/UI assertions.
 - Prefer running `pnpm test:e2e` after route, navigation, or view-state changes.
 
+## Agent Tooling Playbooks
+
+- Use prompt `.github/prompts/frontend-dev-workflow.prompt.md` to standardize branch-ready validation and output summaries.
+- Use agent `.github/agents/frontend-quality-reviewer.agent.md` for broad frontend review (routing, accessibility, regressions, missing tests).
+- Use agent `.github/agents/supabase-integration-reviewer.agent.md` when touching Supabase catalog/auth mapping or public schema assumptions.
+- Prefer subagent `Explore` for read-only mapping of large areas before edits to reduce context drift.
+
+Suggested execution profiles:
+
+- UI-only page/component edits: `pnpm build`
+- Data mapping or auth logic edits: `pnpm test:unit && pnpm build`
+- Navigation or route-flow edits: `pnpm build && pnpm test:e2e`
+- Supabase schema-sensitive edits: `pnpm security:check-rls && pnpm build`
+
 ## Critical Data Contracts
 
 - `Course.id` stays stable and unique.
@@ -87,3 +111,7 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 For Supabase integration changes, use:
 
 - [.github/agents/supabase-integration-reviewer.agent.md](.github/agents/supabase-integration-reviewer.agent.md)
+
+For general frontend quality/regression reviews, use:
+
+- [.github/agents/frontend-quality-reviewer.agent.md](.github/agents/frontend-quality-reviewer.agent.md)
