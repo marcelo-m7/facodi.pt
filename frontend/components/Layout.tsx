@@ -81,7 +81,7 @@ const Layout: React.FC<Props> = ({
   const pageGo = (slug: string) => { onNavigatePage?.(slug); setMobileOpen(false); };
   const isActive = (view: View, extra?: View[]) => currentView === view || (extra?.includes(currentView) ?? false);
   const navCls = (view: View, extra?: View[]) =>
-    `transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 ${isActive(view, extra) ? 'text-black bg-primary stark-border' : 'text-gray-500 hover:text-black hover:bg-brand-muted'}`;
+    `facodi-nav-link ${isActive(view, extra) ? 'facodi-nav-link-active' : ''}`;
 
   // Prevent body scroll when drawer is open
   useEffect(() => {
@@ -126,7 +126,7 @@ const Layout: React.FC<Props> = ({
         Ir para conteúdo
       </a>
 
-      <header className={`fixed top-0 w-full z-50 h-16 md:h-20 transition-all ${isScrolled ? 'bg-white/95 backdrop-blur stark-border-b shadow-[0_4px_0_0_rgba(0,0,0,0.06)]' : 'bg-white stark-border-b'}`}>
+      <header className={`fixed top-0 w-full z-50 h-16 md:h-20 transition-all ${isScrolled ? 'bg-white/95 backdrop-blur stark-border-b shadow-[0_10px_24px_rgba(0,0,0,0.12)]' : 'bg-white stark-border-b'}`}>
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 h-full flex items-center justify-between gap-3">
           {/* Logo */}
           <button onClick={() => navGo('home')} aria-label="FACODI — Página inicial" className="flex items-center gap-2 shrink-0">
@@ -174,7 +174,7 @@ const Layout: React.FC<Props> = ({
             <button onClick={() => navGo('blog')} aria-current={isActive('blog', ['blog-post']) ? 'page' : undefined} className={navCls('blog', ['blog-post'])}>
               {t('nav.blog')}
             </button>
-            <button onClick={() => pageGo('manifesto')} className="transition-all text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500 hover:text-black hover:bg-brand-muted">
+            <button onClick={() => pageGo('manifesto')} className="facodi-nav-link">
               Manifesto
             </button>
           </nav>
@@ -236,7 +236,7 @@ const Layout: React.FC<Props> = ({
       </header>
 
       {/* Mobile backdrop */}
-      <div className={`fixed inset-0 z-[100] md:hidden bg-black/40 transition-opacity ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} aria-hidden="true" onClick={() => setMobileOpen(false)} />
+      <div className={`fixed inset-0 z-[100] md:hidden bg-black/60 backdrop-blur-sm transition-opacity ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} aria-hidden="true" onClick={() => setMobileOpen(false)} />
 
       {/* Mobile drawer */}
       <nav
@@ -268,7 +268,7 @@ const Layout: React.FC<Props> = ({
             <button
               key={view}
               onClick={() => navGo(view)}
-              className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-between ${currentView === view ? 'bg-primary text-black stark-border' : 'text-gray-600 hover:bg-brand-muted hover:text-black'}`}
+              className={`text-left w-full py-3 px-4 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-between border ${currentView === view ? 'bg-primary text-black border-black shadow-[0_2px_0_rgba(0,0,0,0.2)]' : 'text-gray-600 border-transparent hover:bg-brand-muted hover:text-black hover:border-black'}`}
             >
               <span>{label}</span>
               <span className="material-symbols-outlined text-lg">{icon}</span>
