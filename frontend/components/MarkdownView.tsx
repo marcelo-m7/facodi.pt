@@ -13,7 +13,7 @@ const MarkdownView: React.FC<Props> = ({ content }) => {
     const rawHtml = marked.parse(content, {
       gfm: true,
       breaks: true,
-    });
+    }) as string;
 
     return DOMPurify.sanitize(rawHtml, {
       ALLOWED_URI_REGEXP: /^(https?:|mailto:|tel:|\/)/i,

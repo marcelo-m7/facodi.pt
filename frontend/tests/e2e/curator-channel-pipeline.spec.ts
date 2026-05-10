@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 const PIPELINE_URL = '/curator/channel-pipeline';
 const CHANNEL_URL = 'https://www.youtube.com/@equacionamatematica';
@@ -6,13 +6,13 @@ const EDITOR_EMAIL = 'test-fun@monynha.com';
 const EDITOR_PASSWORD = 'monynha.com';
 
 // Helper: block all Edge Function calls so pipeline always uses local fallback
-async function blockEdgeFunctions(page: Parameters<Parameters<typeof test>[1]>[0]['page']) {
+async function blockEdgeFunctions(page: Page) {
   await page.route('**/functions/v1/**', (route) => route.abort('failed'));
 }
 
 // Helper: sign in via the auth modal
 async function signIn(
-  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  page: Page,
   email: string,
   password: string,
 ) {
@@ -26,7 +26,7 @@ async function signIn(
   await expect(dialog).not.toBeVisible({ timeout: 10_000 });
 }
 
-async function ensurePipelineAccess(page: Parameters<Parameters<typeof test>[1]>[0]['page']) {
+async function ensurePipelineAccess(page: Page) {
   await page.goto(PIPELINE_URL);
 
   const channelInput = page.getByRole('textbox', { name: /canal/i });
