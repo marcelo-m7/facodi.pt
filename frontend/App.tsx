@@ -650,15 +650,11 @@ const App: React.FC = () => {
     }
 
     if (currentView === 'curator-channel-pipeline') {
-      if (!user) {
-        return <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>{null}</RequireAuth>;
-      }
-      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
-        return <PermissionDenied onBack={() => { setCurrentView('home'); updateRoute('home'); }} requiredRole="Editor ou Administrador" />;
-      }
       return (
         <Suspense fallback={lazyFallback}>
-          <ChannelCurationPage locale={locale} />
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <ChannelCurationPage locale={locale} />
+          </RequireAuth>
         </Suspense>
       );
     }

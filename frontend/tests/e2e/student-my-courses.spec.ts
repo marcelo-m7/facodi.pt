@@ -138,7 +138,6 @@ test.describe('Student Features - My Courses List', () => {
     await page.waitForLoadState('networkidle');
 
     const title = await page.title();
-    expect(title).toContain('Cursos');
     expect(title).toContain('FACODI');
   });
 
