@@ -606,22 +606,26 @@ const App: React.FC = () => {
   }, [effectiveConsent, user?.id]);
 
   useEffect(() => {
-    let timeoutId: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const schedule = () => setEnableAiNavigator(true);
+    const globalWithIdle = globalThis as typeof globalThis & {
+      requestIdleCallback?: (cb: () => void) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleId = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(schedule);
+    if (typeof globalWithIdle.requestIdleCallback === 'function') {
+      const idleId = globalWithIdle.requestIdleCallback(schedule);
       return () => {
-        if ('cancelIdleCallback' in window) {
-          (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        if (typeof globalWithIdle.cancelIdleCallback === 'function') {
+          globalWithIdle.cancelIdleCallback(idleId);
         }
       };
     }
 
-    timeoutId = window.setTimeout(schedule, 900);
+    timeoutId = setTimeout(schedule, 900);
     return () => {
       if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
       }
     };
   }, []);

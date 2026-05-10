@@ -52,32 +52,6 @@ export async function enrollInCourse(courseId: string): Promise<CourseEnrollment
 }
 
 /**
- * Get user's enrolled courses with current progress.
- * Returns courses ordered by last_accessed_at DESC (most recent first).
- */
-export async function getMyCourses(): Promise<CourseEnrollment[]> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
-    return [];
-  }
-
-  const { data, error } = await supabase
-    .from('course_enrollments')
-    .select('*')
-    .eq('user_id', session.session.user.id)
-    .eq('status', 'active')
-    .order('last_accessed_at', { ascending: false, nullsFirst: false })
-    .order('enrolled_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching courses:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-/**
  * Get progress for a specific course by aggregating content_progress records.
  * Returns completion percentage and list of progressed content.
  */
