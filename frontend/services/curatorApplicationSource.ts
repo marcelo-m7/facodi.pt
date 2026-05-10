@@ -49,6 +49,10 @@ export async function submitCuratorApplication(data: CuratorApplicationData): Pr
       .in('status', ['pending', 'approved'])
       .single();
 
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
+
     if (existingApp) {
       throw new Error('application_already_exists');
     }

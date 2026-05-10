@@ -65,7 +65,7 @@ Learn more about Marcelo: [LinkedIn](https://linkedin.com/in/marcelo-m7) | [GitH
 
 The SEA-EU Alliance promotes collaboration among European universities, mobility, student participation, and projects that connect knowledge, territory, and innovation. FACODI aligns with this spirit by proposing an open, community-driven digital platform oriented toward lifelong learning.`;
 
-const InstitutionalPage: React.FC<Props> = ({ slug, locale = 'pt', t, onBack }) => {
+const InstitutionalPage: React.FC<Props> = ({ slug, locale = 'pt', t: _t, onBack }) => {
   const [page, setPage] = useState<ContentPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,8 +78,6 @@ const InstitutionalPage: React.FC<Props> = ({ slug, locale = 'pt', t, onBack }) 
 
     // For 'sobre' slug, use hardcoded institutional content
     if (slug === 'sobre') {
-      const title = locale === 'en' ? 'About FACODI' : 'Sobre a FACODI';
-      const body = locale === 'en' ? INSTITUTIONAL_CONTENT_EN : INSTITUTIONAL_CONTENT_PT;
       if (!cancelled) {
         setPage({
           slug,

@@ -1,5 +1,5 @@
 
-import React, { Suspense, useState, useMemo, useEffect } from 'react';
+import React, { Suspense, useState, useMemo, useEffect, useCallback } from 'react';
 import Layout from './components/Layout';
 import Home from './components/Home';
 import CourseCard from './components/CourseCard';
@@ -84,7 +84,7 @@ const App: React.FC = () => {
     }));
   };
 
-  const syncViewWithLocation = () => {
+  const syncViewWithLocation = useCallback(() => {
     const { view, params } = fromPath(window.location.pathname);
 
     if (view === 'blog-post' && params?.blogSlug) {
@@ -134,7 +134,7 @@ const App: React.FC = () => {
     }
 
     setCurrentView(view);
-  };
+  }, [units]);
 
   useEffect(() => {
     let active = true;
@@ -171,7 +171,7 @@ const App: React.FC = () => {
     const handlePop = () => syncViewWithLocation();
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
-  }, [units]);
+  }, [syncViewWithLocation]);
 
   useEffect(() => {
     const privateViews = new Set<View>([
@@ -528,9 +528,9 @@ const App: React.FC = () => {
     }
   };
 
-  const categories = ['All', ...Object.values(Category)];
-  const years = ['All', 1, 2, 3];
-  const semesters = ['All', 1, 2, 3, 4, 5, 6];
+  const categories: FilterState['category'][] = ['All', ...Object.values(Category)];
+  const years: FilterState['year'][] = ['All', 1, 2, 3];
+  const semesters: FilterState['semester'][] = ['All', 1, 2, 3, 4, 5, 6];
 
   const selectedUnit = useMemo(() => units.find(u => u.id === selectedUnitId) || null, [selectedUnitId, units]);
   const savedUnits = useMemo(() => units.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds, units]);
@@ -1041,10 +1041,24 @@ const App: React.FC = () => {
                     <div>
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Ano / Semestre</h3>
                       <div className="flex gap-4 mb-4">
-                        <select value={filters.year} onChange={(e) => setFilters(f => ({ ...f, year: e.target.value as any }))} className="bg-white stark-border text-[10px] font-black p-2 w-full uppercase cursor-pointer">
+                        <select
+                          value={filters.year}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFilters((f) => ({ ...f, year: value === 'All' ? 'All' : Number(value) }));
+                          }}
+                          className="bg-white stark-border text-[10px] font-black p-2 w-full uppercase cursor-pointer"
+                        >
                           {years.map(y => <option key={y} value={y}>{y === 'All' ? 'Ano' : `Ano ${y}`}</option>)}
                         </select>
-                        <select value={filters.semester} onChange={(e) => setFilters(f => ({ ...f, semester: e.target.value as any }))} className="bg-white stark-border text-[10px] font-black p-2 w-full uppercase cursor-pointer">
+                        <select
+                          value={filters.semester}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFilters((f) => ({ ...f, semester: value === 'All' ? 'All' : Number(value) }));
+                          }}
+                          className="bg-white stark-border text-[10px] font-black p-2 w-full uppercase cursor-pointer"
+                        >
                           {semesters.map(s => <option key={s} value={s}>{s === 'All' ? 'Sem' : `S0${s}`}</option>)}
                         </select>
                       </div>
@@ -1052,7 +1066,7 @@ const App: React.FC = () => {
                     <div>
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Área</h3>
                       <div className="flex flex-wrap lg:flex-col gap-1">
-                        {categories.map(cat => <button key={cat} onClick={() => setFilters(f => ({ ...f, category: cat as any }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.category === cat ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{cat}</button>)}
+                        {categories.map(cat => <button key={cat} onClick={() => setFilters(f => ({ ...f, category: cat }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.category === cat ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{cat}</button>)}
                       </div>
                     </div>
                     <button onClick={clearFilters} className="w-full stark-border py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1">Limpar Filtros</button>

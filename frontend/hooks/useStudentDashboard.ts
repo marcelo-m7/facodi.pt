@@ -4,7 +4,7 @@
  * Combines enrolled courses, progress, continue watching, and recent activity.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getStudentDashboard, StudentDashboardData } from '../services/studentSource';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,7 +28,7 @@ export function useStudentDashboard(): UseStudentDashboard {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     if (!user) {
       setData(EMPTY_DASHBOARD);
       setIsLoading(false);
@@ -47,11 +47,11 @@ export function useStudentDashboard(): UseStudentDashboard {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchDashboard();
-  }, [user?.id]);
+  }, [fetchDashboard]);
 
   return {
     data,

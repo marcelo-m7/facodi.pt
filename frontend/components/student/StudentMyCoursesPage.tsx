@@ -2,6 +2,7 @@ import React from 'react';
 import { useMyCourses } from '../../hooks/useMyCourses';
 import { useAuth } from '../../contexts/AuthContext';
 import { Translator } from '../../data/i18n';
+import StudentPageScaffold from './StudentPageScaffold';
 
 interface StudentMyCoursesPageProps {
   onBack: () => void;
@@ -12,74 +13,21 @@ interface StudentMyCoursesPageProps {
 export default function StudentMyCoursesPage({
   onBack,
   onSelectCourse,
-  t,
+  t: _t,
 }: StudentMyCoursesPageProps): React.ReactElement {
   const { user } = useAuth();
   const { courses, isLoading, error } = useMyCourses();
 
-  if (!user) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-brand-muted p-8">
-          <p className="text-sm font-semibold">Autenticação necessária para acessar seus cursos.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-brand-muted p-6 text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3">
-          <span className="material-symbols-outlined animate-pulse">hourglass_top</span>
-          A carregar cursos...
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
-          <p className="font-semibold mb-2">Erro ao carregar cursos</p>
-          <p className="text-xs">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <button
-        onClick={onBack}
-        className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-      >
-        <span className="material-symbols-outlined text-lg">arrow_back</span>
-        Voltar
-      </button>
-
+    <StudentPageScaffold
+      onBack={onBack}
+      isAuthenticated={Boolean(user)}
+      authMessage="Autenticação necessária para acessar seus cursos."
+      isLoading={isLoading}
+      loadingMessage="A carregar cursos..."
+      error={error}
+      errorTitle="Erro ao carregar cursos"
+    >
       <div className="mb-16">
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-4">
           Meus Cursos
@@ -158,6 +106,6 @@ export default function StudentMyCoursesPage({
           ))}
         </div>
       )}
-    </div>
+    </StudentPageScaffold>
   );
 }

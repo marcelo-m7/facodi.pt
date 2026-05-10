@@ -11,7 +11,7 @@ export default defineConfig({
     headless: true
   },
   webServer: {
-    command: `pnpm dev --host 127.0.0.1 --port ${E2E_PORT}`,
+    command: `VITE_DISABLE_DEVELOPMENT_NOTICE=true pnpm dev --host 127.0.0.1 --port ${E2E_PORT}`,
     url: E2E_BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

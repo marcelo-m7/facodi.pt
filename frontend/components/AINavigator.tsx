@@ -51,7 +51,7 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
 
       const responseText = typeof data?.answer === 'string' ? data.answer : 'Desculpe, nao consegui processar isso.';
       setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to the hub nodes.' }]);
     } finally {
       setIsLoading(false);

@@ -169,6 +169,7 @@ function mockVideos(channelId: string): ChannelVideo[] {
 }
 
 function mockAnalysis(videoIds: string[]): Map<string, VideoAnalysis> {
+  const difficultyLevels: VideoAnalysis['difficulty'][] = ['beginner', 'intermediate', 'advanced', 'expert'];
   const topics = [
     ['Limits', 'Continuity', 'Calculus'],
     ['Derivatives', 'Chain Rule', 'Calculus'],
@@ -195,7 +196,7 @@ function mockAnalysis(videoIds: string[]): Map<string, VideoAnalysis> {
     
     result.set(videoId, {
       videoId,
-      difficulty: ['beginner', 'intermediate', 'advanced', 'expert'][idx % 4] as any,
+      difficulty: difficultyLevels[idx % difficultyLevels.length],
       pedagogicalScore: 70 + Math.random() * 25,
       topics: topicSet,
       justification: `Video aligns well with ${suggestionSet[0]} curriculum standards.`,
@@ -356,14 +357,24 @@ export async function publishCuratedVideos(request: PublishRequest): Promise<Pub
 }
 
 // Fallback state management
-let fallbackState: any = null;
+interface PipelineFallbackState {
+  used: boolean;
+  stages: string[];
+}
+
+const EMPTY_FALLBACK_STATE: PipelineFallbackState = {
+  used: false,
+  stages: [],
+};
+
+let fallbackState: PipelineFallbackState = EMPTY_FALLBACK_STATE;
 
 export function getPipelineFallbackState() {
   return fallbackState;
 }
 
 export function resetPipelineFallbackState() {
-  fallbackState = null;
+  fallbackState = EMPTY_FALLBACK_STATE;
 }
 
 // Aliases for backwards compatibility

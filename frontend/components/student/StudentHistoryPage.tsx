@@ -2,6 +2,7 @@ import React from 'react';
 import { useStudentDashboard } from '../../hooks/useStudentDashboard';
 import { useAuth } from '../../contexts/AuthContext';
 import { Translator } from '../../data/i18n';
+import StudentPageScaffold from './StudentPageScaffold';
 
 interface StudentHistoryPageProps {
   onBack: () => void;
@@ -10,63 +11,10 @@ interface StudentHistoryPageProps {
 
 export default function StudentHistoryPage({
   onBack,
-  t,
+  t: _t,
 }: StudentHistoryPageProps): React.ReactElement {
   const { user } = useAuth();
   const { data: dashboard, isLoading, error } = useStudentDashboard();
-
-  if (!user) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-brand-muted p-8">
-          <p className="text-sm font-semibold">Autenticação necessária para acessar seu histórico.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-brand-muted p-6 text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3">
-          <span className="material-symbols-outlined animate-pulse">hourglass_top</span>
-          A carregar histórico...
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
-          <p className="font-semibold mb-2">Erro ao carregar histórico</p>
-          <p className="text-xs">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   const hasActivity = dashboard.recentActivity.length > 0;
 
@@ -105,15 +53,15 @@ export default function StudentHistoryPage({
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <button
-        onClick={onBack}
-        className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-      >
-        <span className="material-symbols-outlined text-lg">arrow_back</span>
-        Voltar
-      </button>
-
+    <StudentPageScaffold
+      onBack={onBack}
+      isAuthenticated={Boolean(user)}
+      authMessage="Autenticação necessária para acessar seu histórico."
+      isLoading={isLoading}
+      loadingMessage="A carregar histórico..."
+      error={error}
+      errorTitle="Erro ao carregar histórico"
+    >
       <div className="mb-16">
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-4">
           Histórico
@@ -170,6 +118,6 @@ export default function StudentHistoryPage({
           </div>
         </div>
       )}
-    </div>
+    </StudentPageScaffold>
   );
 }

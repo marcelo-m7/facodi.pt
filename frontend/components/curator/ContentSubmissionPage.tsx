@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
 import { submitContent, getMySubmissions } from '../../services/contentSubmissionSource';
 import { parseYouTubeVideoId } from '../../services/videoSuggestionSource';
 import { createTranslator, type Locale } from '../../data/i18n';
@@ -25,7 +24,6 @@ interface ContentSubmissionPageProps {
 
 export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ locale = 'pt' }) => {
   const t = createTranslator(locale as Locale);
-  const { profile } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
     contentType: 'video',

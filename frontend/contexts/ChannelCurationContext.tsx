@@ -4,7 +4,6 @@ import {
   ChannelIdentity,
   ChannelVideo,
   AIAnalysisResult,
-  PlaylistSuggestion,
 } from '../types';
 
 interface ChannelCurationContextType {

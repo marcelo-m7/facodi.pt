@@ -12,7 +12,7 @@ interface SubmissionReviewPanelProps {
 export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
   submissionId,
   locale = 'pt',
-  onClose,
+  onClose: _onClose,
 }) => {
   const t = createTranslator(locale as Locale);
 
@@ -85,7 +85,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
       }
 
       setTimeout(() => setSuccess(null), 5000);
-    } catch (err) {
+    } catch {
       setError(locale === 'pt' ? 'Erro ao atualizar metadados' : 'Error updating metadata');
     } finally {
       setUpdating(false);
@@ -112,7 +112,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
       }
 
       setTimeout(() => setSuccess(null), 5000);
-    } catch (err) {
+    } catch {
       setError(locale === 'pt' ? 'Erro ao aprovar submissão' : 'Error approving submission');
     } finally {
       setUpdating(false);
@@ -140,7 +140,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
       }
 
       setTimeout(() => setSuccess(null), 5000);
-    } catch (err) {
+    } catch {
       setError(locale === 'pt' ? 'Erro ao rejeitar submissão' : 'Error rejecting submission');
     } finally {
       setUpdating(false);
@@ -167,7 +167,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
       }
 
       setTimeout(() => setSuccess(null), 5000);
-    } catch (err) {
+    } catch {
       setError(locale === 'pt' ? 'Erro ao solicitar ajustes' : 'Error requesting changes');
     } finally {
       setUpdating(false);

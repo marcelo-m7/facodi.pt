@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CurricularUnit, Category } from '../types';
+import { CurricularUnit } from '../types';
 
 interface DashboardProps {
   savedUnits: CurricularUnit[];
