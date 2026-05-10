@@ -7,6 +7,7 @@
 
 import { supabase } from './supabase';
 import { Database } from './supabase.types';
+import { getSessionUserId, requireAuthenticatedUser } from './authHelper';
 
 export type CourseEnrollment = Database['public']['Tables']['course_enrollments']['Row'];
 export type ContentProgress = Database['public']['Tables']['content_progress']['Row'];
@@ -24,15 +25,15 @@ export interface StudentDashboardData {
  * Creates course_enrollments record with status='active' and initial progress=0.
  */
 export async function enrollInCourse(courseId: string): Promise<CourseEnrollment> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     throw new Error('User not authenticated');
   }
 
   const { data, error } = await supabase
     .from('course_enrollments')
     .insert({
-      user_id: session.session.user.id,
+      user_id: userId,
       course_id: courseId,
       status: 'active',
       progress_percentage: 0,
@@ -56,15 +57,15 @@ export async function enrollInCourse(courseId: string): Promise<CourseEnrollment
  * Returns courses ordered by last_accessed_at DESC (most recent first).
  */
 export async function getMyCourses(): Promise<CourseEnrollment[]> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     return [];
   }
 
   const { data, error } = await supabase
     .from('course_enrollments')
     .select('*')
-    .eq('user_id', session.session.user.id)
+    .eq('user_id', userId)
     .eq('status', 'active')
     .order('last_accessed_at', { ascending: false, nullsFirst: false })
     .order('enrolled_at', { ascending: false });
@@ -85,15 +86,15 @@ export async function getCourseProgress(courseId: string): Promise<{
   totalProgress: number;
   contents: ContentProgress[];
 }> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     return { totalProgress: 0, contents: [] };
   }
 
   const { data, error } = await supabase
     .from('content_progress')
     .select('*')
-    .eq('user_id', session.session.user.id)
+    .eq('user_id', userId)
     .eq('course_id', courseId)
     .order('last_accessed_at', { ascending: false });
 
@@ -117,15 +118,15 @@ export async function getUnitProgress(unitId: string): Promise<{
   totalProgress: number;
   contents: ContentProgress[];
 }> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     return { totalProgress: 0, contents: [] };
   }
 
   const { data, error } = await supabase
     .from('content_progress')
     .select('*')
-    .eq('user_id', session.session.user.id)
+    .eq('user_id', userId)
     .eq('curricular_unit_id', unitId)
     .order('last_accessed_at', { ascending: false });
 
@@ -154,8 +155,10 @@ export async function updateContentProgress(
   watchSeconds?: number,
   durationSeconds?: number
 ): Promise<ContentProgress> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  let userId: string;
+  try {
+    userId = (await requireAuthenticatedUser({ fallbackToGetUser: false })).id;
+  } catch {
     throw new Error('User not authenticated');
   }
 
@@ -166,7 +169,7 @@ export async function updateContentProgress(
   const { data, error } = await supabase
     .from('content_progress')
     .upsert({
-      user_id: session.session.user.id,
+      user_id: userId,
       content_id: contentId,
       curricular_unit_id: unitId || null,
       course_id: courseId || null,
@@ -200,8 +203,10 @@ export async function markContentAsCompleted(
   courseId?: string,
   contentType: string = 'video'
 ): Promise<ContentProgress> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  let userId: string;
+  try {
+    userId = (await requireAuthenticatedUser({ fallbackToGetUser: false })).id;
+  } catch {
     throw new Error('User not authenticated');
   }
 
@@ -213,7 +218,7 @@ export async function markContentAsCompleted(
       completed_at: new Date().toISOString(),
       last_accessed_at: new Date().toISOString(),
     })
-    .eq('user_id', session.session.user.id)
+    .eq('user_id', userId)
     .eq('content_id', contentId)
     .eq('curricular_unit_id', unitId || null)
     .eq('course_id', courseId || null)
@@ -234,15 +239,15 @@ export async function markContentAsCompleted(
  * ordered by most recent, ready for resume functionality.
  */
 export async function getContinueWatching(limit: number = 5): Promise<ContentProgress[]> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     return [];
   }
 
   const { data, error } = await supabase
     .from('content_progress')
     .select('*')
-    .eq('user_id', session.session.user.id)
+    .eq('user_id', userId)
     .eq('content_type', 'video')
     .in('status', ['started', 'in_progress'])
     .order('last_accessed_at', { ascending: false })
@@ -261,8 +266,8 @@ export async function getContinueWatching(limit: number = 5): Promise<ContentPro
  * Aggregates data across multiple tables for dashboard view.
  */
 export async function getStudentDashboard(): Promise<StudentDashboardData> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     return {
       enrolledCourses: [],
       totalProgress: 0,
@@ -276,7 +281,7 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
     const { data: courses, error: coursesError } = await supabase
       .from('course_enrollments')
       .select('*')
-      .eq('user_id', session.session.user.id)
+      .eq('user_id', userId)
       .eq('status', 'active')
       .order('last_accessed_at', { ascending: false, nullsFirst: false });
 
@@ -286,7 +291,7 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
     const { data: continueWatching, error: continueError } = await supabase
       .from('content_progress')
       .select('*')
-      .eq('user_id', session.session.user.id)
+      .eq('user_id', userId)
       .eq('content_type', 'video')
       .in('status', ['started', 'in_progress'])
       .order('last_accessed_at', { ascending: false })
@@ -301,7 +306,7 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
     const { data: activities, error: activitiesError } = await supabase
       .from('student_activity_events')
       .select('*')
-      .eq('user_id', session.session.user.id)
+      .eq('user_id', userId)
       .gte('created_at', sevenDaysAgo.toISOString())
       .order('created_at', { ascending: false })
       .limit(10);
@@ -312,7 +317,7 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
     const { data: allProgress, error: progressError } = await supabase
       .from('content_progress')
       .select('*')
-      .eq('user_id', session.session.user.id);
+      .eq('user_id', userId);
 
     if (progressError) throw progressError;
 
@@ -347,8 +352,8 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
 export async function getStudentRecommendations(): Promise<{
   courseRecommendations: CourseEnrollment[];
 }> {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.session?.user?.id) {
+  const userId = await getSessionUserId();
+  if (!userId) {
     return { courseRecommendations: [] };
   }
 
@@ -356,7 +361,7 @@ export async function getStudentRecommendations(): Promise<{
   const { data: courses, error } = await supabase
     .from('course_enrollments')
     .select('*')
-    .eq('user_id', session.session.user.id)
+    .eq('user_id', userId)
     .eq('status', 'active')
     .lt('progress_percentage', 100)
     .order('progress_percentage', { ascending: true })

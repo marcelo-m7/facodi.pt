@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { getMySubmissions } from '../../services/contentSubmissionSource';
 import { createTranslator, type Locale } from '../../data/i18n';
 import type { ContentSubmission } from '../../types';
+import { useListWithFilters } from '../../hooks/useListWithFilters';
 
 interface SubmissionListPageProps {
   locale?: Locale;
@@ -10,32 +11,27 @@ interface SubmissionListPageProps {
 export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale = 'pt' }) => {
   const t = createTranslator(locale as Locale);
 
-  const [submissions, setSubmissions] = useState<ContentSubmission[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<ContentSubmission['status'] | 'all'>('all');
-  const [page, setPage] = useState(0);
-  const [total, setTotal] = useState(0);
-
   const pageSize = 10;
 
-  // Load submissions on mount and when filter/page changes
-  useEffect(() => {
-    const loadSubmissions = async () => {
-      try {
-        setLoading(true);
-        const status = filter === 'all' ? undefined : filter;
-        const { submissions, total } = await getMySubmissions(status, pageSize, page * pageSize);
-        setSubmissions(submissions);
-        setTotal(total);
-      } catch (err) {
-        console.error('Error loading submissions:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSubmissions();
-  }, [filter, page]);
+  const {
+    items: submissions,
+    total,
+    totalPages,
+    page,
+    setPage,
+    filters,
+    updateFilters,
+    isLoading,
+    error,
+  } = useListWithFilters<ContentSubmission, { status: ContentSubmission['status'] | 'all' }>({
+    pageSize,
+    initialFilters: { status: 'all' },
+    fetchPage: async ({ filters: currentFilters, limit, offset }) => {
+      const status = currentFilters.status === 'all' ? undefined : currentFilters.status;
+      const { submissions: rows, total: totalRows } = await getMySubmissions(status, limit, offset);
+      return { items: rows, total: totalRows };
+    },
+  });
 
   const statusColors: Record<ContentSubmission['status'], string> = {
     pending: 'bg-yellow-50 border-yellow-200',
@@ -68,8 +64,6 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
     'published',
   ];
 
-  const totalPages = Math.ceil(total / pageSize);
-
   return (
     <div className="facodi-page">
       <div className="max-w-4xl mx-auto">
@@ -93,11 +87,10 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
               <button
                 key={status}
                 onClick={() => {
-                  setFilter(status);
-                  setPage(0);
+                  updateFilters({ status });
                 }}
                 className={`px-4 py-2 transition-all ${
-                  filter === status
+                  filters.status === status
                     ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
                     : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
                 }`}
@@ -111,9 +104,13 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
         </div>
 
         {/* Submissions List */}
-        {loading ? (
+        {isLoading ? (
           <div className="text-center py-12">
             <p className="text-slate-600">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
+          </div>
+        ) : error ? (
+          <div className="stark-border bg-red-50 p-8 text-center text-red-700">
+            <p className="text-sm font-semibold">{locale === 'pt' ? 'Erro ao carregar submissões.' : 'Error loading submissions.'}</p>
           </div>
         ) : submissions.length === 0 ? (
           <div className="stark-border bg-white p-12 text-center">

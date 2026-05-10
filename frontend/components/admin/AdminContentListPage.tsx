@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { getAdminQueue } from '../../services/contentSubmissionSource';
 import type { ContentSubmission } from '../../types';
+import { useListWithFilters } from '../../hooks/useListWithFilters';
+import AdminPageScaffold from './AdminPageScaffold';
 
 interface AdminContentListPageProps {
   onBack: () => void;
@@ -18,40 +20,38 @@ const STATUS_LABELS: Record<ContentSubmission['status'], string> = {
 };
 
 const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onOpenSubmission }) => {
-  const [rows, setRows] = useState<ContentSubmission[]>([]);
-  const [total, setTotal] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<ContentSubmission['status'] | ''>('');
-  const [typeFilter, setTypeFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
 
   const pageSize = 20;
 
-  const load = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const {
+    items: rows,
+    totalPages,
+    page,
+    setPage,
+    filters,
+    updateFilters,
+    isLoading,
+    error,
+  } = useListWithFilters<
+    ContentSubmission,
+    { statusFilter: ContentSubmission['status'] | ''; typeFilter: ContentSubmission['content_type'] | '' }
+  >({
+    pageSize,
+    initialFilters: {
+      statusFilter: '',
+      typeFilter: '',
+    },
+    fetchPage: async ({ filters: currentFilters, limit, offset }) => {
       const { submissions, total: totalCount } = await getAdminQueue({
-        status: statusFilter || undefined,
-        content_type: typeFilter || undefined,
-        limit: pageSize,
-        offset: page * pageSize,
+        status: currentFilters.statusFilter || undefined,
+        content_type: currentFilters.typeFilter || undefined,
+        limit,
+        offset,
       });
-      setRows(submissions);
-      setTotal(totalCount);
-    } catch (err) {
-      console.error('[admin-content-list] load error', err);
-      setError('Erro ao carregar conteudos.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [statusFilter, typeFilter, page]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+      return { items: submissions, total: totalCount };
+    },
+  });
 
   const filteredRows = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -64,18 +64,14 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
     );
   }, [rows, search]);
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] mb-12 hover:text-primary transition-colors group"
-      >
-        <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
-        Painel Admin
-      </button>
-
+    <AdminPageScaffold
+      onBack={onBack}
+      backLabel="Painel Admin"
+      isLoading={isLoading}
+      loadingLabel="A carregar conteúdos..."
+      error={error}
+    >
       <h1 className="text-5xl font-black uppercase tracking-tighter mb-8">Revisao de Conteudos</h1>
 
       <div className="stark-border p-6 bg-white mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -83,10 +79,12 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
           <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Estado</label>
           <select
             className="w-full stark-border px-3 py-2 text-xs uppercase"
-            value={statusFilter}
+            value={filters.statusFilter}
             onChange={(e) => {
-              setStatusFilter(e.target.value as ContentSubmission['status'] | '');
-              setPage(0);
+              updateFilters((prev) => ({
+                ...prev,
+                statusFilter: e.target.value as ContentSubmission['status'] | '',
+              }));
             }}
           >
             <option value="">Todos</option>
@@ -99,10 +97,9 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
           <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Tipo</label>
           <select
             className="w-full stark-border px-3 py-2 text-xs uppercase"
-            value={typeFilter}
+            value={filters.typeFilter}
             onChange={(e) => {
-              setTypeFilter(e.target.value);
-              setPage(0);
+              updateFilters((prev) => ({ ...prev, typeFilter: e.target.value }));
             }}
           >
             <option value="">Todos</option>
@@ -123,13 +120,7 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
         </div>
       </div>
 
-      {error && <div className="stark-border p-4 bg-red-50 text-red-700 mb-6">{error}</div>}
-
-      {isLoading ? (
-        <div className="py-24 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-black border-t-primary animate-spin" />
-        </div>
-      ) : filteredRows.length === 0 ? (
+      {filteredRows.length === 0 ? (
         <div className="stark-border p-10 bg-brand-muted text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Nenhum conteudo encontrado</p>
         </div>
@@ -176,7 +167,7 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
           </button>
         </div>
       )}
-    </div>
+    </AdminPageScaffold>
   );
 };
 

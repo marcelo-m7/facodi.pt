@@ -1,44 +1,46 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { listApplications, updateApplicationStatus } from '../../services/curatorApplicationSource';
 import type { EditorApplication } from '../../types';
+import { useListWithFilters } from '../../hooks/useListWithFilters';
+import AdminPageScaffold from './AdminPageScaffold';
 
 interface AdminCuratorListPageProps {
   onBack: () => void;
 }
 
 const AdminCuratorListPage: React.FC<AdminCuratorListPageProps> = ({ onBack }) => {
-  const [rows, setRows] = useState<EditorApplication[]>([]);
-  const [statusFilter, setStatusFilter] = useState<EditorApplication['status'] | ''>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const { applications } = await listApplications(statusFilter || undefined, 50, 0);
-      setRows(applications);
-    } catch (err) {
-      console.error('[admin-curator-list] load error', err);
-      setError('Erro ao carregar candidaturas.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [statusFilter]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const {
+    items: rows,
+    filters,
+    updateFilters,
+    isLoading,
+    error,
+    reload,
+  } = useListWithFilters<EditorApplication, { statusFilter: EditorApplication['status'] | '' }>({
+    pageSize: 50,
+    initialFilters: { statusFilter: '' },
+    fetchPage: async ({ filters: currentFilters, limit, offset }) => {
+      const { applications, total } = await listApplications(
+        currentFilters.statusFilter || undefined,
+        limit,
+        offset,
+      );
+      return { items: applications, total };
+    },
+  });
 
   const approve = async (id: string) => {
     try {
+      setActionError(null);
       await updateApplicationStatus(id, 'approved');
       setNote('Candidatura aprovada.');
-      await load();
+      await reload();
     } catch (err) {
       console.error('[admin-curator-list] approve error', err);
-      setError('Erro ao aprovar candidatura.');
+      setActionError('Erro ao aprovar candidatura.');
     }
   };
 
@@ -46,30 +48,41 @@ const AdminCuratorListPage: React.FC<AdminCuratorListPageProps> = ({ onBack }) =
     const reason = window.prompt('Motivo da rejeicao (obrigatorio):');
     if (!reason || !reason.trim()) return;
     try {
+      setActionError(null);
       await updateApplicationStatus(id, 'rejected', reason.trim());
       setNote('Candidatura rejeitada.');
-      await load();
+      await reload();
     } catch (err) {
       console.error('[admin-curator-list] reject error', err);
-      setError('Erro ao rejeitar candidatura.');
+      setActionError('Erro ao rejeitar candidatura.');
     }
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] mb-12 hover:text-primary"
-      >
-        <span className="material-symbols-outlined text-sm">arrow_back</span>
-        Painel Admin
-      </button>
-
+    <AdminPageScaffold
+      onBack={onBack}
+      backLabel="Painel Admin"
+      isLoading={isLoading}
+      loadingLabel="A carregar candidaturas..."
+      error={error}
+      notice={
+        <>
+          {note && <div className="stark-border p-4 bg-green-50 text-green-700 mb-6">{note}</div>}
+          {actionError && <div className="stark-border p-4 bg-red-50 text-red-700 mb-6">{actionError}</div>}
+        </>
+      }
+    >
       <h1 className="text-5xl font-black uppercase tracking-tighter mb-8">Candidaturas de Curadores</h1>
 
       <div className="stark-border p-6 bg-white mb-8 max-w-xs">
         <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Estado</label>
-        <select className="w-full stark-border px-3 py-2 text-xs uppercase" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as EditorApplication['status'] | '')}>
+        <select
+          className="w-full stark-border px-3 py-2 text-xs uppercase"
+          value={filters.statusFilter}
+          onChange={(e) => {
+            updateFilters({ statusFilter: e.target.value as EditorApplication['status'] | '' });
+          }}
+        >
           <option value="">Todos</option>
           <option value="pending">Pendente</option>
           <option value="approved">Aprovado</option>
@@ -77,14 +90,7 @@ const AdminCuratorListPage: React.FC<AdminCuratorListPageProps> = ({ onBack }) =
         </select>
       </div>
 
-      {note && <div className="stark-border p-4 bg-green-50 text-green-700 mb-6">{note}</div>}
-      {error && <div className="stark-border p-4 bg-red-50 text-red-700 mb-6">{error}</div>}
-
-      {isLoading ? (
-        <div className="py-24 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-black border-t-primary animate-spin" />
-        </div>
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="stark-border p-10 bg-brand-muted text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Nenhuma candidatura encontrada</p>
         </div>
@@ -111,7 +117,7 @@ const AdminCuratorListPage: React.FC<AdminCuratorListPageProps> = ({ onBack }) =
           ))}
         </div>
       )}
-    </div>
+    </AdminPageScaffold>
   );
 };
 

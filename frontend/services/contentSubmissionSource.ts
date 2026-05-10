@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { ContentSubmission } from '../types';
 import { Database } from './supabase.types';
+import { requireAuthenticatedUser } from './authHelper';
 
 type ContentSubmissionRow = Database['public']['Tables']['content_submissions']['Row'];
 type ContentSubmissionInsert = Database['public']['Tables']['content_submissions']['Insert'];
@@ -42,18 +43,7 @@ export interface SubmissionFilters {
  */
 export async function submitContent(data: SubmitContentData): Promise<ContentSubmission | null> {
   try {
-    // Prefer locally restored session user to avoid unnecessary remote auth roundtrip.
-    // Fallback to getUser when session is not available.
-    const { data: { session } } = await supabase.auth.getSession();
-    let user = session?.user ?? null;
-
-    if (!user) {
-      const { data: { user: fetchedUser }, error: authError } = await supabase.auth.getUser();
-      if (authError || !fetchedUser) {
-        throw new Error('auth_required');
-      }
-      user = fetchedUser;
-    }
+    const user = await requireAuthenticatedUser({ fallbackToGetUser: true });
 
     // Get user profile for author_name and author_email
     const { data: profile, error: profileError } = await supabase
@@ -128,10 +118,7 @@ export async function getMySubmissions(
   offset = 0
 ): Promise<{ submissions: ContentSubmission[]; total: number }> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('auth_required');
-    }
+    const user = await requireAuthenticatedUser({ fallbackToGetUser: true });
 
     let query = supabase
       .from('content_submissions')
@@ -254,10 +241,7 @@ export async function updateSubmissionStatus(
   }
 ): Promise<ContentSubmission | null> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('auth_required');
-    }
+    const user = await requireAuthenticatedUser({ fallbackToGetUser: true });
 
     const updateData: ContentSubmissionUpdate = {
       status,
