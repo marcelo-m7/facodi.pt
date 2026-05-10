@@ -149,20 +149,20 @@ export const ContentSubmissionPage: React.FC<ContentSubmissionPageProps> = ({ lo
     <div className="facodi-page">
       <div className="max-w-4xl mx-auto">
         {/* Institutional Guidance Section */}
-        <div className="mb-10 bg-brand-muted stark-border p-8">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-4">
+        <div className="facodi-card mb-12 bg-opacity-50">
+          <h2 className="text-[9px] uppercase font-bold tracking-[0.3em] mb-4 text-gray-600 dark:text-gray-400">
             {locale === 'pt' ? 'Orientação para envio de conteúdos' : 'Content submission guidance'}
           </h2>
-          <p className="text-sm font-medium text-gray-700 leading-relaxed">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">
             {t('institutional.content.submission.text')}
           </p>
         </div>
 
         {/* Header */}
-        <div className="mb-10">
-          <span className="text-[10px] font-black bg-black text-primary px-3 py-1.5 uppercase tracking-[0.2em] mb-4 inline-block">Curadoria</span>
-          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter">{t('curator.submit.title')}</h1>
-          <p className="text-sm text-gray-500 mt-3 max-w-xl">{t('curator.submit.intro')}</p>
+        <div className="mb-12">
+          <span className="facodi-badge facodi-badge-neon mb-6 inline-block">Curadoria</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95] mb-4">{t('curator.submit.title')}</h1>
+          <p className="text-base text-gray-600 dark:text-gray-400 font-medium max-w-xl">{t('curator.submit.intro')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

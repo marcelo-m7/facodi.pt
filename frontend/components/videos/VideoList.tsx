@@ -79,8 +79,8 @@ const VideoList: React.FC<Props> = ({ onSelectVideo, t }) => {
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 mb-12">
         <div className="max-w-3xl">
-          <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-6">{t('videos.title')}</h1>
-          <p className="text-xl lg:text-2xl text-gray-400 font-medium tracking-tight">{t('videos.subtitle')}</p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[0.95] mb-6">{t('videos.title')}</h1>
+          <p className="text-base lg:text-lg text-gray-600 dark:text-gray-400 font-medium">{t('videos.subtitle')}</p>
         </div>
       </div>
 
@@ -89,13 +89,13 @@ const VideoList: React.FC<Props> = ({ onSelectVideo, t }) => {
           type="text"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          className="w-full bg-white stark-border px-5 py-4 text-sm font-bold uppercase tracking-wider outline-none"
+          className="facodi-input"
           placeholder={t('videos.searchPlaceholder')}
         />
         <select
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
-          className="bg-white stark-border px-4 py-4 text-sm font-bold uppercase tracking-wider"
+          className="facodi-input"
         >
           <option value="">{t('videos.allCategories')}</option>
           {categories.map((category) => (
@@ -107,7 +107,7 @@ const VideoList: React.FC<Props> = ({ onSelectVideo, t }) => {
         <select
           value={playlistId}
           onChange={(event) => setPlaylistId(event.target.value)}
-          className="bg-white stark-border px-4 py-4 text-sm font-bold uppercase tracking-wider"
+          className="facodi-input"
         >
           <option value="">{t('videos.allPlaylists')}</option>
           {playlists.map((playlist) => (

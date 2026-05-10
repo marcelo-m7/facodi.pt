@@ -135,7 +135,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="facodi-spinner mx-auto mb-4" />
-          <p className="text-[10px] font-black uppercase tracking-widest">{t('nav.progress')}</p>
+          <p className="text-sm font-semibold">{t('nav.progress')}</p>
         </div>
       </div>
     );
@@ -147,38 +147,38 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
       <div className="facodi-page">
         <div className="max-w-2xl mx-auto">
           <div className="facodi-card">
-            <h1 className="text-4xl font-black uppercase tracking-tighter mb-6">{t('curator.apply.title')}</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-8">{t('curator.apply.title')}</h1>
             <div className="facodi-alert facodi-alert-info">
-              <p className="text-blue-900">
+              <p className="font-semibold">
                 {locale === 'pt' 
                   ? 'Você já possui uma candidatura ativa.' 
                   : 'You already have an active application.'}
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6 mt-8">
               <div>
-                <label className="text-sm font-semibold text-slate-700">
+                <label className="facodi-label">
                   {t('curator.apply.status.' + existingApp.status)}
                 </label>
-                <p className="text-base text-slate-900 mt-1">{existingApp.status}</p>
+                <p className="text-base text-black dark:text-white mt-2 font-semibold">{existingApp.status}</p>
               </div>
 
               {existingApp.review_notes && (
                 <div>
-                  <label className="text-sm font-semibold text-slate-700">
+                  <label className="facodi-label">
                     {locale === 'pt' ? 'Notas de revisão' : 'Review notes'}
                   </label>
-                  <p className="text-base text-slate-900 mt-1">{existingApp.review_notes}</p>
+                  <p className="text-base text-gray-700 dark:text-gray-300 mt-2">{existingApp.review_notes}</p>
                 </div>
               )}
 
               {existingApp.reviewed_at && (
                 <div>
-                  <label className="text-sm font-semibold text-slate-700">
+                  <label className="facodi-label">
                     {locale === 'pt' ? 'Data de revisão' : 'Review date'}
                   </label>
-                  <p className="text-base text-slate-900 mt-1">
+                  <p className="text-base text-gray-700 dark:text-gray-300 mt-2">
                     {new Date(existingApp.reviewed_at).toLocaleDateString(locale === 'pt' ? 'pt-PT' : 'en-US')}
                   </p>
                 </div>
@@ -194,29 +194,29 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
     <div className="facodi-page">
       <div className="max-w-2xl mx-auto">
         {/* Institutional Context Section */}
-        <div className="mb-10 bg-brand-muted stark-border p-8">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-4">
+        <div className="facodi-card mb-10 bg-opacity-50">
+          <h2 className="text-[9px] uppercase font-bold tracking-[0.3em] mb-4 text-gray-600 dark:text-gray-400">
             {t('institutional.curator.context.title')}
           </h2>
-          <p className="text-sm font-medium text-gray-700 leading-relaxed">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">
             {t('institutional.curator.context.text')}
           </p>
         </div>
 
         {/* Header */}
-        <div className="mb-10">
-          <span className="text-[10px] font-black bg-black text-primary px-3 py-1.5 uppercase tracking-[0.2em] mb-4 inline-block">Curadoria</span>
-          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter">{t('curator.apply.title')}</h1>
-          <p className="text-sm text-gray-500 mt-3">{t('curator.apply.intro')}</p>
+        <div className="mb-12">
+          <span className="facodi-badge facodi-badge-neon mb-6 inline-block">Curadoria</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95] mb-4">{t('curator.apply.title')}</h1>
+          <p className="text-base text-gray-600 dark:text-gray-400 font-medium">{t('curator.apply.intro')}</p>
         </div>
 
         {/* Info Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <div className="facodi-card">
-            <h3 className="text-[10px] font-black uppercase tracking-widest mb-4">
+            <h3 className="text-[9px] uppercase font-bold tracking-[0.3em] mb-4 text-gray-600 dark:text-gray-400">
               {locale === 'pt' ? 'Responsabilidades' : 'Responsibilities'}
             </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li>• {locale === 'pt' ? 'Revisar e aprovar conteúdo enviado' : 'Review and approve submitted content'}</li>
               <li>• {locale === 'pt' ? 'Mapear unidades curriculares' : 'Map curricular units'}</li>
               <li>• {locale === 'pt' ? 'Organizar playlists' : 'Organize playlists'}</li>
@@ -225,10 +225,10 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
           </div>
 
           <div className="facodi-card">
-            <h3 className="text-[10px] font-black uppercase tracking-widest mb-4">
+            <h3 className="text-[9px] uppercase font-bold tracking-[0.3em] mb-4 text-gray-600 dark:text-gray-400">
               {locale === 'pt' ? 'Tipos de conteúdo' : 'Content types'}
             </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li>• Vídeos / Videos</li>
               <li>• Artigos / Articles</li>
               <li>• Recursos interativos / Interactive resources</li>
@@ -239,7 +239,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
 
         {/* Form */}
         <div className="facodi-card">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8">{t('curator.apply.form.submit')}</h2>
+          <h2 className="text-[9px] uppercase font-bold tracking-[0.3em] mb-8 text-gray-600 dark:text-gray-400">{t('curator.apply.form.submit')}</h2>
 
           {success && (
             <div className="facodi-alert facodi-alert-success">{t('curator.apply.success')}</div>
@@ -370,7 +370,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
               />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <label className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -380,7 +380,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                   className="mt-1"
                   required
                 />
-                <span className="text-sm text-slate-700">
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                   {t('curator.apply.form.guidelinesAccepted')} *
                 </span>
               </label>
@@ -394,7 +394,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
                   className="mt-1"
                   required
                 />
-                <span className="text-sm text-slate-700">
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                   {t('curator.apply.form.consentPrivacy')} *
                 </span>
               </label>
@@ -403,7 +403,7 @@ export const CuratorApplicationPage: React.FC<CuratorApplicationPageProps> = ({ 
             <button
               type="submit"
               disabled={submitting}
-              className="facodi-btn facodi-btn-primary facodi-btn-full"
+              className="mt-8 w-full facodi-btn facodi-btn-primary"
             >
               {submitting ? t('curator.apply.form.submitting') : t('curator.apply.form.submit')}
             </button>
