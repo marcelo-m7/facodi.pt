@@ -208,30 +208,30 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">{t('auth.editProfile')}</h2>
             <form onSubmit={handleSave} className="flex flex-col gap-5">
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block mb-1">{t('auth.displayName')}</label>
+                <label className="facodi-label">{t('auth.displayName')}</label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   maxLength={80}
-                  className="w-full stark-border px-4 py-3 text-sm font-medium outline-none focus:shadow-[4px_4px_0px_0px_rgba(239,255,0,1)] transition-all"
+                  className="facodi-input"
                 />
               </div>
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block mb-1">{t('auth.bio')}</label>
+                <label className="facodi-label">{t('auth.bio')}</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   rows={4}
                   maxLength={300}
-                  className="w-full stark-border px-4 py-3 text-sm font-medium outline-none focus:shadow-[4px_4px_0px_0px_rgba(239,255,0,1)] transition-all resize-none"
+                  className="facodi-input resize-none"
                 />
               </div>
               {saveMsg && <p className="text-[10px] font-bold uppercase text-gray-600">{saveMsg}</p>}
               <button
                 type="submit"
                 disabled={isSaving}
-                className="self-start bg-primary text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50"
+                className="self-start facodi-btn facodi-btn-primary disabled:opacity-50"
               >
                 {isSaving ? '...' : t('auth.saveChanges')}
               </button>
@@ -281,7 +281,7 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
                 type="text"
                 value={confirmText}
                 onChange={(event) => setConfirmText(event.target.value)}
-                className="stark-border px-3 py-2"
+                className="facodi-input"
               />
             </label>
 
@@ -291,7 +291,7 @@ const ProfilePage: React.FC<Props> = ({ onBack, t }) => {
                 type="password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
-                className="stark-border px-3 py-2"
+                className="facodi-input"
               />
             </label>
 
