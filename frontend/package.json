@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "security:check-rls": "./scripts/check-rls.sh",
-    "test:unit": "vitest run ./services/env.test.ts"
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
@@ -25,6 +26,10 @@
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "jsdom": "^25.0.1",
+    "@vitest/coverage-v8": "^2.1.8"
   }
 }
