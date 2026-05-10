@@ -249,7 +249,7 @@ const App: React.FC = () => {
     let title = 'FACODI - Faculdade Comunitaria Digital';
     let description = defaultDescription;
     let type: 'website' | 'article' = 'website';
-    let image = defaultImage;
+    const image = defaultImage;
     let structuredData: Record<string, unknown> | Array<Record<string, unknown>> | undefined = [
       {
         '@context': 'https://schema.org',
@@ -477,7 +477,7 @@ const App: React.FC = () => {
   }, [isDark]);
 
   useEffect(() => {
-    let timeoutId: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const schedule = () => setEnableAiNavigator(true);
 
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -489,10 +489,10 @@ const App: React.FC = () => {
       };
     }
 
-    timeoutId = window.setTimeout(schedule, 900);
+    timeoutId = setTimeout(schedule, 900);
     return () => {
       if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
       }
     };
   }, []);

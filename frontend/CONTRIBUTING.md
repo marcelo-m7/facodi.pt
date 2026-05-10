@@ -20,6 +20,21 @@ pnpm build
 pnpm test:e2e
 ```
 
+5. Antes de abrir PR, rode a validacao minima:
+
+```bash
+pnpm lint
+pnpm type-check
+pnpm test:unit
+pnpm build
+```
+
+Opcional (atalho):
+
+```bash
+pnpm validate
+```
+
 ## Regras de Codigo
 
 - Use pnpm (nao npm) para manter lockfile consistente.

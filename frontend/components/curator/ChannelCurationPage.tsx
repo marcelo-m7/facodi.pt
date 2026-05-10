@@ -96,7 +96,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
     setVideosError(null);
     try {
       setLoadingVideos(true);
-      const items = await listChannelVideos(channelInput.trim(), brief);
+      const { videos: items } = await listChannelVideos(channelInput.trim(), undefined, brief.maxVideos);
       setVideos(items);
       setSelectedVideoIds(items.map((item) => item.id));
       syncFallbackMode();
@@ -116,10 +116,10 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
     setAnalysisError(null);
     try {
       setAnalyzing(true);
-      const result = await analyzeVideoBatch(channel, selectedVideos, brief);
-      setAnalyses(result);
-      if (result.length > 0) {
-        const mapped = await generatePlaylistSuggestions(channel, selectedVideos, result);
+      const result = await analyzeVideoBatch(selectedVideos.map((video) => video.id));
+      setAnalyses(Array.from(result.values()));
+      if (result.size > 0) {
+        const mapped = await generatePlaylistSuggestions(result);
         setSuggestions(mapped);
       }
       syncFallbackMode();
@@ -143,42 +143,40 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
     try {
       setPublishing(true);
 
-      const items = selectedVideos.map((video) => ({
-        video,
-        analysis: analyses.find((entry) => entry.videoId === video.id),
-        suggestion: suggestions.find((entry) => entry.videoId === video.id),
-      }));
-
-      const normalized = await publishCuratedVideos(items);
+      const published = await publishCuratedVideos({
+        channelId: channel?.id ?? channelInput.trim(),
+        videoIds: selectedVideos.map((video) => video.id),
+        mappings: {},
+        curatorNotes: 'Origem: pipeline de curadoria por canal (MVP).',
+      });
       syncFallbackMode();
 
       // Compatibilidade: publicação final no fluxo existente de submissão — per-item results
       const results: PublishItemResult[] = [];
       let duplicateCount = 0;
-      for (const item of normalized) {
+      for (const video of selectedVideos) {
         try {
+          const analysis = analyses.find((entry) => entry.videoId === video.id);
           await submitContent({
             content_type: 'video',
-            url: item.video.id ? `https://www.youtube.com/watch?v=${item.video.id}` : undefined,
-            youtube_video_id: item.video.id,
-            suggested_title: item.video.title,
-            summary: item.analysis?.summary || item.video.description || undefined,
-            course_id: item.suggestion?.courseId,
-            unit_id: item.suggestion?.unitId,
-            topic: item.analysis?.topic,
-            pedagogical_reason: item.analysis?.pedagogicalReason,
-            tags: item.analysis?.tags || item.video.tags || [],
+            url: video.id ? `https://www.youtube.com/watch?v=${video.id}` : undefined,
+            youtube_video_id: video.id,
+            suggested_title: video.title,
+            summary: analysis?.justification || video.description || undefined,
+            topic: analysis?.topics?.join(', '),
+            pedagogical_reason: analysis?.justification,
+            tags: analysis?.topics || [],
             additional_notes: 'Origem: pipeline de curadoria por canal (MVP).',
           });
-          results.push({ title: item.video.title, success: true });
+          results.push({ title: video.title, success: true });
         } catch (err) {
           const message = err instanceof Error ? err.message : 'erro desconhecido';
           if (message === 'submission_duplicate') {
             duplicateCount += 1;
-            results.push({ title: item.video.title, success: true });
+            results.push({ title: video.title, success: true });
             continue;
           }
-          results.push({ title: item.video.title, success: false, error: message });
+          results.push({ title: video.title, success: false, error: message });
         }
       }
 
@@ -190,11 +188,14 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
           duplicateCount > 0 ? ` (${duplicateCount} já existente(s), sem duplicar envio).` : '';
         setPublishSuccess(
           failed > 0
-            ? `${succeeded} de ${normalized.length} processado(s); ${failed} falhou.${duplicateSuffix}`
+            ? `${succeeded} de ${selectedVideos.length} processado(s); ${failed} falhou.${duplicateSuffix}`
             : `${succeeded} vídeo(s) processado(s) para revisão no fluxo atual.${duplicateSuffix}`,
         );
       } else {
-        setPublishError(`Todos os ${normalized.length} envios falharam.`);
+        setPublishError(`Todos os ${selectedVideos.length} envios falharam.`);
+      }
+      if (!published.success && published.message) {
+        setPublishError(published.message);
       }
     } catch (error) {
       setPublishError(error instanceof Error ? error.message : 'Falha ao publicar conteúdo curado.');

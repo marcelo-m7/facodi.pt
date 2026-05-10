@@ -8,6 +8,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit -p tsconfig.typecheck.json",
+    "validate": "pnpm lint && pnpm type-check && pnpm test:unit && pnpm build",
     "test:e2e": "playwright test",
     "security:check-rls": "./scripts/check-rls.sh",
     "test:unit": "vitest run",
@@ -21,15 +25,20 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.26.0",
     "@playwright/test": "^1.55.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0",
-    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "eslint": "^9.26.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
     "jsdom": "^25.0.1",
-    "@vitest/coverage-v8": "^2.1.8"
+    "typescript": "~5.8.2",
+    "typescript-eslint": "^8.31.1",
+    "vite": "^6.2.0",
+    "vitest": "^2.1.8"
   }
 }
