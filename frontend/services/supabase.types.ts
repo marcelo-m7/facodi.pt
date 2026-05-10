@@ -71,6 +71,174 @@ export type Database = {
           },
         ]
       }
+      catalog_courses_snapshot: {
+        Row: {
+          code: string
+          content_license: string | null
+          created_at: string
+          curriculum_version: string | null
+          degree_type: string
+          description: string | null
+          duration_semesters: number
+          ects_total: number
+          enroll: string | null
+          id: string
+          institution: string | null
+          is_active: boolean
+          language_code: string
+          long_description: string | null
+          members_count: number | null
+          metadata: Json
+          odoo_id: number | null
+          school: string | null
+          title: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          code: string
+          content_license?: string | null
+          created_at?: string
+          curriculum_version?: string | null
+          degree_type?: string
+          description?: string | null
+          duration_semesters?: number
+          ects_total?: number
+          enroll?: string | null
+          id?: string
+          institution?: string | null
+          is_active?: boolean
+          language_code?: string
+          long_description?: string | null
+          members_count?: number | null
+          metadata?: Json
+          odoo_id?: number | null
+          school?: string | null
+          title: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          code?: string
+          content_license?: string | null
+          created_at?: string
+          curriculum_version?: string | null
+          degree_type?: string
+          description?: string | null
+          duration_semesters?: number
+          ects_total?: number
+          enroll?: string | null
+          id?: string
+          institution?: string | null
+          is_active?: boolean
+          language_code?: string
+          long_description?: string | null
+          members_count?: number | null
+          metadata?: Json
+          odoo_id?: number | null
+          school?: string | null
+          title?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      catalog_units_snapshot: {
+        Row: {
+          category: string | null
+          code: string
+          content: string | null
+          content_url: string | null
+          contributor: string | null
+          course_id: string
+          created_at: string
+          difficulty: string | null
+          duration: string | null
+          ects: number
+          editorial_state: string | null
+          id: string
+          metadata: Json
+          name: string
+          odoo_id: number | null
+          position: number
+          prerequisites: string[]
+          section_name: string | null
+          semester: number
+          slide_category: string | null
+          source_url: string | null
+          summary: string | null
+          syllabus_url: string | null
+          tags: string[]
+          unit_code: string | null
+          updated_at: string
+          video_url: string | null
+          website_url: string | null
+          year: number
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          content?: string | null
+          content_url?: string | null
+          contributor?: string | null
+          course_id: string
+          created_at?: string
+          difficulty?: string | null
+          duration?: string | null
+          ects?: number
+          editorial_state?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          odoo_id?: number | null
+          position?: number
+          prerequisites?: string[]
+          section_name?: string | null
+          semester?: number
+          slide_category?: string | null
+          source_url?: string | null
+          summary?: string | null
+          syllabus_url?: string | null
+          tags?: string[]
+          unit_code?: string | null
+          updated_at?: string
+          video_url?: string | null
+          website_url?: string | null
+          year?: number
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          content?: string | null
+          content_url?: string | null
+          contributor?: string | null
+          course_id?: string
+          created_at?: string
+          difficulty?: string | null
+          duration?: string | null
+          ects?: number
+          editorial_state?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          odoo_id?: number | null
+          position?: number
+          prerequisites?: string[]
+          section_name?: string | null
+          semester?: number
+          slide_category?: string | null
+          source_url?: string | null
+          summary?: string | null
+          syllabus_url?: string | null
+          tags?: string[]
+          unit_code?: string | null
+          updated_at?: string
+          video_url?: string | null
+          website_url?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string
@@ -179,6 +347,189 @@ export type Database = {
         }
         Relationships: []
       }
+      content_progress: {
+        Row: {
+          completed_at: string | null
+          content_id: string | null
+          content_type: string
+          course_id: string | null
+          created_at: string
+          curricular_unit_id: string | null
+          duration_seconds: number | null
+          first_accessed_at: string | null
+          id: string
+          last_accessed_at: string | null
+          progress_percentage: number
+          status: string
+          updated_at: string
+          user_id: string
+          watch_seconds: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content_id?: string | null
+          content_type: string
+          course_id?: string | null
+          created_at?: string
+          curricular_unit_id?: string | null
+          duration_seconds?: number | null
+          first_accessed_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+          watch_seconds?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          content_id?: string | null
+          content_type?: string
+          course_id?: string | null
+          created_at?: string
+          curricular_unit_id?: string | null
+          duration_seconds?: number | null
+          first_accessed_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+          watch_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_progress_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "content_progress_curricular_unit_id_fkey"
+            columns: ["curricular_unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "content_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_submissions: {
+        Row: {
+          additional_notes: string | null
+          assigned_to: string | null
+          author_email: string | null
+          author_id: string | null
+          author_name: string | null
+          content_type: string
+          course_id: string | null
+          created_at: string | null
+          id: string
+          pedagogical_reason: string | null
+          rejection_reason: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          suggested_title: string
+          summary: string | null
+          tags: string[] | null
+          topic: string | null
+          unit_id: string | null
+          updated_at: string | null
+          url: string | null
+          youtube_video_id: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          assigned_to?: string | null
+          author_email?: string | null
+          author_id?: string | null
+          author_name?: string | null
+          content_type: string
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          pedagogical_reason?: string | null
+          rejection_reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_title: string
+          summary?: string | null
+          tags?: string[] | null
+          topic?: string | null
+          unit_id?: string | null
+          updated_at?: string | null
+          url?: string | null
+          youtube_video_id?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          assigned_to?: string | null
+          author_email?: string | null
+          author_id?: string | null
+          author_name?: string | null
+          content_type?: string
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          pedagogical_reason?: string | null
+          rejection_reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_title?: string
+          summary?: string | null
+          tags?: string[] | null
+          topic?: string | null
+          unit_id?: string | null
+          updated_at?: string | null
+          url?: string | null
+          youtube_video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_submissions_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_submissions_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_sync_conflicts: {
         Row: {
           created_at: string
@@ -262,100 +613,57 @@ export type Database = {
         }
         Relationships: []
       }
-      content_submissions: {
+      course_enrollments: {
         Row: {
-          additional_notes: string | null
-          assigned_to: string | null
-          author_email: string
-          author_id: string
-          author_name: string
-          content_type: string
-          course_id: string | null
+          completed_at: string | null
+          course_id: string
           created_at: string
+          enrolled_at: string
           id: string
-          pedagogical_reason: string | null
-          rejection_reason: string | null
-          review_notes: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
+          last_accessed_at: string | null
+          progress_percentage: number
+          started_at: string | null
           status: string
-          suggested_title: string
-          summary: string | null
-          tags: string[] | null
-          topic: string | null
-          unit_id: string | null
           updated_at: string
-          url: string | null
-          youtube_video_id: string | null
+          user_id: string
         }
         Insert: {
-          additional_notes?: string | null
-          assigned_to?: string | null
-          author_email: string
-          author_id: string
-          author_name: string
-          content_type: string
-          course_id?: string | null
+          completed_at?: string | null
+          course_id: string
           created_at?: string
+          enrolled_at?: string
           id?: string
-          pedagogical_reason?: string | null
-          rejection_reason?: string | null
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status: string
-          suggested_title: string
-          summary?: string | null
-          tags?: string[] | null
-          topic?: string | null
-          unit_id?: string | null
+          last_accessed_at?: string | null
+          progress_percentage?: number
+          started_at?: string | null
+          status?: string
           updated_at?: string
-          url?: string | null
-          youtube_video_id?: string | null
+          user_id: string
         }
         Update: {
-          additional_notes?: string | null
-          assigned_to?: string | null
-          author_email?: string
-          author_id?: string
-          author_name?: string
-          content_type?: string
-          course_id?: string | null
+          completed_at?: string | null
+          course_id?: string
           created_at?: string
+          enrolled_at?: string
           id?: string
-          pedagogical_reason?: string | null
-          rejection_reason?: string | null
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
+          last_accessed_at?: string | null
+          progress_percentage?: number
+          started_at?: string | null
           status?: string
-          suggested_title?: string
-          summary?: string | null
-          tags?: string[] | null
-          topic?: string | null
-          unit_id?: string | null
           updated_at?: string
-          url?: string | null
-          youtube_video_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "content_submissions_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: "courses"
+            referencedColumns: ["code"]
           },
           {
-            foreignKeyName: "content_submissions_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_submissions_assigned_to_fkey"
-            columns: ["assigned_to"]
+            foreignKeyName: "course_enrollments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -555,54 +863,79 @@ export type Database = {
       }
       editor_applications: {
         Row: {
+          availability: string | null
           consent_privacy: boolean
           created_at: string
           email: string
+          experience_summary: string | null
           full_name: string
+          guidelines_accepted: boolean | null
           id: string
           motivation: string | null
           portfolio_url: string | null
+          relevant_links: string[] | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           source_page: string
+          specialty_area: string | null
           status: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          availability?: string | null
           consent_privacy?: boolean
           created_at?: string
           email: string
+          experience_summary?: string | null
           full_name: string
+          guidelines_accepted?: boolean | null
           id?: string
           motivation?: string | null
           portfolio_url?: string | null
+          relevant_links?: string[] | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           source_page?: string
+          specialty_area?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          availability?: string | null
           consent_privacy?: boolean
           created_at?: string
           email?: string
+          experience_summary?: string | null
           full_name?: string
+          guidelines_accepted?: boolean | null
           id?: string
           motivation?: string | null
           portfolio_url?: string | null
+          relevant_links?: string[] | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           source_page?: string
+          specialty_area?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "editor_applications_reviewed_by_fkey"
             columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editor_applications_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1155,6 +1488,68 @@ export type Database = {
           },
         ]
       }
+      student_activity_events: {
+        Row: {
+          content_id: string | null
+          course_id: string | null
+          created_at: string
+          curricular_unit_id: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          content_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          curricular_unit_id?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          content_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          curricular_unit_id?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_activity_events_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_activity_events_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "student_activity_events_curricular_unit_id_fkey"
+            columns: ["curricular_unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "student_activity_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unit_enrichments: {
         Row: {
           ai_summary: string | null
@@ -1221,7 +1616,15 @@ export type Database = {
           unit_code?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "unit_favorites_unit_code_fkey"
+            columns: ["unit_code"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       units: {
         Row: {
@@ -1389,6 +1792,134 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      video_suggestions: {
+        Row: {
+          channel_name: string | null
+          confidence: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          payload: Json
+          status: string
+          suggested_course_id: string | null
+          suggested_playlist_id: string | null
+          suggested_topic: string | null
+          suggested_unit_id: string | null
+          tags: string[]
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          video_id: string | null
+          youtube_url: string
+          youtube_video_id: string
+        }
+        Insert: {
+          channel_name?: string | null
+          confidence?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          payload?: Json
+          status?: string
+          suggested_course_id?: string | null
+          suggested_playlist_id?: string | null
+          suggested_topic?: string | null
+          suggested_unit_id?: string | null
+          tags?: string[]
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          video_id?: string | null
+          youtube_url: string
+          youtube_video_id: string
+        }
+        Update: {
+          channel_name?: string | null
+          confidence?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          payload?: Json
+          status?: string
+          suggested_course_id?: string | null
+          suggested_playlist_id?: string | null
+          suggested_topic?: string | null
+          suggested_unit_id?: string | null
+          tags?: string[]
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          video_id?: string | null
+          youtube_url?: string
+          youtube_video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_suggestions_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_suggestions_suggested_course_id_fkey"
+            columns: ["suggested_course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_suggestions_suggested_playlist_id_fkey"
+            columns: ["suggested_playlist_id"]
+            isOneToOne: false
+            referencedRelation: "playlists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_suggestions_suggested_playlist_id_fkey"
+            columns: ["suggested_playlist_id"]
+            isOneToOne: false
+            referencedRelation: "v_course_playlist_catalog"
+            referencedColumns: ["playlist_id"]
+          },
+          {
+            foreignKeyName: "video_suggestions_suggested_unit_id_fkey"
+            columns: ["suggested_unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_suggestions_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       video_view_events: {
         Row: {

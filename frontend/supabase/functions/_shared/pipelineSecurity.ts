@@ -119,6 +119,33 @@ export const requireEditorOrAdmin = async (req: Request): Promise<AuthContext> =
   return { userId: user.id, role };
 };
 
+
+export const requireCuratorOrHigher = async (req: Request): Promise<AuthContext> => {
+  const token = getBearerToken(req);
+  const supabaseUrl = getEnv('SUPABASE_URL');
+  const anonKey = getEnv('SUPABASE_ANON_KEY');
+
+  const user = await fetchUser(supabaseUrl, anonKey, token);
+  const role = await fetchProfileRole(supabaseUrl, anonKey, token, user.id);
+
+  if (role !== 'curator' && role !== 'editor' && role !== 'admin') {
+    throw new HttpError(403, 'forbidden', 'Curator, Editor, or Admin role required.');
+  }
+
+  return { userId: user.id, role };
+};
+
+export const requireAuthenticated = async (req: Request): Promise<AuthContext> => {
+  const token = getBearerToken(req);
+  const supabaseUrl = getEnv('SUPABASE_URL');
+  const anonKey = getEnv('SUPABASE_ANON_KEY');
+
+  const user = await fetchUser(supabaseUrl, anonKey, token);
+  const role = await fetchProfileRole(supabaseUrl, anonKey, token, user.id);
+
+  return { userId: user.id, role };
+};
+
 const rateWindows = new Map<string, RateWindow>();
 
 export const enforceRateLimit = (key: string, limit: number, windowMs: number): void => {

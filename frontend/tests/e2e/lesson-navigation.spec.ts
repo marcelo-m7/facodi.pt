@@ -145,9 +145,6 @@ test.describe('Lesson Navigation', () => {
     // Navigate to lesson
     await cards.first().click();
     
-    // Scroll should be reset or manageable on lesson detail
-    const scrollOnLesson = await page.evaluate(() => window.scrollY);
-    
     // Go back to units
     await page.goBack();
     

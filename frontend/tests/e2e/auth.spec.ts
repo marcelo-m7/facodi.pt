@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_EMAIL = 'test-fun@monynha.com';
-const TEST_PASSWORD = 'monynha.com';
+const TEST_EMAIL = process.env.USER_EMAIL ?? '';
+const TEST_PASSWORD = process.env.USER_PASSWORD ?? '';
+const HAS_TEST_CREDENTIALS = Boolean(TEST_EMAIL && TEST_PASSWORD);
 
 test.describe('Auth – Modal', () => {
   test('nav shows "Entrar" button when logged out', async ({ page }) => {
@@ -60,6 +61,8 @@ test.describe('Auth – Modal', () => {
 });
 
 test.describe('Auth – Sign in flow', () => {
+  test.skip(!HAS_TEST_CREDENTIALS, 'Set USER_EMAIL and USER_PASSWORD to run login-dependent tests.');
+
   test('successful login closes modal and shows profile button', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Entrar' }).first().click();
@@ -118,6 +121,8 @@ test.describe('Auth – Sign in flow', () => {
 });
 
 test.describe('Auth – Profile page', () => {
+  test.skip(!HAS_TEST_CREDENTIALS, 'Set USER_EMAIL and USER_PASSWORD to run profile auth tests.');
+
   test.beforeEach(async ({ page }) => {
     // Sign in before each test in this group
     await page.goto('/');

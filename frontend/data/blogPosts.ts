@@ -1,5 +1,5 @@
 import postDesignRaw from '../content/blog/design-tecnologia-inclusiva.md?raw';
-import postMonynhaRaw from '../content/blog/por-tras-da-monynha.md?raw';
+import postOpen2Raw from '../content/blog/por-tras-da-open2.md?raw';
 
 export interface BlogPostMeta {
   title: string;
@@ -75,7 +75,7 @@ function parseFrontmatter(markdown: string): BlogPost {
 
 export const blogPosts: BlogPost[] = [
   parseFrontmatter(postDesignRaw),
-  parseFrontmatter(postMonynhaRaw),
+  parseFrontmatter(postOpen2Raw),
 ];
 
 export function getPublishedPosts(): BlogPost[] {

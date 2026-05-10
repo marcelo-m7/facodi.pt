@@ -1,4 +1,5 @@
 export type Locale = 'pt' | 'en';
+export type Translator = (key: string, vars?: Record<string, string | number>) => string;
 
 type TranslationDict = Record<string, string>;
 

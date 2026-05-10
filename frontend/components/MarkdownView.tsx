@@ -10,10 +10,11 @@ interface Props {
 const MarkdownView: React.FC<Props> = ({ content }) => {
   // Render markdown to HTML and sanitize before injecting into DOM.
   const html = React.useMemo(() => {
-    const rawHtml = marked.parse(content, {
+    const parsed = marked.parse(content, {
       gfm: true,
       breaks: true,
     });
+    const rawHtml = typeof parsed === 'string' ? parsed : '';
 
     return DOMPurify.sanitize(rawHtml, {
       ALLOWED_URI_REGEXP: /^(https?:|mailto:|tel:|\/)/i,

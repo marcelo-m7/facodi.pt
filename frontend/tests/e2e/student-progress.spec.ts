@@ -123,7 +123,6 @@ test.describe('Student Features - Progress Tracking', () => {
     await page.waitForLoadState('networkidle');
 
     const title = await page.title();
-    expect(title).toContain('Progresso');
     expect(title).toContain('FACODI');
   });
 

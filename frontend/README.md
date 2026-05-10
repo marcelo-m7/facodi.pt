@@ -86,6 +86,26 @@ Execução E2E:
 pnpm test:e2e
 ```
 
+Para cenarios E2E que exigem login (perfil/autenticacao), defina tambem:
+
+- `USER_EMAIL`
+- `USER_PASSWORD`
+
+Validacao recomendada antes de PR:
+
+```bash
+pnpm lint
+pnpm type-check
+pnpm test:unit
+pnpm build
+```
+
+Atalho unico:
+
+```bash
+pnpm validate
+```
+
 ## Estrutura Relevante
 
 - App.tsx: shell, roteamento e bootstrap do catálogo.

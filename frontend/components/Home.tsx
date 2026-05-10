@@ -18,13 +18,13 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
+      <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-12 sm:py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-7">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black/20 px-3 py-1 mb-8 inline-block">
               {t('home.heroBadge')}
             </span>
-            <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.9] mb-12">
+            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.9] mb-8 sm:mb-12">
               {t('home.heroTitle')
                 .split('|')
                 .map((line, idx, arr) => (
@@ -34,39 +34,40 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
                   </React.Fragment>
                 ))}
             </h1>
-            <p className="text-lg lg:text-xl text-gray-500 font-medium leading-relaxed max-w-2xl mb-12">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-500 font-medium leading-relaxed max-w-2xl mb-8 sm:mb-12">
               {t('home.heroLead')}
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
               <button 
                 onClick={onExplore}
-                className="bg-primary text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                className="bg-primary text-black px-6 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[10px] font-black uppercase tracking-[0.16em] sm:tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
               >
                 {t('home.heroCtaPrimary')}
               </button>
               <button
                 onClick={() => onNavigatePage?.('sobre-open2')}
-                className="bg-white text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:bg-brand-muted transition-all"
+                className="bg-white text-black px-6 sm:px-8 py-3.5 sm:py-4 text-[11px] sm:text-[10px] font-black uppercase tracking-[0.16em] sm:tracking-widest stark-border hover:bg-brand-muted transition-all"
               >
                 {t('home.heroCtaSecondary')}
               </button>
             </div>
-            <p className="mt-8 text-[9px] font-bold uppercase text-gray-400 tracking-[0.2em]">
+            <p className="mt-6 sm:mt-8 text-[10px] sm:text-[9px] font-bold uppercase text-gray-400 tracking-[0.15em] sm:tracking-[0.2em] leading-relaxed">
               <span className="bg-black text-white px-2 py-0.5 mr-2 italic">{t('home.heroPillOpenLabel')}</span>
+              {' '}
               {t('home.heroPillOpenDescription')}
             </p>
           </div>
           
           <div className="lg:col-span-5">
-            <div className="bg-brand-muted p-10 stark-border relative">
+            <div className="bg-brand-muted p-6 sm:p-10 stark-border relative">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-10">{t('home.heroCardLabel')}</h4>
-              <div className="space-y-12">
+              <div className="space-y-8 sm:space-y-12">
                 <div>
-                  <p className="text-6xl font-black tracking-tighter">{totalCourses}</p>
+                  <p className="text-5xl sm:text-6xl font-black tracking-tighter">{totalCourses}</p>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('home.heroCardCoursesLabel')}</p>
                 </div>
                 <div>
-                  <p className="text-6xl font-black tracking-tighter">{totalUnits}</p>
+                  <p className="text-5xl sm:text-6xl font-black tracking-tighter">{totalUnits}</p>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{t('home.heroCardUnitsLabel')}</p>
                 </div>
               </div>
@@ -80,10 +81,10 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Values & Audience Section */}
-      <section className="bg-brand-muted/30 border-y border-black/5 py-24">
+      <section className="bg-brand-muted/30 border-y border-black/5 py-16 sm:py-24">
         <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
           <div>
-            <h2 className="text-3xl font-black uppercase tracking-tighter mb-12">{t('home.valuesTitle')}</h2>
+            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter mb-8 sm:mb-12">{t('home.valuesTitle')}</h2>
             <ul className="space-y-6">
               {[
                 t('home.values.access'),
@@ -100,7 +101,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             </ul>
           </div>
           <div>
-            <h2 className="text-3xl font-black uppercase tracking-tighter mb-12">{t('home.audienceTitle')}</h2>
+            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter mb-8 sm:mb-12">{t('home.audienceTitle')}</h2>
             <ul className="space-y-6">
               {[
                 t('home.audience.1'),
@@ -119,10 +120,10 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Experience Section */}
-      <section className="py-24 border-b border-black/5">
+      <section className="py-16 sm:py-24 border-b border-black/5">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 text-center mb-16">
           <span className="text-[9px] font-bold uppercase tracking-[0.4em] bg-brand-muted px-3 py-1 mb-6 inline-block">{t('home.featuresEyebrow')}</span>
-          <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter">{t('home.featuresTitle')}</h2>
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black uppercase tracking-tighter">{t('home.featuresTitle')}</h2>
           <p className="text-gray-400 font-medium uppercase text-[10px] tracking-widest mt-4">{t('home.featuresSubtitle')}</p>
         </div>
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -132,7 +133,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             { icon: 'check_circle', title: t('home.feature.progress.title'), desc: t('home.feature.progress.description') },
             { icon: 'groups', title: t('home.feature.curatorship.title'), desc: t('home.feature.curatorship.description') },
           ].map((feat, i) => (
-            <div key={i} className="stark-border p-10 hover:bg-primary transition-all group">
+            <div key={i} className="stark-border p-6 sm:p-10 hover:bg-primary transition-all group">
               <span className="material-symbols-outlined text-4xl mb-8 group-hover:scale-110 transition-transform">{feat.icon}</span>
               <h4 className="text-sm font-black uppercase tracking-tight mb-4">{feat.title}</h4>
               <p className="text-xs font-medium text-gray-500 group-hover:text-black leading-relaxed">{feat.desc}</p>
@@ -142,12 +143,12 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Featured Courses Section */}
-      <section className="py-24 bg-brand-muted/10">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 flex justify-between items-end mb-16">
+      <section className="py-16 sm:py-24 bg-brand-muted/10">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-end mb-10 sm:mb-16">
           <div>
             <span className="text-[9px] font-bold uppercase tracking-[0.4em] mb-4 block">{t('home.coursesEyebrow')}</span>
-            <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-none">{t('home.coursesTitle')}</h2>
-            <p className="text-sm text-gray-500 font-medium uppercase tracking-widest mt-4 max-w-2xl">{t('home.coursesSubtitle')}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-none">{t('home.coursesTitle')}</h2>
+            <p className="text-sm text-gray-500 font-medium uppercase tracking-[0.18em] sm:tracking-widest mt-4 max-w-2xl">{t('home.coursesSubtitle')}</p>
           </div>
           <button
             onClick={onExplore}
@@ -161,13 +162,13 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             <button
               key={i}
               onClick={() => onSelectCourse?.(course.id)}
-              className="bg-white stark-border p-12 group hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer text-left"
+              className="bg-white stark-border p-6 sm:p-12 group hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer text-left"
             >
-              <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 border border-black/10 px-2 py-1 mb-8 inline-block">PLANO 2025/2026</span>
-              <h3 className="text-3xl font-black uppercase tracking-tighter mb-8 group-hover:text-primary transition-colors">{course.title}</h3>
-              <p className="text-sm font-medium text-gray-500 mb-12 leading-relaxed">{course.description}</p>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 border border-black/10 px-2 py-1 mb-6 sm:mb-8 inline-block">PLANO 2025/2026</span>
+              <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter mb-6 sm:mb-8 group-hover:text-primary transition-colors">{course.title}</h3>
+              <p className="text-sm font-medium text-gray-500 mb-8 sm:mb-12 leading-relaxed">{course.description}</p>
               <div className="flex justify-between items-end pt-8 border-t border-black/10">
-                <div className="flex gap-12">
+                <div className="flex gap-6 sm:gap-12">
                   <div>
                     <p className="text-[9px] font-black text-gray-400 uppercase mb-1">ECTS</p>
                     <p className="text-xs font-bold">{course.ects}</p>
@@ -177,10 +178,10 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
                     <p className="text-xs font-bold">{course.semesters}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary stark-border px-3 py-1 flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-primary stark-border px-2 sm:px-3 py-1 flex items-center gap-1.5 sm:gap-2">
                     <span className="material-symbols-outlined text-sm">grid_view</span>
-                    <span className="text-[10px] font-black">
+                    <span className="text-[9px] sm:text-[10px] font-black">
                       {units.filter(unit => unit.courseId === course.id).length} {t('home.courseCardFootSuffix')}
                     </span>
                   </div>
@@ -193,19 +194,19 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Steps Section */}
-      <section className="py-24 border-y border-black/5">
+      <section className="py-16 sm:py-24 border-y border-black/5">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
           <span className="text-[9px] font-bold uppercase tracking-[0.4em] mb-4 block">{t('home.journeyEyebrow')}</span>
-          <h2 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter mb-16">{t('home.journeyTitle')}</h2>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter mb-10 sm:mb-16">{t('home.journeyTitle')}</h2>
           <div className="space-y-12">
             {[
               { n: '1', title: t('home.journeyStep1'), color: 'text-primary' },
               { n: '2', title: t('home.journeyStep2'), color: 'text-primary' },
               { n: '3', title: t('home.journeyStep3'), color: 'text-primary' },
             ].map((step, i) => (
-              <div key={i} className="flex gap-8 items-start">
-                <span className={`text-6xl font-black italic leading-none ${step.color}`}>{step.n}</span>
-                <p className="text-lg lg:text-xl font-black uppercase tracking-tighter mt-2 max-w-2xl">{step.title}</p>
+              <div key={i} className="flex gap-4 sm:gap-8 items-start">
+                <span className={`text-4xl sm:text-6xl font-black italic leading-none ${step.color}`}>{step.n}</span>
+                <p className="text-base sm:text-lg lg:text-xl font-black uppercase tracking-tighter mt-1 sm:mt-2 max-w-2xl">{step.title}</p>
               </div>
             ))}
           </div>
@@ -213,11 +214,11 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Manifesto Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-[1000px] mx-auto px-6 text-center border border-black/10 py-24 px-12 relative overflow-hidden group">
+      <section className="py-16 sm:py-24 bg-white">
+        <div className="max-w-[1000px] mx-auto px-6 text-center border border-black/10 py-14 sm:py-24 sm:px-12 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
           <span className="text-[9px] font-bold uppercase tracking-[0.4em] mb-12 block text-gray-400">{t('home.manifestoEyebrow')}</span>
-          <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter mb-12 leading-[0.9]">
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black uppercase tracking-tighter mb-10 sm:mb-12 leading-[0.9]">
             {t('home.manifestoTitle')}
           </h2>
           <p className="text-gray-500 font-medium leading-relaxed mb-12 max-w-2xl mx-auto uppercase text-xs tracking-widest">
@@ -233,7 +234,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Institutional Recognition Section */}
-      <section className="py-24 bg-brand-muted border-y-4 border-black">
+      <section className="py-16 sm:py-24 bg-brand-muted border-y-4 border-black">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
             {/* Left: Badges */}
@@ -285,14 +286,14 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-[1600px] mx-auto px-6 text-center">
-          <h2 className="text-5xl lg:text-8xl font-black uppercase tracking-tighter mb-12 italic">{t('home.ctaTitle')}</h2>
-          <p className="text-lg font-medium text-gray-500 mb-12 max-w-2xl mx-auto uppercase tracking-widest">{t('home.ctaDescription')}</p>
-          <div className="flex flex-wrap justify-center gap-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-8xl font-black uppercase tracking-tighter mb-10 sm:mb-12 italic">{t('home.ctaTitle')}</h2>
+          <p className="text-base sm:text-lg font-medium text-gray-500 mb-10 sm:mb-12 max-w-2xl mx-auto uppercase tracking-[0.16em] sm:tracking-widest">{t('home.ctaDescription')}</p>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 sm:gap-6">
             <button 
               onClick={onExplore}
-              className="bg-primary text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="bg-primary text-black px-8 sm:px-12 py-4 sm:py-5 text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] stark-border hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               {t('home.ctaPrimary')}
             </button>
@@ -300,7 +301,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
               href={CONTENT_SUBMIT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:bg-brand-muted transition-all inline-flex items-center"
+              className="bg-white text-black px-8 sm:px-12 py-4 sm:py-5 text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] stark-border hover:bg-brand-muted transition-all inline-flex items-center justify-center"
             >
               {t('home.ctaSecondary')}
             </a>

@@ -16,6 +16,21 @@ pnpm install
 pnpm dev
 pnpm build
 pnpm test:e2e
+```
+
+Fast verification profiles:
+
+```bash
+# quick safety check for scoped code edits
+pnpm test:unit
+
+# full regression check for route/view-state updates
+pnpm build && pnpm test:e2e
+```
+
+Optional security command (only if script exists in your branch):
+
+```bash
 pnpm security:check-rls
 ```
 
@@ -42,6 +57,33 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 - Use `loadCatalogData()` as the single catalog entrypoint.
 - Preserve mock fallback when live providers fail.
 
+## Runtime And Data-Source Rules
+
+- `VITE_DATA_SOURCE=mock|supabase` controls runtime source selection.
+- Keep fallback behavior: if Supabase catalog fetch fails, return mock data.
+- Keep source-specific error logs explicit (for example `[catalogSource:supabase]`).
+
+## E2E Testing Notes
+
+- E2E tests live in [tests/e2e/](tests/e2e/).
+- Install browsers on fresh machines with `pnpm exec playwright install`.
+- Keep catalog ordering deterministic to avoid flaky navigation/UI assertions.
+- Prefer running `pnpm test:e2e` after route, navigation, or view-state changes.
+
+## Agent Tooling Playbooks
+
+- Use prompt `.github/prompts/frontend-dev-workflow.prompt.md` to standardize branch-ready validation and output summaries.
+- Use agent `.github/agents/frontend-quality-reviewer.agent.md` for broad frontend review (routing, accessibility, regressions, missing tests).
+- Use agent `.github/agents/supabase-integration-reviewer.agent.md` when touching Supabase catalog/auth mapping or public schema assumptions.
+- Prefer subagent `Explore` for read-only mapping of large areas before edits to reduce context drift.
+
+Suggested execution profiles:
+
+- UI-only page/component edits: `pnpm build`
+- Data mapping or auth logic edits: `pnpm test:unit && pnpm build`
+- Navigation or route-flow edits: `pnpm build && pnpm test:e2e`
+- Supabase schema-sensitive edits: `pnpm security:check-rls && pnpm build`
+
 ## Critical Data Contracts
 
 - `Course.id` stays stable and unique.
@@ -61,9 +103,15 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 - ID format changes break routing and joins.
 - Provider logic leaking into components causes coupling and regressions.
 - Parallel data entrypoints drift; keep integration centralized.
+- Non-deterministic unit/playlist ordering causes UI flicker and test instability.
+- Running `pnpm security:check-rls` fails when the backing script is absent.
 
 ## Specialized Reviewer
 
 For Supabase integration changes, use:
 
 - [.github/agents/supabase-integration-reviewer.agent.md](.github/agents/supabase-integration-reviewer.agent.md)
+
+For general frontend quality/regression reviews, use:
+
+- [.github/agents/frontend-quality-reviewer.agent.md](.github/agents/frontend-quality-reviewer.agent.md)

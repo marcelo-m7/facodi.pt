@@ -2,6 +2,7 @@ import React from 'react';
 import { useStudentDashboard } from '../../hooks/useStudentDashboard';
 import { useAuth } from '../../contexts/AuthContext';
 import { Translator } from '../../data/i18n';
+import StudentPageScaffold from './StudentPageScaffold';
 
 interface StudentProgressPageProps {
   onBack: () => void;
@@ -10,76 +11,23 @@ interface StudentProgressPageProps {
 
 export default function StudentProgressPage({
   onBack,
-  t,
+  t: _t,
 }: StudentProgressPageProps): React.ReactElement {
   const { user } = useAuth();
   const { data: dashboard, isLoading, error } = useStudentDashboard();
 
-  if (!user) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-brand-muted p-8">
-          <p className="text-sm font-semibold">Autenticação necessária para acessar seu progresso.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-brand-muted p-6 text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3">
-          <span className="material-symbols-outlined animate-pulse">hourglass_top</span>
-          A carregar progresso...
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-        <button
-          onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Voltar
-        </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
-          <p className="font-semibold mb-2">Erro ao carregar progresso</p>
-          <p className="text-xs">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
   const hasEnrollments = dashboard.enrolledCourses.length > 0;
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <button
-        onClick={onBack}
-        className="mb-8 flex items-center gap-2 text-xs uppercase tracking-widest font-bold hover:opacity-70 transition-opacity"
-      >
-        <span className="material-symbols-outlined text-lg">arrow_back</span>
-        Voltar
-      </button>
-
+    <StudentPageScaffold
+      onBack={onBack}
+      isAuthenticated={Boolean(user)}
+      authMessage="Autenticação necessária para acessar seu progresso."
+      isLoading={isLoading}
+      loadingMessage="A carregar progresso..."
+      error={error}
+      errorTitle="Erro ao carregar progresso"
+    >
       <div className="mb-16">
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-8">
           Meu Progresso
@@ -183,6 +131,6 @@ export default function StudentProgressPage({
           ))}
         </div>
       )}
-    </div>
+    </StudentPageScaffold>
   );
 }

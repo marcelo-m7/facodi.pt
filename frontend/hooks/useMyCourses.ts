@@ -4,7 +4,7 @@
  * Follows usePlaylistVideos pattern: loading, error, data + setters.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getMyCourses, CourseEnrollment } from '../services/studentSource';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -21,7 +21,7 @@ export function useMyCourses(): UseMyCourses {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     if (!user) {
       setCourses([]);
       setIsLoading(false);
@@ -40,11 +40,11 @@ export function useMyCourses(): UseMyCourses {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchCourses();
-  }, [user?.id]);
+  }, [fetchCourses]);
 
   return {
     courses,

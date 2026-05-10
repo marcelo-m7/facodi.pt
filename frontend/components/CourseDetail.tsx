@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CurricularUnit, Playlist, VideoItem } from '../types';
+import { CurricularUnit, Playlist } from '../types';
 import MarkdownView from './MarkdownView';
 import { findPlaylistForUnit } from '../services/catalogSource';
 import { usePlaylistVideos } from '../hooks/usePlaylistVideos';

@@ -3,10 +3,17 @@ import { useCallback, useEffect, useState } from 'react';
 const STORAGE_KEY = 'facodi_development_notice_seen_v1';
 
 export const useDevelopmentNotice = () => {
+  const shouldDisableNotice = import.meta.env.VITE_DISABLE_DEVELOPMENT_NOTICE === 'true';
   const [isOpen, setIsOpen] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(shouldDisableNotice);
 
   useEffect(() => {
+    if (shouldDisableNotice) {
+      setIsOpen(false);
+      setIsReady(true);
+      return;
+    }
+
     try {
       const seen = localStorage.getItem(STORAGE_KEY) === '1';
       if (!seen) {
@@ -16,7 +23,7 @@ export const useDevelopmentNotice = () => {
       // no-op if storage is unavailable
     }
     setIsReady(true);
-  }, []);
+  }, [shouldDisableNotice]);
 
   const closeNotice = useCallback((persist = true) => {
     setIsOpen(false);

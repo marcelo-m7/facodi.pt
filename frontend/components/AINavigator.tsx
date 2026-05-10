@@ -51,7 +51,7 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
 
       const responseText = typeof data?.answer === 'string' ? data.answer : 'Desculpe, nao consegui processar isso.';
       setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to the hub nodes.' }]);
     } finally {
       setIsLoading(false);
@@ -59,16 +59,16 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
   };
 
   return (
-    <div className="fixed bottom-12 right-12 z-[100]">
+    <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-[100]">
       {isOpen ? (
-        <div className="w-96 h-[500px] bg-white stark-border flex flex-col shadow-[20px_20px_0px_0px_#000000]">
-          <div className="p-6 bg-black text-white flex justify-between items-center">
+        <div className="w-[calc(100vw-2rem)] sm:w-96 max-w-[24rem] h-[min(70vh,500px)] bg-white stark-border flex flex-col shadow-[12px_12px_0px_0px_#000000] sm:shadow-[20px_20px_0px_0px_#000000]">
+          <div className="p-4 sm:p-6 bg-black text-white flex justify-between items-center gap-3">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Curriculum AI Node</h4>
             <button onClick={() => setIsOpen(false)} className="material-symbols-outlined text-xl hover:text-primary transition-colors">close</button>
           </div>
           
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="bg-brand-muted p-4 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            <div className="bg-brand-muted p-4 text-[11px] font-bold uppercase tracking-wide leading-relaxed">
               Hello. I am the FACODI Navigator. Ask me anything about the LESTI curriculum or your learning path.
             </div>
             {messages.map((m, i) => (
@@ -83,15 +83,15 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
             )}
           </div>
 
-          <form onSubmit={handleAsk} className="p-4 border-t border-black/10 flex gap-2">
+          <form onSubmit={handleAsk} className="p-3 sm:p-4 border-t border-black/10 flex gap-2">
             <input 
               type="text" 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="ASK ASSISTANT..."
-              className="flex-1 bg-brand-muted stark-border px-4 py-3 text-[10px] font-bold uppercase outline-none focus:border-primary"
+              className="flex-1 min-w-0 bg-brand-muted stark-border px-3 sm:px-4 py-2.5 sm:py-3 text-[10px] font-bold uppercase outline-none focus:border-primary"
             />
-            <button type="submit" className="bg-black text-white px-6 hover:bg-primary hover:text-black transition-all">
+            <button type="submit" className="bg-black text-white px-4 sm:px-6 hover:bg-primary hover:text-black transition-all">
               <span className="material-symbols-outlined">send</span>
             </button>
           </form>
@@ -99,9 +99,9 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
       ) : (
         <button 
           onClick={() => setIsOpen(true)}
-          className="w-16 h-16 bg-black text-white stark-border flex items-center justify-center hover:bg-primary hover:text-black transition-all shadow-[10px_10px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="w-12 h-12 sm:w-16 sm:h-16 bg-black text-white stark-border flex items-center justify-center hover:bg-primary hover:text-black transition-all shadow-[8px_8px_0px_0px_#000000] sm:shadow-[10px_10px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
         >
-          <span className="material-symbols-outlined text-3xl">smart_toy</span>
+          <span className="material-symbols-outlined text-2xl sm:text-3xl">smart_toy</span>
         </button>
       )}
     </div>

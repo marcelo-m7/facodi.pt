@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { EditorApplication } from '../types';
 import { Database } from './supabase.types';
+import { requireAuthenticatedUser } from './authHelper';
 
 type EditorApplicationRow = Database['public']['Tables']['editor_applications']['Row'];
 type EditorApplicationInsert = Database['public']['Tables']['editor_applications']['Insert'];
@@ -35,11 +36,7 @@ export interface ApplicationStatus {
  */
 export async function submitCuratorApplication(data: CuratorApplicationData): Promise<EditorApplication | null> {
   try {
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('auth_required');
-    }
+    const user = await requireAuthenticatedUser({ fallbackToGetUser: true });
 
     // Check for existing active application
     const { data: existingApp, error: checkError } = await supabase
@@ -48,6 +45,10 @@ export async function submitCuratorApplication(data: CuratorApplicationData): Pr
       .eq('user_id', user.id)
       .in('status', ['pending', 'approved'])
       .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
 
     if (existingApp) {
       throw new Error('application_already_exists');
@@ -90,8 +91,10 @@ export async function submitCuratorApplication(data: CuratorApplicationData): Pr
  */
 export async function getUserApplication(): Promise<EditorApplication | null> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    let user;
+    try {
+      user = await requireAuthenticatedUser({ fallbackToGetUser: true });
+    } catch {
       return null;
     }
 
@@ -161,10 +164,7 @@ export async function updateApplicationStatus(
   reviewNotes?: string
 ): Promise<EditorApplication | null> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('auth_required');
-    }
+    const user = await requireAuthenticatedUser({ fallbackToGetUser: true });
 
     const { data, error } = await supabase
       .from('editor_applications')

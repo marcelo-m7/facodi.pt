@@ -5,36 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import DevelopmentBadge from './DevelopmentBadge';
 import DevelopmentDisclaimer from './DevelopmentDisclaimer';
 import { useDevelopmentNotice } from '../hooks/useDevelopmentNotice';
-
-type View =
-  | 'home'
-  | 'courses'
-  | 'repository'
-  | 'paths'
-  | 'contributors'
-  | 'playlists'
-  | 'dashboard'
-  | 'course-detail'
-  | 'lesson-detail'
-  | 'institutional-page'
-  | 'videos'
-  | 'video-detail'
-  | 'profile'
-  | 'student-dashboard'
-  | 'student-my-courses'
-  | 'student-progress'
-  | 'student-history'
-  | 'curator-apply'
-  | 'curator-submit'
-  | 'curator-submissions'
-  | 'curator-channel-pipeline'
-  | 'curator-admin-review'
-  | 'admin-dashboard'
-  | 'admin-contents'
-  | 'admin-content-detail'
-  | 'admin-curators'
-  | 'blog'
-  | 'blog-post';
+import { type View } from '../app/router/routes';
 
 interface Props {
   children: React.ReactNode;
