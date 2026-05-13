@@ -1,12 +1,18 @@
 ---
-applyTo: "frontend/**"
+applyTo: "DEPRECATED - DO NOT USE"
 description: >
-  Rules for connecting the FACODI React frontend to the Odoo e-learning API
-  (edu-facodi.odoo.com). Apply when modifying catalogSource.ts, vite.config.ts,
-  .env.local, or any service that fetches slide.channel / slide.slide data.
+  ⚠️ **DEPRECATED (2026-05-13)**: Odoo e-learning API integration is NOT implemented.
+  This file is archived for reference only. The FACODI frontend is now Supabase-only.
+  See [SUPABASE_AUDIT_REPORT.md](../../SUPABASE_AUDIT_REPORT.md) for current architecture.
 ---
 
-# Odoo e-Learning Frontend Integration
+# Odoo e-Learning Frontend Integration [ARCHIVED]
+
+**STATUS: DEPRECATED — ODOO INTEGRATION NOT ACTIVE**
+
+The following documentation describes a future integration pattern that was planned but never implemented. The frontend currently uses Supabase exclusively for all data access.
+
+---
 
 **Target instance:** `https://edu-facodi.odoo.com` (Odoo SaaS)  
 **Credentials in `.env.local`:** `ODOO_HOST`, `ODOO_DB`, `ODOO_USERNAME`, `ODOO_PASSWORD` — never commit.

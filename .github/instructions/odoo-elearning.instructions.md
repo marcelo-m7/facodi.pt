@@ -1,11 +1,19 @@
 ---
-applyTo: "services/catalogSource.ts,types.ts,data/**"
-description: "Rules for editing Odoo e-learning integration code: catalogSource.ts, types, and data mapping."
+applyTo: "DEPRECATED - DO NOT USE"
+description: "⚠️ DEPRECATED (2026-05-13): Odoo integration rules. NOT implemented. See SUPABASE_AUDIT_REPORT.md for current architecture."
 ---
 
-# Odoo E-learning Integration Rules
+# Odoo E-learning Integration Rules [ARCHIVED]
 
-## Single Gateway Principle
+**STATUS: DEPRECATED — ODOO INTEGRATION NOT ACTIVE**
+
+The following documentation describes data mapping patterns for Odoo integration that were planned but never implemented. The frontend currently uses Supabase exclusively.
+
+See [SUPABASE_AUDIT_REPORT.md](../../SUPABASE_AUDIT_REPORT.md) for the current Supabase-only architecture.
+
+---
+
+## ARCHIVED: Single Gateway Principle
 - All Odoo data access MUST go through `services/catalogSource.ts`.
 - Never import Odoo field names, model names, or raw API responses in components.
 - Components consume `Course`, `CurricularUnit`, and `Playlist` from `types.ts` only.
