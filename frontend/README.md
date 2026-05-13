@@ -102,6 +102,14 @@ Segurança:
 - Ao alterar integração Supabase, preserve o cliente único em `services/supabase.ts`.
 - Evite lógica de provedor em componentes; mantenha no serviço.
 
+## Índice de Documentação
+
+- Guia de contribuição: `CONTRIBUTING.md`
+- Guia para agentes e guardrails de implementação: `AGENTS.md`
+- Regras de contrato de catálogo: `.github/instructions/catalog-contract-guard.instructions.md`
+- Regras de integração Supabase para playlists/catálogo: `.github/instructions/supabase-playlist-schema.instructions.md`
+- Regras para auth, sessão e perfil de usuário: `.github/instructions/auth-user.instructions.md`
+
 ## Links Úteis
 
 - Guia de contribuição: `CONTRIBUTING.md`
