@@ -184,6 +184,76 @@ export interface ContentSubmission {
   updated_at: string;
 }
 
+// ============= YouTube Channel Curation Pipeline Types =============
+
+export interface ChannelIdentity {
+  channelId: string;
+  username: string;
+  email: string;
+  handle?: string;
+  url?: string;
+}
+
+export interface ChannelVideo {
+  videoId: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  duration: number; // in seconds
+  publishedAt: string; // ISO 8601
+  channelName: string;
+  viewCount: number;
+  tags?: string[];
+  isProcessed?: boolean;
+}
+
+export interface VideoDiscoveryState {
+  channelId: string | null;
+  channelName?: string;
+  status: 'idle' | 'importing' | 'discovering' | 'analyzing' | 'mapping' | 'reviewing' | 'publishing';
+  videos: ChannelVideo[];
+  selectedVideoIds: string[];
+  analysisResults: Map<string, AIAnalysisResult>;
+  playlistMappings: Map<string, string>; // videoId -> playlistId
+  error: string | null;
+  message: string | null;
+}
+
+export interface AIAnalysisResult {
+  videoId: string;
+  topics: string[];
+  difficulty: Difficulty;
+  pedagogicalScore: number; // 0-1
+  pedagogicalJustification?: string;
+  playlistSuggestions: PlaylistSuggestion[];
+  curatorNotes?: string;
+}
+
+export interface PlaylistSuggestion {
+  playlistId: string;
+  playlistName: string;
+  confidence: number; // 0-1
+  reason: string;
+}
+
+export interface PublishRequest {
+  channelId: string;
+  videoIds: string[];
+  mappings: Record<string, string>; // videoId -> playlistId
+  curatorNotes?: string;
+}
+
+export interface PublishResult {
+  success: boolean;
+  message: string;
+  publishedCount: number;
+  affectedPlaylists: string[];
+  timestamp: string;
+  notes?: string;
+}
+
+// ============= Cookie Consent & GDPR Types =============
+
 export type CookieConsentCategory = 'necessary' | 'analytics' | 'marketing' | 'preferences';
 
 export interface CookieConsentPreferences {

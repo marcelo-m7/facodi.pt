@@ -33,7 +33,7 @@ const CuratorApplicationPage = React.lazy(() => import('./components/curator/Cur
 const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
 const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
 const AdminReviewDashboard = React.lazy(() => import('./components/curator/AdminReviewDashboard').then(m => ({ default: m.AdminReviewDashboard })));
-const ChannelCurationPage = React.lazy(() => import('./components/curator/ChannelCurationPage').then(m => ({ default: m.ChannelCurationPage })));
+const ChannelCurationPage = React.lazy(() => import('./components/ChannelCurationPage'));
 const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
 const AdminContentListPage = React.lazy(() => import('./components/admin/AdminContentListPage'));
 const AdminContentDetailPage = React.lazy(() => import('./components/admin/AdminContentDetailPage'));
@@ -61,6 +61,7 @@ type View =
   | 'curator-submissions'
   | 'curator-channel-pipeline'
   | 'curator-admin-review'
+  | 'curator-channel-curation'
   | 'admin-dashboard'
   | 'admin-contents'
   | 'admin-content-detail'
@@ -130,6 +131,7 @@ const App: React.FC = () => {
     if (view === 'curator-submissions') path = '/curator/submissions';
     if (view === 'curator-channel-pipeline') path = '/curator/channel-pipeline';
     if (view === 'curator-admin-review') path = '/curator/admin-review';
+    if (view === 'curator-channel-curation') path = '/curator/channel-curation';
     if (view === 'admin-dashboard') path = '/admin';
     if (view === 'admin-contents') path = '/admin/conteudos';
     if (view === 'admin-content-detail' && unitId) path = `/admin/conteudos/${unitId}`;
@@ -187,6 +189,10 @@ const App: React.FC = () => {
       }
       if (path === '/curator/admin-review') {
         setCurrentView('curator-admin-review');
+        return;
+      }
+      if (path === '/curator/channel-curation') {
+        setCurrentView('curator-channel-curation');
         return;
       }
     }
@@ -353,6 +359,10 @@ const App: React.FC = () => {
         setIsDark(true);
       }
     }
+
+    // Ensure stale dark-mode class is cleared on mount.
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('facodi_theme');
   }, [canUseCategory]);
 
   useEffect(() => {
@@ -800,6 +810,16 @@ const App: React.FC = () => {
       return (
         <Suspense fallback={lazyFallback}>
           <AdminReviewDashboard locale={locale} />
+        </Suspense>
+      );
+    }
+
+    if (currentView === 'curator-channel-curation') {
+      return (
+        <Suspense fallback={lazyFallback}>
+          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+            <ChannelCurationPage locale={locale} />
+          </RequireAuth>
         </Suspense>
       );
     }
