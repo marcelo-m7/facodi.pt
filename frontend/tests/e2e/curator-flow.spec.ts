@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Curator Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:5173/');
+    await page.goto('/');
   });
 
   test.describe('Navigation & Access Control', () => {
@@ -26,7 +26,7 @@ test.describe('Curator Flow', () => {
       await page.click('button[type="submit"]:has-text("Entrar")');
       
       // Wait for auth to complete
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
       
       // Check that curator nav buttons are visible
       await expect(page.locator('button:has-text("Enviar Conteúdo")')).toBeVisible({ timeout: 5000 });
@@ -41,7 +41,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('user@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Regular user should not see admin panel
       await expect(page.locator('button:has-text("Painel Admin")')).not.toBeVisible();
@@ -57,7 +57,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('curator@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Click "Ser Curador" button
       await page.click('button:has-text("Ser Curador")');
@@ -74,7 +74,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('curator-with-app@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to curator apply
       await page.click('button:has-text("Ser Curador")');
@@ -94,7 +94,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('newcurator@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to curator apply
       await page.click('button:has-text("Ser Curador")');
@@ -119,7 +119,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Click "Enviar Conteúdo" button
       await page.click('button:has-text("Enviar Conteúdo")');
@@ -135,7 +135,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to content submit
       await page.click('button:has-text("Enviar Conteúdo")');
@@ -160,7 +160,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to content submit
       await page.click('button:has-text("Enviar Conteúdo")');
@@ -181,14 +181,14 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to submissions list
       await page.click('button:has-text("Enviar Conteúdo")');
       await expect(page).toHaveURL('**/curator/submit');
 
       // Try to navigate to submissions (via direct URL or button if available)
-      await page.goto('http://localhost:5173/curator/submissions');
+      await page.goto('/curator/submissions');
       await expect(page).toHaveURL('**/curator/submissions');
     });
 
@@ -199,10 +199,10 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to submissions
-      await page.goto('http://localhost:5173/curator/submissions');
+      await page.goto('/curator/submissions');
       await expect(page).toHaveURL('**/curator/submissions');
 
       // Check that status filter buttons exist
@@ -217,10 +217,10 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to submissions
-      await page.goto('http://localhost:5173/curator/submissions');
+      await page.goto('/curator/submissions');
       await expect(page).toHaveURL('**/curator/submissions');
 
       // Check for pagination buttons (may not exist if < 10 items)
@@ -239,10 +239,10 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('user@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Try to navigate to admin dashboard
-      await page.goto('http://localhost:5173/curator/admin-review');
+      await page.goto('/curator/admin-review');
       
       // Should either be redirected or show error
       // Non-admins should not see content or should be redirected
@@ -253,7 +253,7 @@ test.describe('Curator Flow', () => {
     test('should be accessible to admin users', async ({ page }) => {
       // Login as admin user (this requires special test account)
       // For now, we just test that the page structure is correct if accessed
-      await page.goto('http://localhost:5173/curator/admin-review');
+      await page.goto('/curator/admin-review');
       
       // If not logged in, auth modal should appear
       const authModal = page.locator('text=Entrar, Login');
@@ -263,7 +263,7 @@ test.describe('Curator Flow', () => {
 
     test('should display submission queue with stats', async ({ page }) => {
       // This test assumes admin access or test admin account
-      await page.goto('http://localhost:5173/curator/admin-review');
+      await page.goto('/curator/admin-review');
       
       // Check for key elements that would indicate page loaded
       // (may be hidden by auth check, but we validate URL routing works)
@@ -279,12 +279,12 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('admin@example.com');
       await page.locator('input[type="password"]').fill('adminpass');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       // Navigate to admin dashboard
       await page.click('button:has-text("Painel Admin")').catch(() => {
         // If button not visible, navigate directly
-        page.goto('http://localhost:5173/curator/admin-review');
+        page.goto('/curator/admin-review');
       });
 
       // Check for tab buttons
@@ -298,22 +298,22 @@ test.describe('Curator Flow', () => {
 
   test.describe('URL Routing & Deep Linking', () => {
     test('should deep link to curator apply page', async ({ page }) => {
-      await page.goto('http://localhost:5173/curator/apply');
+      await page.goto('/curator/apply');
       expect(page.url()).toContain('/curator/apply');
     });
 
     test('should deep link to curator submit page', async ({ page }) => {
-      await page.goto('http://localhost:5173/curator/submit');
+      await page.goto('/curator/submit');
       expect(page.url()).toContain('/curator/submit');
     });
 
     test('should deep link to submissions list', async ({ page }) => {
-      await page.goto('http://localhost:5173/curator/submissions');
+      await page.goto('/curator/submissions');
       expect(page.url()).toContain('/curator/submissions');
     });
 
     test('should deep link to admin review dashboard', async ({ page }) => {
-      await page.goto('http://localhost:5173/curator/admin-review');
+      await page.goto('/curator/admin-review');
       expect(page.url()).toContain('/curator/admin-review');
     });
   });
@@ -326,7 +326,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('testuser@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       await page.click('button:has-text("Ser Curador")');
       await expect(page).toHaveURL('**/curator/apply');
@@ -343,7 +343,7 @@ test.describe('Curator Flow', () => {
       await emailInput.fill('submitter@example.com');
       await page.locator('input[type="password"]').fill('password123');
       await page.click('button[type="submit"]:has-text("Entrar")');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
+      await page.waitForURL('**/', { timeout: 10000 });
 
       await page.click('button:has-text("Enviar Conteúdo")');
       await expect(page).toHaveURL('**/curator/submit');
