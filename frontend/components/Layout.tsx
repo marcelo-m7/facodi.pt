@@ -434,16 +434,23 @@ const Layout: React.FC<Props> = ({
             </div>
 
             {/* Copyright and disclaimer */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-400">© 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.</p>
-              <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.4em]">
-                <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
-                <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
-                <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
-                <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
-                <details className="cursor-pointer">
-                  <summary className="hover:text-primary">AVISO LEGAL</summary>
-                  <div className="mt-4 text-[8px] font-medium leading-relaxed p-4 bg-gray-50 stark-border max-w-2xl">
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 lg:gap-10">
+                <p className="max-w-2xl text-[9px] font-bold uppercase tracking-[0.3em] text-gray-400 leading-relaxed">
+                  © 2026 OPEN2 TECHNOLOGY. CONSTRUÍDO COM CARINHO PELA COMUNIDADE FACODI.
+                </p>
+                <div className="w-full lg:w-auto flex flex-wrap items-center gap-x-6 gap-y-3 text-[9px] font-bold uppercase tracking-[0.24em]">
+                  <a href={CONTENT_SUBMIT_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">ENVIAR CONTEUDO</a>
+                  <a href="https://open2.tech/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary">CONTACTO</a>
+                  <button onClick={() => onNavigatePage?.('sobre')} className="hover:text-primary">PRIVACIDADE</button>
+                  <button onClick={() => onNavigatePage?.('como-contribuir')} className="hover:text-primary">TERMOS</button>
+                </div>
+              </div>
+
+              <div className="flex lg:justify-end">
+                <details className="w-full lg:w-auto max-w-2xl cursor-pointer">
+                  <summary className="hover:text-primary list-none text-[9px] font-bold uppercase tracking-[0.24em]">AVISO LEGAL</summary>
+                  <div className="mt-3 text-[8px] font-medium leading-relaxed p-4 bg-gray-50 stark-border tracking-[0.02em]">
                     <p>{t('institutional.disclaimer.pt')}</p>
                   </div>
                 </details>
