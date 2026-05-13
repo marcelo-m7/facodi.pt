@@ -31,6 +31,7 @@ pnpm exec playwright install
 - Contribution/PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Docs map for quick navigation: [README.md#documentacao](README.md#documentacao)
 - **Supabase architecture & audit**: [SUPABASE_AUDIT_REPORT.md](SUPABASE_AUDIT_REPORT.md)
+- **Database migrations & schema changes**: [.github/instructions/supabase-migrations.instructions.md](.github/instructions/supabase-migrations.instructions.md)
 - Postman MCP rules: [.github/instructions/postman-mcp.instructions.md](.github/instructions/postman-mcp.instructions.md)
 
 **DEPRECATED INSTRUCTIONS** (archived for reference only, not active):
@@ -60,7 +61,30 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 - Use a single shared client from [services/supabase.ts](services/supabase.ts); do not create additional client instances.
 - Never query `auth.users` from frontend code; use `public.profiles` access patterns defined in auth instructions.
 
-## Common Failure Modes
+## Supabase Migrations & Schema Changes
+
+**When to use `mcp_supabase_apply_migration`:**
+- Any structural change: CREATE/ALTER/DROP TABLE, ADD/DROP COLUMN, constraints, indexes, triggers, functions
+- RLS policy changes at schema level
+- Data type or default value changes
+
+**Key patterns:**
+1. Plan migrations before applying (check `mcp_supabase_list_tables` first)
+2. Use naming convention: `YYYYMMDD_sequence_description` (e.g., `20260513_1_create_courses_table`)
+3. Always enable RLS on new public tables; define explicit policies before app uses the table
+4. Test with `pnpm security:check-rls` after schema changes
+5. Regenerate types: `pnpm supabase:generate-types` after production migrations
+6. Document rollback plan for breaking changes
+
+**Critical guardrails:**
+- Do NOT change `Course.id`, `CurricularUnit.courseId`, or `Playlist.units` contracts without team discussion
+- Do NOT remove columns without deprecation period (use soft deletes or aliases)
+- FK constraints must reference existing rows; plan backfill carefully
+- UNIQUE or NOT NULL constraints may conflict with existing data
+
+**Detailed guidance:** See [.github/instructions/supabase-migrations.instructions.md](.github/instructions/supabase-migrations.instructions.md) for tool reference, safety practices, RLS patterns, and workflow examples.
+
+
 
 - ID format changes break routing and joins.
 - Provider logic leaking into components causes coupling and regressions.
