@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { submitContent } from './contentSubmissionSource';
 
 export function parseYouTubeVideoId(url: string): string | null {
   try {
@@ -57,13 +58,82 @@ export type VideoSuggestionResult = {
 };
 
 export async function suggestYouTubeVideo(url: string): Promise<VideoSuggestionResult> {
-  const { data, error } = await supabase.functions.invoke('suggest-youtube-video', {
-    body: { url },
-  });
-
-  if (error) {
-    throw new Error(error.message || 'Falha ao enviar sugestao de video.');
+  const videoId = parseYouTubeVideoId(url);
+  if (!videoId) {
+    throw new Error('URL de YouTube invalida.');
   }
 
-  return data as VideoSuggestionResult;
+  const { data: existing, error: existingError } = await (supabase as any)
+    .from('content_submissions')
+    .select('id, status, created_at')
+    .or(`url.eq.${url},youtube_video_id.eq.${videoId}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error(existingError.message || 'Falha ao verificar sugestoes existentes.');
+  }
+
+  if (existing) {
+    return {
+      duplicate: true,
+      status: existing.status,
+      message: 'Video ja sugerido anteriormente.',
+      suggestion: {
+        id: existing.id,
+        status: existing.status,
+        created_at: existing.created_at,
+      },
+      video: {
+        videoId,
+        title: `YouTube Video ${videoId}`,
+        description: '',
+        channelTitle: '',
+        thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        tags: [],
+        duration: null,
+        durationSeconds: null,
+      },
+      match: {
+        course: null,
+        unit: null,
+        playlist: null,
+        topic: null,
+        confidence: 0,
+      },
+    };
+  }
+
+  await submitContent({
+    content_type: 'video',
+    url,
+    youtube_video_id: videoId,
+    suggested_title: `YouTube Video ${videoId}`,
+    summary: 'Sugestao enviada pelo painel do editor.',
+    tags: ['youtube', 'suggested'],
+  });
+
+  return {
+    duplicate: false,
+    status: 'pending',
+    message: 'Sugestao enviada para revisao.',
+    video: {
+      videoId,
+      title: `YouTube Video ${videoId}`,
+      description: '',
+      channelTitle: '',
+      thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+      tags: [],
+      duration: null,
+      durationSeconds: null,
+    },
+    match: {
+      course: null,
+      unit: null,
+      playlist: null,
+      topic: null,
+      confidence: 0,
+    },
+  };
 }

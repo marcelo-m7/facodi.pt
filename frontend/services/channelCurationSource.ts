@@ -225,7 +225,7 @@ export async function importChannel(identifier: string): Promise<ChannelIdentity
     }
 
     const { data, error } = await supabase.functions.invoke('fetch_youtube_channel', {
-      body: { channelIdentifier: identifier },
+      body: { channelInput: identifier },
     });
 
     if (error) {
@@ -233,7 +233,13 @@ export async function importChannel(identifier: string): Promise<ChannelIdentity
       return mockChannel(identifier);
     }
 
-    return data as ChannelIdentity;
+    const payload = data as Record<string, unknown>;
+    return {
+      id: String(payload?.channelId || identifier),
+      name: String(payload?.title || identifier),
+      description: typeof payload?.description === 'string' ? payload.description : undefined,
+      thumbnailUrl: typeof payload?.thumbnailUrl === 'string' ? payload.thumbnailUrl : undefined,
+    };
   } catch (err) {
     console.warn('Channel import failed, using mock:', err);
     return mockChannel(identifier);
@@ -252,7 +258,11 @@ export async function listChannelVideos(
     }
 
     const { data, error } = await supabase.functions.invoke('list_channel_videos', {
-      body: { channelId, pageToken, maxResults },
+      body: {
+        channelInput: channelId,
+        pageToken,
+        brief: { maxVideos: maxResults },
+      },
     });
 
     if (error) {
@@ -261,7 +271,32 @@ export async function listChannelVideos(
       return { videos: allVideos };
     }
 
-    return data;
+    const rows = Array.isArray(data)
+      ? data
+      : Array.isArray((data as Record<string, unknown>)?.videos)
+        ? ((data as Record<string, unknown>).videos as unknown[])
+        : [];
+
+    const normalized: ChannelVideo[] = rows.map((row) => {
+      const payload = row as Record<string, unknown>;
+      return {
+        id: String(payload.id || ''),
+        title: String(payload.title || ''),
+        description: typeof payload.description === 'string' ? payload.description : undefined,
+        duration: Number(payload.durationSeconds || payload.duration || 0),
+        viewCount: Number(payload.viewCount || 0),
+        publishedAt: String(payload.publishedAt || new Date().toISOString()),
+        thumbnailUrl: typeof payload.thumbnailUrl === 'string' ? payload.thumbnailUrl : undefined,
+        channelName: String(payload.channelTitle || payload.channelName || channelId),
+      };
+    });
+
+    return {
+      videos: normalized,
+      nextPageToken: typeof (data as Record<string, unknown>)?.nextPageToken === 'string'
+        ? ((data as Record<string, unknown>).nextPageToken as string)
+        : undefined,
+    };
   } catch (err) {
     console.warn('Video listing failed, using mock:', err);
     const allVideos = mockVideos(channelId);
@@ -276,7 +311,9 @@ export async function analyzeVideosBatch(videoIds: string[]): Promise<Map<string
     }
 
     const { data, error } = await supabase.functions.invoke('analyze_video_batch', {
-      body: { videoIds },
+      body: {
+        videos: videoIds.map((id) => ({ id })),
+      },
     });
 
     if (error) {
@@ -284,7 +321,31 @@ export async function analyzeVideosBatch(videoIds: string[]): Promise<Map<string
       return mockAnalysis(videoIds);
     }
 
-    return new Map(data);
+    const entries = Array.isArray(data) ? data : [];
+    const mapped = new Map<string, VideoAnalysis>();
+
+    for (const row of entries as Array<Record<string, unknown>>) {
+      const videoId = String(row.videoId || '');
+      if (!videoId) continue;
+      const rawDifficulty = String(row.difficulty || 'intermediate');
+      const difficulty = rawDifficulty === 'foundational' ? 'beginner' : rawDifficulty;
+
+      mapped.set(videoId, {
+        videoId,
+        difficulty: (['beginner', 'intermediate', 'advanced', 'expert'].includes(difficulty)
+          ? difficulty
+          : 'intermediate') as VideoAnalysis['difficulty'],
+        pedagogicalScore: Number(row.confidence || 0.7) * 100,
+        topics: Array.isArray(row.tags)
+          ? (row.tags as string[])
+          : (typeof row.topic === 'string' ? [row.topic] : []),
+        justification: String(row.pedagogicalReason || row.summary || ''),
+        playlistSuggestions: [],
+        confidence: Number(row.confidence || 0.7) * 100,
+      });
+    }
+
+    return mapped;
   } catch (err) {
     console.warn('Analysis failed, using mock:', err);
     return mockAnalysis(videoIds);
@@ -300,7 +361,14 @@ export async function generatePlaylistSuggestions(
     }
 
     const { data, error } = await supabase.functions.invoke('generate_playlist_suggestions', {
-      body: { analyses: Array.from(videoAnalyses.values()) },
+      body: {
+        videos: Array.from(videoAnalyses.keys()).map((id) => ({ id })),
+        analyses: Array.from(videoAnalyses.values()).map((entry) => ({
+          videoId: entry.videoId,
+          topic: entry.topics[0] || '',
+          difficulty: entry.difficulty,
+        })),
+      },
     });
 
     if (error) {
@@ -308,7 +376,14 @@ export async function generatePlaylistSuggestions(
       return mockSuggestions();
     }
 
-    return data as PlaylistSuggestion[];
+    const suggestions = Array.isArray(data) ? data : [];
+
+    return (suggestions as Array<Record<string, unknown>>).map((item, index) => ({
+      id: String(item.playlistId || `suggested_playlist_${index + 1}`),
+      name: String(item.suggestedUnit || `Sugestao ${index + 1}`),
+      matchPercentage: Math.round(Number(item.confidence || 0.5) * 100),
+      description: typeof item.courseId === 'string' ? `Curso ${item.courseId}` : undefined,
+    }));
   } catch (err) {
     console.warn('Suggestion generation failed, using mock:', err);
     return mockSuggestions();
@@ -328,7 +403,15 @@ export async function publishCuratedVideos(request: PublishRequest): Promise<Pub
     }
 
     const { data, error } = await supabase.functions.invoke('publish_curated_videos', {
-      body: request,
+      body: {
+        items: request.videoIds.map((videoId) => ({
+          video: { id: videoId },
+          suggestion: {
+            playlistId: request.mappings[videoId] || null,
+          },
+          analysis: null,
+        })),
+      },
     });
 
     if (error) {
@@ -342,7 +425,16 @@ export async function publishCuratedVideos(request: PublishRequest): Promise<Pub
       };
     }
 
-    return data as PublishResult;
+    const publishedItems = Array.isArray(data) ? data : [];
+    const affectedPlaylists = Array.from(new Set(Object.values(request.mappings)));
+
+    return {
+      success: true,
+      message: `Successfully normalized ${publishedItems.length} videos for publication flow`,
+      publishedCount: publishedItems.length,
+      affectedPlaylists,
+      timestamp: new Date().toISOString(),
+    };
   } catch (err) {
     console.warn('Publish failed, using mock:', err);
     return {
