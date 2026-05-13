@@ -60,7 +60,7 @@ export default function StudentHistoryPage({
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           Voltar
         </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
+        <div className="stark-border bg-red-50 p-6 text-sm text-red-700">
           <p className="font-semibold mb-2">Erro ao carregar histórico</p>
           <p className="text-xs">{error}</p>
         </div>
@@ -118,7 +118,7 @@ export default function StudentHistoryPage({
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-4">
           Histórico
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600">
           Visualize sua atividade de aprendizagem
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function StudentHistoryPage({
       {!hasActivity ? (
         <div className="stark-border bg-brand-muted p-8 text-center">
           <p className="text-sm font-semibold mb-4">Você ainda não tem histórico de atividades.</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
+          <p className="text-xs text-gray-600">
             Comece a aprender para ver suas atividades aqui.
           </p>
         </div>
@@ -155,11 +155,11 @@ export default function StudentHistoryPage({
                     <h4 className="font-semibold text-sm">
                       {getActivityLabel(activity.event_type)}
                     </h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-gray-600 mt-1">
                       {formattedDate} às {formattedTime}
                     </p>
                     {activity.metadata && (
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         {JSON.stringify(activity.metadata).substring(0, 100)}...
                       </p>
                     )}

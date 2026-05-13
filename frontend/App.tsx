@@ -84,7 +84,6 @@ const App: React.FC = () => {
   const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
   const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
-  const [isDark, setIsDark] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [units, setUnits] = useState<CurricularUnit[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -357,10 +356,12 @@ const App: React.FC = () => {
     if (storedLocale === 'pt' || storedLocale === 'en') {
       setLocale(storedLocale);
     }
-    const storedTheme = localStorage.getItem('facodi_theme');
-    if (storedTheme === 'dark') {
-      setIsDark(true);
-    }
+
+    // Ensure stale dark-mode settings are cleared.
+    document.documentElement.classList.remove('dark');
+    document.body.classList.remove('bg-black', 'text-white');
+    document.body.classList.add('bg-white', 'text-black');
+    localStorage.removeItem('facodi_theme');
   }, []);
 
   useEffect(() => {
@@ -615,15 +616,6 @@ const App: React.FC = () => {
     selectedVideoId,
     units,
   ]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
-    localStorage.setItem('facodi_theme', isDark ? 'dark' : 'light');
-    document.body.classList.toggle('bg-black', isDark);
-    document.body.classList.toggle('text-white', isDark);
-    document.body.classList.toggle('bg-white', !isDark);
-    document.body.classList.toggle('text-black', !isDark);
-  }, [isDark]);
 
   useEffect(() => {
     let timeoutId: number | null = null;
@@ -1264,8 +1256,6 @@ const App: React.FC = () => {
         savedCount={savedUnitIds.length}
         locale={locale}
         onLocaleChange={setLocale}
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(prev => !prev)}
         t={t}
         onOpenAuth={() => setShowAuthModal(true)}
       >

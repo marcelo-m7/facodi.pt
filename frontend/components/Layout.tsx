@@ -44,8 +44,6 @@ interface Props {
   savedCount: number;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
-  isDark: boolean;
-  onToggleTheme: () => void;
   t: (key: string) => string;
   onOpenAuth: () => void;
 }
@@ -58,8 +56,6 @@ const Layout: React.FC<Props> = ({
   savedCount,
   locale,
   onLocaleChange,
-  isDark,
-  onToggleTheme,
   t,
   onOpenAuth,
 }) => {
@@ -199,9 +195,6 @@ const Layout: React.FC<Props> = ({
                 <option value="en">EN</option>
               </select>
             </div>
-            <button onClick={onToggleTheme} aria-label={t('nav.themeToggle')} className="stark-border w-11 h-11 flex items-center justify-center hover:bg-brand-muted transition-all">
-              <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
-            </button>
             {user ? (
               <button
                 onClick={() => navGo('profile')}
@@ -238,7 +231,7 @@ const Layout: React.FC<Props> = ({
                 <span className="absolute top-0 right-0 bg-primary text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center stark-border">{savedCount}</span>
               )}
             </button>
-            <button onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileOpen} aria-controls="mobile-menu" className="w-10 h-10 flex items-center justify-center stark-border hover:bg-brand-muted transition-all text-black dark:text-white">
+            <button onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileOpen} aria-controls="mobile-menu" className="w-10 h-10 flex items-center justify-center stark-border hover:bg-brand-muted transition-all text-black">
               <span className="relative block w-5 h-4" aria-hidden="true">
                 <span className={`absolute left-0 w-5 h-0.5 bg-current transition-all ${mobileOpen ? 'top-1.5 rotate-45' : 'top-0'}`} />
                 <span className={`absolute left-0 top-1.5 w-5 h-0.5 bg-current transition-all ${mobileOpen ? 'opacity-0' : 'opacity-100'}`} />
@@ -316,10 +309,6 @@ const Layout: React.FC<Props> = ({
               <option value="en">English</option>
             </select>
           </div>
-          <button onClick={onToggleTheme} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
-            <span className="material-symbols-outlined text-base">{isDark ? 'light_mode' : 'dark_mode'}</span>
-            {isDark ? 'Modo claro' : 'Modo escuro'}
-          </button>
           {user ? (
             <button onClick={() => { navGo('profile'); }} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-muted px-4 py-3 transition-all stark-border w-full">
               <span className="material-symbols-outlined text-base">account_circle</span>

@@ -60,7 +60,7 @@ export default function StudentProgressPage({
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           Voltar
         </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
+        <div className="stark-border bg-red-50 p-6 text-sm text-red-700">
           <p className="font-semibold mb-2">Erro ao carregar progresso</p>
           <p className="text-xs">{error}</p>
         </div>
@@ -88,7 +88,7 @@ export default function StudentProgressPage({
         <div className="stark-border p-8 mb-16">
           <div className="flex items-end justify-between mb-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">
                 Progresso Geral
               </p>
               <p className="text-6xl lg:text-8xl font-black tracking-tighter">
@@ -96,12 +96,12 @@ export default function StudentProgressPage({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <p className="text-sm text-gray-600 mb-2">
                 {dashboard.enrolledCourses.length} {dashboard.enrolledCourses.length === 1 ? 'curso' : 'cursos'}
               </p>
             </div>
           </div>
-          <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+          <div className="w-full h-4 bg-gray-200 rounded overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-300"
               style={{ width: `${dashboard.totalProgress}%` }}
@@ -113,7 +113,7 @@ export default function StudentProgressPage({
       {!hasEnrollments ? (
         <div className="stark-border bg-brand-muted p-8 text-center">
           <p className="text-sm font-semibold mb-4">Você ainda não tem progresso registrado.</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
+          <p className="text-xs text-gray-600">
             Inscreva-se em um curso para começar a rastrear seu progresso.
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function StudentProgressPage({
                     <span className="text-sm font-semibold">Progresso do Curso</span>
                     <span className="text-sm font-bold text-brand-primary">{enrollment.progress_percentage}%</span>
                   </div>
-                  <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                  <div className="w-full h-4 bg-gray-200 rounded overflow-hidden">
                     <div
                       className="h-full bg-brand-primary transition-all duration-300"
                       style={{ width: `${enrollment.progress_percentage}%` }}
@@ -139,13 +139,13 @@ export default function StudentProgressPage({
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                   <div className="p-4 bg-brand-muted stark-border">
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">
                       Status
                     </p>
                     <p className="text-lg font-bold">{enrollment.status}</p>
                   </div>
                   <div className="p-4 bg-brand-muted stark-border">
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">
                       Inscrito
                     </p>
                     <p className="text-sm">
@@ -156,7 +156,7 @@ export default function StudentProgressPage({
                     </p>
                   </div>
                   <div className="p-4 bg-brand-muted stark-border">
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">
                       Iniciado
                     </p>
                     <p className="text-sm">
@@ -167,7 +167,7 @@ export default function StudentProgressPage({
                     </p>
                   </div>
                   <div className="p-4 bg-brand-muted stark-border">
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">
                       Completado
                     </p>
                     <p className="text-sm">

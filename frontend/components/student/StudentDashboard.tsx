@@ -64,7 +64,7 @@ export default function StudentDashboard({
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           Voltar
         </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
+        <div className="stark-border bg-red-50 p-6 text-sm text-red-700">
           <p className="font-semibold mb-2">Erro ao carregar dashboard</p>
           <p className="text-xs">{error}</p>
         </div>
@@ -88,7 +88,7 @@ export default function StudentDashboard({
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-4">
           Meus Cursos
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600">
           Progresso geral: <span className="font-bold">{dashboard.totalProgress}%</span>
         </p>
       </div>
@@ -128,14 +128,14 @@ export default function StudentDashboard({
                       <span className="text-xs font-semibold">Progresso</span>
                       <span className="text-xs font-bold">{enrollment.progress_percentage}%</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                    <div className="w-full h-2 bg-gray-200 rounded overflow-hidden">
                       <div
                         className="h-full bg-brand-primary transition-all duration-300"
                         style={{ width: `${enrollment.progress_percentage}%` }}
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500">
                     Último acesso: {enrollment.last_accessed_at
                       ? new Date(enrollment.last_accessed_at).toLocaleDateString('pt-PT')
                       : 'Não iniciado'
@@ -164,14 +164,14 @@ export default function StudentDashboard({
                         <span className="text-xs font-semibold">Progresso</span>
                         <span className="text-xs font-bold">{content.progress_percentage}%</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                      <div className="w-full h-2 bg-gray-200 rounded overflow-hidden">
                         <div
                           className="h-full bg-brand-primary transition-all duration-300"
                           style={{ width: `${content.progress_percentage}%` }}
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {content.watch_seconds > 0 && (
                         <>Assistido: {Math.round(content.watch_seconds / 60)}m</>
                       )}
@@ -196,7 +196,7 @@ export default function StudentDashboard({
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold">{activity.event_type}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-gray-500">
                           {new Date(activity.created_at).toLocaleDateString('pt-PT')}
                         </p>
                       </div>

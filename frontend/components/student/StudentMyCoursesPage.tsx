@@ -62,7 +62,7 @@ export default function StudentMyCoursesPage({
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           Voltar
         </button>
-        <div className="stark-border bg-red-50 dark:bg-red-900 p-6 text-sm text-red-700 dark:text-red-200">
+        <div className="stark-border bg-red-50 p-6 text-sm text-red-700">
           <p className="font-semibold mb-2">Erro ao carregar cursos</p>
           <p className="text-xs">{error}</p>
         </div>
@@ -84,7 +84,7 @@ export default function StudentMyCoursesPage({
         <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-4">
           Meus Cursos
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600">
           Você está inscrito em <span className="font-bold">{courses.length}</span> {courses.length === 1 ? 'curso' : 'cursos'}
         </p>
       </div>
@@ -114,10 +114,10 @@ export default function StudentMyCoursesPage({
                 </h3>
                 <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 stark-border ${
                   enrollment.status === 'active'
-                    ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200'
+                    ? 'bg-green-100 text-green-700'
                     : enrollment.status === 'completed'
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-700'
                 }`}>
                   {enrollment.status}
                 </span>
@@ -128,7 +128,7 @@ export default function StudentMyCoursesPage({
                   <span className="text-xs font-semibold">Progresso</span>
                   <span className="text-xs font-bold text-brand-primary">{enrollment.progress_percentage}%</span>
                 </div>
-                <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                <div className="w-full h-3 bg-gray-200 rounded overflow-hidden">
                   <div
                     className="h-full bg-brand-primary transition-all duration-300"
                     style={{ width: `${enrollment.progress_percentage}%` }}
@@ -136,7 +136,7 @@ export default function StudentMyCoursesPage({
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400 mb-4">
+              <div className="space-y-2 text-xs text-gray-600 mb-4">
                 {enrollment.enrolled_at && (
                   <p>Inscrito em: {new Date(enrollment.enrolled_at).toLocaleDateString('pt-PT')}</p>
                 )}
