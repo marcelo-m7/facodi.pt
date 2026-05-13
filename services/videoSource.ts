@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from './supabase';
 import { PublicPlaylist, VideoCategory, VideoItem } from '../types';
 
 type VideoRow = {
@@ -38,22 +38,6 @@ export type VideoQueryParams = {
   offset?: number;
 };
 
-let _supabase: SupabaseClient | null = null;
-
-function getSupabaseClient(): SupabaseClient {
-  if (_supabase) return _supabase;
-
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!url || !key) {
-    throw new Error('[videoSource] VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are required');
-  }
-
-  _supabase = createClient(url, key);
-  return _supabase;
-}
-
 function mapVideoRow(row: VideoRow): VideoItem {
   return {
     id: row.id,
@@ -77,7 +61,7 @@ function mapVideoRow(row: VideoRow): VideoItem {
 }
 
 export async function listPublicCategories(): Promise<VideoCategory[]> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   const { data, error } = await sb
     .schema('public')
@@ -98,7 +82,7 @@ export async function listPublicCategories(): Promise<VideoCategory[]> {
 }
 
 export async function listPublicPlaylists(): Promise<PublicPlaylist[]> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   const { data, error } = await sb
     .schema('public')
@@ -124,7 +108,7 @@ export async function listPublicPlaylists(): Promise<PublicPlaylist[]> {
 }
 
 export async function listPlaylistVideos(playlistId: string): Promise<VideoItem[]> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   const { data, error } = await sb
     .schema('public')
@@ -169,7 +153,7 @@ export async function listPlaylistVideos(playlistId: string): Promise<VideoItem[
 }
 
 export async function listPublicVideos(params: VideoQueryParams = {}): Promise<VideoItem[]> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   if (params.playlistId) {
     return listPlaylistVideos(params.playlistId);
@@ -204,7 +188,7 @@ export async function listPublicVideos(params: VideoQueryParams = {}): Promise<V
 }
 
 export async function getPublicVideoById(videoId: string): Promise<VideoItem | null> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   const { data, error } = await sb
     .schema('public')
@@ -241,7 +225,7 @@ export async function getPublicVideoById(videoId: string): Promise<VideoItem | n
 }
 
 export async function listRelatedVideos(currentVideo: VideoItem, limit = 4): Promise<VideoItem[]> {
-  const sb = getSupabaseClient();
+  const sb = supabase;
 
   let query = sb
     .schema('public')

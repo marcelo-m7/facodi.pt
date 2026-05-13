@@ -10,11 +10,11 @@ test('courses page lists all degrees', async ({ page }) => {
   const cards = page.locator('[data-testid="course-card"]');
   // Wait for either course cards or the empty state message to appear
   await expect(
-    cards.first().or(page.getByText('Sem cursos sincronizados do Odoo neste momento.'))
+    cards.first().or(page.getByText('Nenhum curso disponível neste momento.'))
   ).toBeVisible({ timeout: 10000 });
   const count = await cards.count();
   if (count === 0) {
-    await expect(page.getByText('Sem cursos sincronizados do Odoo neste momento.')).toBeVisible();
+    await expect(page.getByText('Nenhum curso disponível neste momento.')).toBeVisible();
     return;
   }
   await expect(cards.first()).toBeVisible();
