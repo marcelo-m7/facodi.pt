@@ -29,6 +29,7 @@ pnpm exec playwright install
 
 - Project overview and runtime modes: [README.md](README.md)
 - Contribution/PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Docs map for quick navigation: [README.md#índice-de-documentação](README.md#índice-de-documentação)
 - Catalog contract rules: [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
 - Supabase catalog mapping rules: [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
 - Auth/user feature rules: [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md)
