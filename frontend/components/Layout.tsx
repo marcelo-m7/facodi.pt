@@ -131,6 +131,9 @@ const Layout: React.FC<Props> = ({
           {/* Logo */}
           <button onClick={() => navGo('home')} aria-label="FACODI — Página inicial" className="flex items-center gap-2 shrink-0">
             <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">FACODI</span>
+            <span className="stark-border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest leading-none bg-primary text-black">
+              Beta
+            </span>
           </button>
 
           {/* Desktop nav */}
@@ -257,7 +260,12 @@ const Layout: React.FC<Props> = ({
         className={`fixed top-0 right-0 z-[110] h-full w-80 max-w-[90vw] bg-white stark-border-l flex flex-col md:hidden transition-transform duration-300 ${mobileOpen ? 'translate-x-0 visible' : 'translate-x-full invisible pointer-events-none'}`}
       >
         <div className="h-16 flex items-center justify-between px-6 stark-border-b shrink-0">
-          <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-black uppercase tracking-tighter">FACODI</span>
+            <span className="stark-border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest leading-none bg-primary text-black">
+              Beta
+            </span>
+          </div>
           <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="w-11 h-11 flex items-center justify-center stark-border hover:bg-brand-muted transition-all">
             <span className="material-symbols-outlined text-xl">close</span>
           </button>
