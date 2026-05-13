@@ -1,151 +1,184 @@
 
 import React from 'react';
-import { CurricularUnit, Category } from '../types';
+import { useStudentDashboard } from '../hooks/useStudentDashboard';
 
 interface DashboardProps {
-  savedUnits: CurricularUnit[];
-  onUnitClick: (id: string) => void;
-  onRemove: (id: string) => void;
+  onSelectCourse: (unitId: string) => void;
+  onSelectVideo: (videoId: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ savedUnits, onUnitClick, onRemove }) => {
-  const totalECTS = savedUnits.reduce((acc, unit) => acc + unit.ects, 0);
-  const targetECTS = 180;
-  const progressPercent = Math.min((totalECTS / targetECTS) * 100, 100);
+const EVENT_LABELS: Record<string, string> = {
+  course_enrolled: 'Inscreveu-se em um curso',
+  course_started: 'Iniciou um curso',
+  course_completed: 'Completou um curso',
+  unit_started: 'Iniciou uma unidade',
+  unit_completed: 'Completou uma unidade',
+  content_started: 'Iniciou um conteúdo',
+  content_completed: 'Completou um conteúdo',
+  content_abandoned: 'Abandonou um conteúdo',
+  video_watched: 'Assistiu a um vídeo',
+  resource_accessed: 'Acessou um recurso',
+  certificate_earned: 'Conquistou um certificado',
+};
 
-  const categoryCount = savedUnits.reduce((acc, unit) => {
-    // Cast category to string to ensure stable Record key indexing
-    const cat = unit.category as string;
-    acc[cat] = (acc[cat] || 0) + unit.ects;
-    return acc;
-  }, {} as Record<string, number>);
+const Dashboard: React.FC<DashboardProps> = ({ onSelectCourse, onSelectVideo }) => {
+  const { data: dashboard, isLoading, error } = useStudentDashboard();
+  const hasEnrollments = dashboard.enrolledCourses.length > 0;
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <div className="mb-20">
-        <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-8">
-          Meu<br/>Progresso
+      <div className="mb-12">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[0.95] mb-6">
+          Meu Progresso
         </h1>
-        <p className="text-xl lg:text-2xl text-gray-400 font-medium tracking-tight">
-          Acompanhamento dinâmico das suas conquistas académicas na FACODI.
+        <p className="text-base lg:text-lg text-gray-600 dark:text-gray-400 font-medium">
+          Acompanhe seus cursos, continue de onde parou e visualize sua atividade recente em um único painel.
         </p>
       </div>
 
-      <section className="mb-12 lg:mb-14">
-        <div className="stark-border bg-brand-muted p-8 lg:p-10">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-500 mb-6">Como Ler Este Painel</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2">Créditos acumulados</p>
-              <p className="text-xs text-gray-600 leading-relaxed">Mostra o total de ECTS das unidades guardadas em relação ao objetivo de referência.</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2">Distribuição por área</p>
-              <p className="text-xs text-gray-600 leading-relaxed">Ajuda a identificar desequilíbrios entre áreas e orientar o próximo bloco de estudo.</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2">Plano em foco</p>
-              <p className="text-xs text-gray-600 leading-relaxed">Use a lista para abrir unidades, remover itens e manter um plano realista por semestre.</p>
-            </div>
-          </div>
+      {isLoading && (
+        <div className="facodi-card facodi-badge inline-flex items-center gap-3 mb-8">
+          <span className="material-symbols-outlined animate-pulse text-xl">hourglass_top</span>
+          A carregar progresso...
         </div>
-      </section>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left Column: Stats */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="stark-border p-10 bg-black text-white relative overflow-hidden">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] mb-12 text-primary">Créditos Acumulados</h4>
-            <div className="flex items-baseline gap-4 mb-4">
-              <span className="text-8xl font-black italic">{totalECTS}</span>
-              <span className="text-xl font-bold opacity-40">/ {targetECTS} ECTS</span>
-            </div>
-            <div className="w-full h-4 bg-white/10 stark-border mb-2">
-              <div 
-                className="h-full bg-primary transition-all duration-1000 ease-out" 
-                style={{ width: `${progressPercent}%` }}
-              ></div>
-            </div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-right opacity-40">
-              {progressPercent.toFixed(1)}% do curso concluído
-            </p>
-          </div>
-
-          <div className="stark-border p-10 bg-brand-muted">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] mb-8">Distribuição por Área</h4>
-            <div className="space-y-6">
-              {Object.entries(categoryCount).map(([cat, count]) => (
-                <div key={cat}>
-                  <div className="flex justify-between text-[10px] font-black uppercase mb-2">
-                    <span>{cat}</span>
-                    <span>{count} ECTS</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-black/5">
-                    {/* Fixed arithmetic operation error by renaming destructured variable and ensuring type safety with Number() cast */}
-                    <div 
-                      className="h-full bg-black transition-all" 
-                      style={{ width: `${totalECTS > 0 ? (Number(count) / totalECTS) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-              {savedUnits.length === 0 && (
-                <p className="text-xs text-gray-400 italic">Guarde unidades para ver a distribuição.</p>
-              )}
-            </div>
-          </div>
+      {error && (
+        <div className="facodi-alert facodi-alert-error mb-8">
+          <p className="font-semibold mb-2">Erro ao carregar painel</p>
+          <p className="text-xs">{error}</p>
         </div>
+      )}
 
-        {/* Right Column: Saved List */}
-        <div className="lg:col-span-8">
-          <div className="stark-border bg-white">
-            <div className="p-8 border-b border-black flex justify-between items-center bg-black text-white">
-              <h3 className="text-xs font-black uppercase tracking-widest">Unidades em Foco ({savedUnits.length})</h3>
-              <button className="text-[9px] font-black uppercase tracking-widest hover:text-primary underline">Exportar Plano</button>
+      {!isLoading && !error && (
+        <>
+          <section className="facodi-card mb-10">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 mb-2">
+                  Progresso Geral
+                </p>
+                <p className="text-5xl lg:text-6xl font-black tracking-tight">{dashboard.totalProgress}%</p>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                {dashboard.enrolledCourses.length} {dashboard.enrolledCourses.length === 1 ? 'curso ativo' : 'cursos ativos'}
+              </div>
             </div>
-            
-            <div className="divide-y divide-black/10">
-              {savedUnits.map(unit => (
-                <div key={unit.id} className="p-8 hover:bg-brand-muted transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group">
-                  <div className="cursor-pointer flex-1" onClick={() => onUnitClick(unit.id)}>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-[9px] font-black bg-black text-white px-2 py-0.5 uppercase">{unit.id}</span>
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{unit.courseId}</span>
-                    </div>
-                    <h4 className="text-xl font-black uppercase tracking-tighter group-hover:text-primary group-hover:bg-black px-1 transition-all inline-block">
-                      {unit.name}
-                    </h4>
-                  </div>
-                  
-                  <div className="flex items-center gap-8">
-                    <div className="text-right">
-                      <p className="text-[9px] font-black uppercase text-gray-400">Status</p>
-                      <p className="text-[10px] font-bold uppercase text-green-600">A Estudar</p>
-                    </div>
-                    <div className="text-right w-16">
-                      <p className="text-[9px] font-black uppercase text-gray-400">Créditos</p>
-                      <p className="text-[10px] font-bold">{unit.ects} ECTS</p>
-                    </div>
-                    <button 
-                      onClick={() => onRemove(unit.id)}
-                      className="w-10 h-10 stark-border flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
+            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-300"
+                style={{ width: `${dashboard.totalProgress}%` }}
+              />
+            </div>
+          </section>
+
+          {!hasEnrollments ? (
+            <div className="facodi-card text-center py-12">
+              <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 inline-block">school</span>
+              <p className="text-sm font-semibold mb-3 mt-4">Você ainda não se inscreveu em nenhum curso.</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Explore a área de cursos para iniciar sua jornada.</p>
+            </div>
+          ) : (
+            <>
+              <section className="mb-12">
+                <h2 className="text-2xl lg:text-3xl font-black tracking-tight mb-6">Meus Cursos</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {dashboard.enrolledCourses.map((enrollment) => (
+                    <div
+                      key={enrollment.id}
+                      className="facodi-card facodi-card-interactive transition-all cursor-pointer"
+                      onClick={() => onSelectCourse(enrollment.course_id)}
                     >
-                      <span className="material-symbols-outlined text-sm">delete</span>
-                    </button>
+                      <div className="flex items-start justify-between mb-4 gap-3">
+                        <h3 className="text-base lg:text-lg font-bold break-words">{enrollment.course_id}</h3>
+                        <span className="facodi-badge-neon text-[9px] shrink-0">
+                          {enrollment.status}
+                        </span>
+                      </div>
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2 text-xs font-bold">
+                          <span>Progresso</span>
+                          <span>{enrollment.progress_percentage}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-300"
+                            style={{ width: `${enrollment.progress_percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Último acesso: {enrollment.last_accessed_at ? new Date(enrollment.last_accessed_at).toLocaleDateString('pt-PT') : 'Não iniciado'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {dashboard.continueWatching.length > 0 && (
+                <section className="mb-12">
+                  <h2 className="text-2xl lg:text-3xl font-black tracking-tight mb-6">Continue Assistindo</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dashboard.continueWatching.map((content) => (
+                      <div
+                        key={content.id}
+                        className="facodi-card facodi-card-interactive transition-all cursor-pointer"
+                        onClick={() => onSelectVideo(content.content_id)}
+                      >
+                        <h3 className="text-base lg:text-lg font-bold mb-4 break-words">{content.content_id}</h3>
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2 text-xs font-bold">
+                            <span>Progresso</span>
+                            <span>{content.progress_percentage}%</span>
+                          </div>
+                          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-300"
+                              style={{ width: `${content.progress_percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {content.watch_seconds > 0 ? `Assistido: ${Math.round(content.watch_seconds / 60)} min` : 'Sem progresso de reprodução'}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-              
-              {savedUnits.length === 0 && (
-                <div className="p-20 text-center opacity-20">
-                  <span className="material-symbols-outlined text-6xl mb-4">folder_open</span>
-                  <p className="text-sm font-black uppercase tracking-[0.2em]">Nenhuma unidade guardada ainda.</p>
-                </div>
+                </section>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+
+              <section>
+                <h2 className="text-2xl lg:text-3xl font-black tracking-tight mb-6">Atividades Recentes</h2>
+                {dashboard.recentActivity.length === 0 ? (
+                  <div className="facodi-card text-sm text-gray-600 dark:text-gray-400 text-center py-12">
+                    <span className="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-700 mb-4 inline-block">history</span>
+                    <p className="mt-4">Ainda sem atividades recentes registradas.</p>
+                  </div>
+                ) : (
+                  <div className="facodi-card">
+                    <div className="space-y-4">
+                      {dashboard.recentActivity.map((activity) => {
+                        const label = EVENT_LABELS[activity.event_type] || activity.event_type;
+                        return (
+                          <div key={activity.id} className="flex items-start gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:pb-0">
+                            <span className="material-symbols-outlined text-sm text-primary mt-0.5">history</span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold">{label}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(activity.created_at).toLocaleString('pt-PT')}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </section>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };

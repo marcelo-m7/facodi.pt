@@ -70,19 +70,19 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] mb-12 hover:text-primary transition-colors group"
+        className="facodi-nav-link mb-12 flex items-center gap-2"
       >
-        <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span className="material-symbols-outlined text-sm">arrow_back</span>
         Painel Admin
       </button>
 
-      <h1 className="text-5xl font-black uppercase tracking-tighter mb-8">Revisao de Conteudos</h1>
+      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95] mb-12">Revisao de Conteudos</h1>
 
-      <div className="stark-border p-6 bg-white mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="facodi-card mb-8 p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Estado</label>
+          <label className="facodi-label mb-2 block">Estado</label>
           <select
-            className="w-full stark-border px-3 py-2 text-xs uppercase"
+            className="facodi-input w-full"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value as ContentSubmission['status'] | '');
@@ -96,9 +96,9 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
           </select>
         </div>
         <div>
-          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Tipo</label>
+          <label className="facodi-label mb-2 block">Tipo</label>
           <select
-            className="w-full stark-border px-3 py-2 text-xs uppercase"
+            className="facodi-input w-full"
             value={typeFilter}
             onChange={(e) => {
               setTypeFilter(e.target.value);
@@ -113,44 +113,52 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
           </select>
         </div>
         <div>
-          <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Buscar</label>
+          <label className="facodi-label mb-2 block">Buscar</label>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full stark-border px-3 py-2 text-sm"
+            className="facodi-input w-full"
             placeholder="Titulo, URL, autor"
           />
         </div>
       </div>
 
-      {error && <div className="stark-border p-4 bg-red-50 text-red-700 mb-6">{error}</div>}
+      {error && (
+        <div className="facodi-alert facodi-alert-error mb-6">
+          <p className="font-semibold">{error}</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="py-24 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-black border-t-primary animate-spin" />
+          <div className="facodi-spinner"></div>
         </div>
       ) : filteredRows.length === 0 ? (
-        <div className="stark-border p-10 bg-brand-muted text-center">
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Nenhum conteudo encontrado</p>
+        <div className="facodi-card text-center py-12">
+          <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 inline-block">inbox</span>
+          <p className="text-sm font-semibold mt-4">Nenhum conteudo encontrado</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">Tente ajustar seus filtros de busca.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredRows.map((row) => (
             <button
               key={row.id}
               onClick={() => onOpenSubmission(row.id)}
-              className={`w-full stark-border text-left p-6 hover:bg-brand-muted transition-all ${row.status === 'pending' ? 'border-l-4 border-l-yellow-400' : 'bg-white'}`}
+              className={`facodi-card facodi-card-interactive p-6 w-full text-left transition-all ${
+                row.status === 'pending' ? 'border-l-4 border-l-primary' : ''
+              }`}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                  <p className="text-[9px] uppercase font-bold tracking-widest text-gray-600 dark:text-gray-400 mb-2">
                     {STATUS_LABELS[row.status]} · {row.content_type}
                   </p>
-                  <p className="text-sm font-black uppercase tracking-tight">{row.suggested_title || 'Sem titulo'}</p>
-                  <p className="text-xs text-gray-500 mt-1">{row.author_name || row.author_email}</p>
-                  {row.url && <p className="text-xs text-gray-400 mt-1 truncate">{row.url}</p>}
+                  <p className="text-base font-bold tracking-tight">{row.suggested_title || 'Sem titulo'}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">{row.author_name || row.author_email}</p>
+                  {row.url && <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate">{row.url}</p>}
                 </div>
-                <span className="material-symbols-outlined">arrow_forward</span>
+                <span className="material-symbols-outlined text-gray-400 dark:text-gray-600 mt-1">arrow_forward</span>
               </div>
             </button>
           ))}
@@ -158,19 +166,19 @@ const AdminContentListPage: React.FC<AdminContentListPageProps> = ({ onBack, onO
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-8">
+        <div className="flex items-center justify-between mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
           <button
             disabled={page === 0}
             onClick={() => setPage((value) => Math.max(0, value - 1))}
-            className="text-[10px] font-black uppercase tracking-widest disabled:opacity-40"
+            className="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 disabled:opacity-40 hover:text-primary transition-colors"
           >
             Anterior
           </button>
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Pagina {page + 1} de {totalPages}</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400">Pagina {page + 1} de {totalPages}</p>
           <button
             disabled={page >= totalPages - 1}
             onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))}
-            className="text-[10px] font-black uppercase tracking-widest disabled:opacity-40"
+            className="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 disabled:opacity-40 hover:text-primary transition-colors"
           >
             Proxima
           </button>

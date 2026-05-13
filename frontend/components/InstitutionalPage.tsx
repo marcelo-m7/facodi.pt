@@ -110,23 +110,24 @@ const InstitutionalPage: React.FC<Props> = ({ slug, locale = 'pt', t, onBack }) 
   const body = page ? (locale === 'en' && page.bodyEn ? page.bodyEn : page.bodyPt) : '';
 
   return (
-    <section className="min-h-screen bg-white">
+    <section className="min-h-screen bg-white dark:bg-gray-950">
       {/* Header stripe */}
-      <div className="border-b-4 border-black bg-brand-muted py-16">
+      <div className="border-b-4 border-gray-900 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 py-16">
         <div className="max-w-4xl mx-auto px-8 lg:px-16">
           {onBack && (
             <button
               onClick={onBack}
-              className="text-[10px] uppercase font-black tracking-widest mb-6 flex items-center gap-2 hover:underline"
+              className="facodi-nav-link mb-8 inline-flex items-center gap-2"
             >
-              ← Início
+              <span className="material-symbols-outlined">arrow_back</span>
+              Início
             </button>
           )}
           {loading && (
-            <div className="h-10 bg-gray-200 animate-pulse rounded w-64" />
+            <div className="h-12 bg-gray-300 dark:bg-gray-700 animate-pulse rounded w-96" />
           )}
           {!loading && title && (
-            <h1 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter">{title}</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[0.95]">{title}</h1>
           )}
         </div>
       </div>
@@ -136,13 +137,13 @@ const InstitutionalPage: React.FC<Props> = ({ slug, locale = 'pt', t, onBack }) 
         {loading && (
           <div className="space-y-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-4 bg-gray-100 animate-pulse rounded" style={{ width: `${80 - i * 5}%` }} />
+              <div key={i} className="h-4 bg-gray-200 dark:bg-gray-800 animate-pulse rounded" style={{ width: `${80 - i * 5}%` }} />
             ))}
           </div>
         )}
         {!loading && error && (
-          <div className="stark-border p-8 bg-red-50">
-            <p className="font-bold text-red-700">{error}</p>
+          <div className="facodi-alert facodi-alert-error">
+            <p className="font-semibold">{error}</p>
           </div>
         )}
         {!loading && body && (

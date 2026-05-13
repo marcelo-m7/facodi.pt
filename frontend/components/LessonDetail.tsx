@@ -59,7 +59,7 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
 
       if (embedUrl) {
         return (
-          <div className="aspect-video bg-black stark-border mb-16 overflow-hidden" data-testid="lesson-video-player">
+          <div className="aspect-video bg-gray-900 dark:bg-gray-950 rounded-lg overflow-hidden shadow-lg mb-12" data-testid="lesson-video-player">
             <iframe
               title={`Video: ${unit.name}`}
               src={embedUrl}
@@ -72,15 +72,15 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
       }
 
       return (
-        <div className="aspect-video bg-black stark-border mb-16 flex items-center justify-center" data-testid="lesson-video-link-fallback">
+        <div className="aspect-video bg-gray-100 dark:bg-gray-900 rounded-lg mb-12 flex items-center justify-center border border-gray-200 dark:border-gray-800" data-testid="lesson-video-link-fallback">
           <div className="text-center">
-            <span className="material-symbols-outlined text-6xl text-gray-600 mb-4">open_in_new</span>
-            <p className="text-sm text-gray-300 uppercase tracking-widest font-bold mb-3">Vídeo Externo</p>
+            <span className="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-600 mb-4">open_in_new</span>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Vídeo Externo</p>
             <a
               href={unit.videoUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-block px-4 py-2 bg-primary text-black text-xs font-black uppercase tracking-wider"
+              className="facodi-btn facodi-btn-primary"
             >
               Abrir vídeo
             </a>
@@ -90,10 +90,10 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
     }
 
     return (
-      <div className="aspect-video bg-gradient-to-b from-gray-100 to-white stark-border mb-16 flex items-center justify-center" data-testid="lesson-video-placeholder">
+      <div className="aspect-video bg-gradient-to-b from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg mb-12 flex items-center justify-center border border-gray-200 dark:border-gray-800" data-testid="lesson-video-placeholder">
         <div className="text-center">
-          <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">description</span>
-          <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Conteúdo em texto</p>
+          <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-700 mb-4">description</span>
+          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">Conteúdo em texto</p>
         </div>
       </div>
     );
@@ -108,17 +108,15 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
       if (!playlist || videos.length === 0) {
         if (videosError) {
           return (
-            <div className="mb-16 p-4 bg-red-100 border border-red-300 rounded text-sm text-red-800">
+            <div className="facodi-alert facodi-alert-error mb-12">
               <p className="font-bold">{t('videoState.error')}</p>
-              <p className="text-xs mt-1">{videosError.message}</p>
+              <p className="text-sm mt-2">{videosError.message}</p>
             </div>
           );
         }
         if (videosLoading) {
           return (
-            <div className="mb-16 p-4 bg-blue-100 border border-blue-300 rounded text-sm text-blue-800">
-              <p className="font-bold">{t('videoState.loading')}</p>
-            </div>
+            <div className="facodi-spinner mx-auto mb-12"></div>
           );
         }
         return null;
@@ -129,10 +127,10 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
 
       return (
         <div className="mb-16">
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-6">{t('courseDetail.unitVideos')}</h3>
+          <h3 className="facodi-label mb-6">{t('courseDetail.unitVideos')}</h3>
         
           {/* Player */}
-          <div className="aspect-video bg-black stark-border mb-8 overflow-hidden">
+          <div className="aspect-video bg-gray-900 dark:bg-gray-950 rounded-lg overflow-hidden shadow-lg mb-8">
             <iframe
               key={selectedVideo.youtubeId}
               width="100%"
@@ -201,7 +199,7 @@ const LessonDetail: React.FC<Props> = ({ unit, allUnits, playlists, courseTitle,
 
           {/* Lesson Title & Metadata */}
           <div className="mb-16">
-            <span className="text-[10px] font-black bg-primary text-black px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
+            <span className="text-[10px] font-black facodi-primary-surface px-3 py-1.5 uppercase tracking-[0.2em] mb-6 inline-block">
               {unit.courseId}
             </span>
             {courseTitle && (

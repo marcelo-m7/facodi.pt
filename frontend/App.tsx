@@ -9,11 +9,16 @@ import { Category, Course, CurricularUnit, FilterState, Playlist } from './types
 import { createTranslator, Locale } from './data/i18n';
 import { CatalogSource, loadCatalogData } from './services/catalogSource';
 import { useAuth } from './contexts/AuthContext';
-import { supabase } from './services/supabase';
 import RequireAuth from './components/auth/RequireAuth';
 import PermissionDenied from './components/auth/PermissionDenied';
 import SEOHead from './components/SEOHead';
 import { getPostBySlug } from './data/blogPosts';
+import { useCookieConsent } from './hooks/useCookieConsent';
+import CookieConsentBanner from './components/legal/CookieConsentBanner';
+import CookiePreferencesModal from './components/legal/CookiePreferencesModal';
+import LegalDocumentPage from './components/legal/LegalDocumentPage';
+import { LEGAL_VERSION } from './services/legalConfig';
+import { persistLegalAcceptance, syncCookieConsent } from './services/consentService';
 
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 const CourseDetail = React.lazy(() => import('./components/CourseDetail'));
@@ -24,10 +29,6 @@ const AINavigator = React.lazy(() => import('./components/AINavigator'));
 const VideoDetail = React.lazy(() => import('./components/videos/VideoDetail'));
 const AuthModal = React.lazy(() => import('./components/auth/AuthModal'));
 const ProfilePage = React.lazy(() => import('./components/user/ProfilePage'));
-const StudentDashboard = React.lazy(() => import('./components/student/StudentDashboard'));
-const StudentMyCoursesPage = React.lazy(() => import('./components/student/StudentMyCoursesPage'));
-const StudentProgressPage = React.lazy(() => import('./components/student/StudentProgressPage'));
-const StudentHistoryPage = React.lazy(() => import('./components/student/StudentHistoryPage'));
 const CuratorApplicationPage = React.lazy(() => import('./components/curator/CuratorApplicationPage').then(m => ({ default: m.CuratorApplicationPage })));
 const ContentSubmissionPage = React.lazy(() => import('./components/curator/ContentSubmissionPage').then(m => ({ default: m.ContentSubmissionPage })));
 const SubmissionListPage = React.lazy(() => import('./components/curator/SubmissionListPage').then(m => ({ default: m.SubmissionListPage })));
@@ -55,10 +56,6 @@ type View =
   | 'videos'
   | 'video-detail'
   | 'profile'
-  | 'student-dashboard'
-  | 'student-my-courses'
-  | 'student-progress'
-  | 'student-history'
   | 'curator-apply'
   | 'curator-submit'
   | 'curator-submissions'
@@ -70,20 +67,23 @@ type View =
   | 'admin-content-detail'
   | 'admin-curators'
   | 'blog'
-  | 'blog-post';
+  | 'blog-post'
+  | 'privacy-policy'
+  | 'terms-of-service'
+  | 'cookie-policy';
 
 const App: React.FC = () => {
   const { user, profile } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-  const [savedUnitIds, setSavedUnitIds] = useState<string[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [selectedAdminSubmissionId, setSelectedAdminSubmissionId] = useState<string | null>(null);
   const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
   const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('pt');
+  const [isDark, setIsDark] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [units, setUnits] = useState<CurricularUnit[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -91,11 +91,21 @@ const App: React.FC = () => {
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [isCatalogLoading, setIsCatalogLoading] = useState(true);
   const [enableAiNavigator, setEnableAiNavigator] = useState(false);
+  const {
+    consent,
+    effectiveConsent,
+    isBannerVisible,
+    isPreferencesOpen,
+    setIsPreferencesOpen,
+    acceptAll,
+    rejectNonEssential,
+    saveConsent,
+    canUseCategory,
+  } = useCookieConsent();
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
     difficulty: 'All',
     search: '',
-    onlySaved: false,
     courseId: 'All',
     year: 'All',
     semester: 'All'
@@ -116,10 +126,6 @@ const App: React.FC = () => {
     if (view === 'contributors') path = '/contributors';
     if (view === 'profile') path = '/profile';
     if (view === 'institutional-page' && unitId) path = `/${unitId}`;
-    if (view === 'student-dashboard') path = '/student/dashboard';
-    if (view === 'student-my-courses') path = '/student/my-courses';
-    if (view === 'student-progress') path = '/student/progress';
-    if (view === 'student-history') path = '/student/history';
     if (view === 'curator-apply') path = '/curator/apply';
     if (view === 'curator-submit') path = '/curator/submit';
     if (view === 'curator-submissions') path = '/curator/submissions';
@@ -132,11 +138,26 @@ const App: React.FC = () => {
     if (view === 'admin-curators') path = '/admin/curadores';
     if (view === 'blog') path = '/blog';
     if (view === 'blog-post' && blogSlug) path = `/blog/${blogSlug}`;
+    if (view === 'privacy-policy') path = '/privacy-policy';
+    if (view === 'terms-of-service') path = '/terms-of-service';
+    if (view === 'cookie-policy') path = '/cookie-policy';
     window.history.pushState({}, '', path);
   };
 
   const syncViewWithLocation = () => {
     const path = window.location.pathname;
+    if (path === '/privacy-policy') {
+      setCurrentView('privacy-policy');
+      return;
+    }
+    if (path === '/terms-of-service') {
+      setCurrentView('terms-of-service');
+      return;
+    }
+    if (path === '/cookie-policy') {
+      setCurrentView('cookie-policy');
+      return;
+    }
     if (path.startsWith('/blog/')) {
       const blogSlug = path.replace('/blog/', '').split('/')[0];
       if (blogSlug) {
@@ -194,24 +215,6 @@ const App: React.FC = () => {
       }
       if (path === '/admin/curadores') {
         setCurrentView('admin-curators');
-        return;
-      }
-    }
-    if (path.startsWith('/student/')) {
-      if (path === '/student/dashboard') {
-        setCurrentView('student-dashboard');
-        return;
-      }
-      if (path === '/student/my-courses') {
-        setCurrentView('student-my-courses');
-        return;
-      }
-      if (path === '/student/progress') {
-        setCurrentView('student-progress');
-        return;
-      }
-      if (path === '/student/history') {
-        setCurrentView('student-history');
         return;
       }
     }
@@ -324,10 +327,6 @@ const App: React.FC = () => {
   useEffect(() => {
     const privateViews = new Set<View>([
       'dashboard',
-      'student-dashboard',
-      'student-my-courses',
-      'student-progress',
-      'student-history',
       'curator-apply',
       'curator-submit',
       'curator-submissions',
@@ -350,24 +349,28 @@ const App: React.FC = () => {
   }, [currentView, selectedUnitId]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('facodi_saved');
-    if (saved) setSavedUnitIds(JSON.parse(saved));
-    const storedLocale = localStorage.getItem('facodi_locale');
-    if (storedLocale === 'pt' || storedLocale === 'en') {
-      setLocale(storedLocale);
+    if (canUseCategory('preferences')) {
+      const storedLocale = localStorage.getItem('facodi_locale');
+      if (storedLocale === 'pt' || storedLocale === 'en') {
+        setLocale(storedLocale);
+      }
+      const storedTheme = localStorage.getItem('facodi_theme');
+      if (storedTheme === 'dark') {
+        setIsDark(true);
+      }
     }
 
-    // Ensure stale dark-mode settings are cleared.
+    // Ensure stale dark-mode class is cleared on mount.
     document.documentElement.classList.remove('dark');
-    document.body.classList.remove('bg-black', 'text-white');
-    document.body.classList.add('bg-white', 'text-black');
     localStorage.removeItem('facodi_theme');
-  }, []);
+  }, [canUseCategory]);
 
   useEffect(() => {
     document.documentElement.lang = locale === 'pt' ? 'pt-PT' : 'en-US';
-    localStorage.setItem('facodi_locale', locale);
-  }, [locale]);
+    if (canUseCategory('preferences')) {
+      localStorage.setItem('facodi_locale', locale);
+    }
+  }, [locale, canUseCategory]);
 
   const seo = useMemo(() => {
     const rawSiteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) || 'https://facodi.open2.tech';
@@ -380,10 +383,6 @@ const App: React.FC = () => {
     const privateViews = new Set<View>([
       'dashboard',
       'profile',
-      'student-dashboard',
-      'student-my-courses',
-      'student-progress',
-      'student-history',
       'curator-apply',
       'curator-submit',
       'curator-submissions',
@@ -537,22 +536,6 @@ const App: React.FC = () => {
       path = '/dashboard';
       title = 'Meu progresso | FACODI';
       description = 'Area pessoal para acompanhar progresso de aprendizagem no FACODI.';
-    } else if (currentView === 'student-dashboard') {
-      path = '/student/dashboard';
-      title = 'Area do estudante | FACODI';
-      description = 'Painel privado para acompanhar cursos e progresso.';
-    } else if (currentView === 'student-my-courses') {
-      path = '/student/my-courses';
-      title = 'Meus cursos | FACODI';
-      description = 'Area privada com matriculas e andamento de estudos.';
-    } else if (currentView === 'student-progress') {
-      path = '/student/progress';
-      title = 'Meu progresso | FACODI';
-      description = 'Area privada com relatorio de progresso.';
-    } else if (currentView === 'student-history') {
-      path = '/student/history';
-      title = 'Meu historico | FACODI';
-      description = 'Area privada com historico de atividades.';
     } else if (currentView === 'profile') {
       path = '/profile';
       title = 'Meu perfil | FACODI';
@@ -618,22 +601,41 @@ const App: React.FC = () => {
   ]);
 
   useEffect(() => {
-    let timeoutId: number | null = null;
-    const schedule = () => setEnableAiNavigator(true);
+    document.documentElement.classList.toggle('dark', isDark);
+    if (canUseCategory('preferences')) {
+      localStorage.setItem('facodi_theme', isDark ? 'dark' : 'light');
+    }
+    document.body.classList.toggle('bg-black', isDark);
+    document.body.classList.toggle('text-white', isDark);
+    document.body.classList.toggle('bg-white', !isDark);
+    document.body.classList.toggle('text-black', !isDark);
+  }, [isDark, canUseCategory]);
 
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleId = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(schedule);
+  useEffect(() => {
+    syncCookieConsent(user?.id ?? null, effectiveConsent);
+  }, [effectiveConsent, user?.id]);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const schedule = () => setEnableAiNavigator(true);
+    const globalWithIdle = globalThis as typeof globalThis & {
+      requestIdleCallback?: (cb: () => void) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (typeof globalWithIdle.requestIdleCallback === 'function') {
+      const idleId = globalWithIdle.requestIdleCallback(schedule);
       return () => {
-        if ('cancelIdleCallback' in window) {
-          (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        if (typeof globalWithIdle.cancelIdleCallback === 'function') {
+          globalWithIdle.cancelIdleCallback(idleId);
         }
       };
     }
 
-    timeoutId = window.setTimeout(schedule, 900);
+    timeoutId = setTimeout(schedule, 900);
     return () => {
       if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
       }
     };
   }, []);
@@ -647,34 +649,11 @@ const App: React.FC = () => {
     </div>
   );
 
-  const toggleSave = (id: string) => {
-    const newSaved = savedUnitIds.includes(id)
-      ? savedUnitIds.filter(sid => sid !== id)
-      : [...savedUnitIds, id];
-    setSavedUnitIds(newSaved);
-    localStorage.setItem('facodi_saved', JSON.stringify(newSaved));
-
-    // Sync to Supabase if logged in (unit_code = id for mock source, or unitCode field)
-    if (user) {
-      const unitCode = units.find(u => u.id === id)?.unitCode ?? id;
-      if (newSaved.includes(id)) {
-        supabase.from('unit_favorites').upsert({ user_id: user.id, unit_code: unitCode }, { onConflict: 'user_id,unit_code' }).then(({ error }) => {
-          if (error) console.warn('[toggleSave] upsert error:', error.message);
-        });
-      } else {
-        supabase.from('unit_favorites').delete().eq('user_id', user.id).eq('unit_code', unitCode).then(({ error }) => {
-          if (error) console.warn('[toggleSave] delete error:', error.message);
-        });
-      }
-    }
-  };
-
   const categories = ['All', ...Object.values(Category)];
   const years = ['All', 1, 2, 3];
   const semesters = ['All', 1, 2, 3, 4, 5, 6];
 
   const selectedUnit = useMemo(() => units.find(u => u.id === selectedUnitId) || null, [selectedUnitId, units]);
-  const savedUnits = useMemo(() => units.filter(u => savedUnitIds.includes(u.id)), [savedUnitIds, units]);
   const selectedLesson = useMemo(() => units.find(u => u.id === selectedLessonId) || null, [selectedLessonId, units]);
   const coursesById = useMemo(() => new Map(courses.map((course) => [course.id, course])), [courses]);
   const selectedCourse = useMemo(
@@ -688,16 +667,15 @@ const App: React.FC = () => {
                           unit.tags.some(t => t.toLowerCase().includes(filters.search.toLowerCase()));
       const matchesCategory = filters.category === 'All' || unit.category === filters.category;
       const matchesDifficulty = filters.difficulty === 'All' || unit.difficulty === filters.difficulty;
-      const matchesSaved = !filters.onlySaved || savedUnitIds.includes(unit.id);
       const matchesCourse = filters.courseId === 'All' || unit.courseId === filters.courseId;
       const matchesYear = filters.year === 'All' || unit.year === Number(filters.year);
       const matchesSemester = filters.semester === 'All' || unit.semester === Number(filters.semester);
-      return matchesSearch && matchesCategory && matchesDifficulty && matchesSaved && matchesCourse && matchesYear && matchesSemester;
+      return matchesSearch && matchesCategory && matchesDifficulty && matchesCourse && matchesYear && matchesSemester;
     });
-  }, [filters, savedUnitIds, units]);
+  }, [filters, units]);
 
   const clearFilters = () => {
-    setFilters({ category: 'All', difficulty: 'All', search: '', onlySaved: false, courseId: 'All', year: 'All', semester: 'All' });
+    setFilters({ category: 'All', difficulty: 'All', search: '', courseId: 'All', year: 'All', semester: 'All' });
   };
 
   const handleUnitSelect = (id: string) => {
@@ -736,6 +714,11 @@ const App: React.FC = () => {
     updateRoute('blog-post', undefined, undefined, undefined, slug);
   };
 
+  const handleLegalNavigate = (document: 'privacy-policy' | 'terms-of-service' | 'cookie-policy') => {
+    setCurrentView(document);
+    updateRoute(document);
+  };
+
   const renderContent = () => {
     if (currentView === 'blog') {
       return (
@@ -757,6 +740,19 @@ const App: React.FC = () => {
             }}
           />
         </Suspense>
+      );
+    }
+
+    if (currentView === 'privacy-policy' || currentView === 'terms-of-service' || currentView === 'cookie-policy') {
+      return (
+        <LegalDocumentPage
+          locale={locale}
+          type={currentView}
+          onBack={() => {
+            setCurrentView('home');
+            updateRoute('home');
+          }}
+        />
       );
     }
 
@@ -931,67 +927,12 @@ const App: React.FC = () => {
                 setCurrentView('home');
                 updateRoute('home');
               }}
-              className="bg-primary text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="facodi-primary-surface px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               Voltar ao início
             </button>
           </div>
         </section>
-      );
-    }
-
-    if (currentView === 'student-dashboard') {
-      return (
-        <Suspense fallback={lazyFallback}>
-          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
-            <StudentDashboard
-              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-              onSelectCourse={handleUnitSelect}
-              onSelectVideo={handleVideoSelect}
-              t={t}
-            />
-          </RequireAuth>
-        </Suspense>
-      );
-    }
-
-    if (currentView === 'student-my-courses') {
-      return (
-        <Suspense fallback={lazyFallback}>
-          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
-            <StudentMyCoursesPage
-              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-              onSelectCourse={handleUnitSelect}
-              t={t}
-            />
-          </RequireAuth>
-        </Suspense>
-      );
-    }
-
-    if (currentView === 'student-progress') {
-      return (
-        <Suspense fallback={lazyFallback}>
-          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
-            <StudentProgressPage
-              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-              t={t}
-            />
-          </RequireAuth>
-        </Suspense>
-      );
-    }
-
-    if (currentView === 'student-history') {
-      return (
-        <Suspense fallback={lazyFallback}>
-          <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
-            <StudentHistoryPage
-              onBack={() => { setCurrentView('home'); updateRoute('home'); }}
-              t={t}
-            />
-          </RequireAuth>
-        </Suspense>
       );
     }
 
@@ -1068,11 +1009,12 @@ const App: React.FC = () => {
       case 'dashboard':
         return (
           <Suspense fallback={lazyFallback}>
-            <Dashboard
-              savedUnits={savedUnits}
-              onUnitClick={handleUnitSelect}
-              onRemove={toggleSave}
-            />
+            <RequireAuth onOpenAuth={() => setShowAuthModal(true)}>
+              <Dashboard
+                onSelectCourse={handleUnitSelect}
+                onSelectVideo={handleVideoSelect}
+              />
+            </RequireAuth>
           </Suspense>
         );
       case 'home':
@@ -1175,8 +1117,8 @@ const App: React.FC = () => {
                     <div>
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Curso</h3>
                       <div className="flex flex-wrap lg:flex-col gap-1">
-                        <button onClick={() => setFilters(f => ({ ...f, courseId: 'All' }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === 'All' ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>Todos</button>
-                        {courses.map(d => <button key={d.id} onClick={() => setFilters(f => ({ ...f, courseId: d.id }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === d.id ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{d.id}</button>)}
+                        <button onClick={() => setFilters(f => ({ ...f, courseId: 'All' }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === 'All' ? 'facodi-primary-surface stark-border' : 'text-gray-400 hover:text-black'}`}>Todos</button>
+                        {courses.map(d => <button key={d.id} onClick={() => setFilters(f => ({ ...f, courseId: d.id }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.courseId === d.id ? 'facodi-primary-surface stark-border' : 'text-gray-400 hover:text-black'}`}>{d.id}</button>)}
                       </div>
                     </div>
                     <div>
@@ -1193,7 +1135,7 @@ const App: React.FC = () => {
                     <div>
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-black pb-3">Área</h3>
                       <div className="flex flex-wrap lg:flex-col gap-1">
-                        {categories.map(cat => <button key={cat} onClick={() => setFilters(f => ({ ...f, category: cat as any }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.category === cat ? 'bg-primary stark-border' : 'text-gray-400 hover:text-black'}`}>{cat}</button>)}
+                        {categories.map(cat => <button key={cat} onClick={() => setFilters(f => ({ ...f, category: cat as any }))} className={`px-3 py-2 text-[10px] font-bold uppercase text-left ${filters.category === cat ? 'facodi-primary-surface stark-border' : 'text-gray-400 hover:text-black'}`}>{cat}</button>)}
                       </div>
                     </div>
                     <button onClick={clearFilters} className="w-full stark-border py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1">Limpar Filtros</button>
@@ -1205,13 +1147,6 @@ const App: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                       {filteredUnits.map(unit => (
                         <div key={unit.id} className="relative group">
-                           <button 
-                            onClick={(e) => { e.stopPropagation(); toggleSave(unit.id); }}
-                            className={`absolute top-10 right-10 z-10 p-2 transition-all ${savedUnitIds.includes(unit.id) ? 'text-primary' : 'text-gray-300 hover:text-black'}`}
-                            title={savedUnitIds.includes(unit.id) ? "Remover dos guardados" : "Guardar no progresso"}
-                          >
-                            <span className="material-symbols-outlined text-2xl">{savedUnitIds.includes(unit.id) ? 'bookmark' : 'bookmark_add'}</span>
-                          </button>
                           <CourseCard
                             unit={unit}
                             onClick={handleLessonSelect}
@@ -1223,7 +1158,7 @@ const App: React.FC = () => {
                   ) : (
                     <div className="stark-border bg-brand-muted p-20 text-center">
                       <p className="text-xl font-bold uppercase tracking-tight mb-4 opacity-40">Nenhum resultado nos nós de dados.</p>
-                      <button onClick={clearFilters} className="text-white bg-black px-10 py-4 font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-black transition-all">Resetar Filtros</button>
+                      <button onClick={clearFilters} className="text-white bg-black px-10 py-4 font-black uppercase text-[10px] tracking-widest facodi-hover-primary-ink transition-all">Resetar Filtros</button>
                     </div>
                   )}
                 </section>
@@ -1253,17 +1188,60 @@ const App: React.FC = () => {
           updateRoute(view);
         }}
         onNavigatePage={handlePageNavigate}
-        savedCount={savedUnitIds.length}
+        onNavigateLegal={handleLegalNavigate}
+        onOpenCookiePreferences={() => setIsPreferencesOpen(true)}
+        allowPreferenceStorage={canUseCategory('preferences')}
         locale={locale}
         onLocaleChange={setLocale}
+        isDark={isDark}
+        onToggleTheme={() => setIsDark(prev => !prev)}
         t={t}
         onOpenAuth={() => setShowAuthModal(true)}
       >
         {renderContent()}
         {showAuthModal && (
           <Suspense fallback={null}>
-            <AuthModal onClose={() => setShowAuthModal(false)} t={t} />
+            <AuthModal
+              onClose={() => {
+                setShowAuthModal(false);
+              }}
+              t={t}
+              locale={locale}
+              onNavigateLegal={(document) => {
+                setCurrentView(document);
+                updateRoute(document);
+                setShowAuthModal(false);
+              }}
+              onAcceptedLegal={(marketingOptIn) => {
+                persistLegalAcceptance({
+                  acceptedAt: new Date().toISOString(),
+                  privacyVersion: LEGAL_VERSION.privacyPolicy,
+                  termsVersion: LEGAL_VERSION.termsOfService,
+                  marketingOptIn,
+                });
+              }}
+            />
           </Suspense>
+        )}
+
+        {isBannerVisible && (
+          <CookieConsentBanner
+            locale={locale}
+            onAcceptAll={acceptAll}
+            onRejectNonEssential={rejectNonEssential}
+            onCustomize={() => setIsPreferencesOpen(true)}
+          />
+        )}
+
+        {isPreferencesOpen && (
+          <CookiePreferencesModal
+            locale={locale}
+            initialPreferences={effectiveConsent.preferences}
+            onClose={() => setIsPreferencesOpen(false)}
+            onSave={(preferences) => {
+              saveConsent(preferences, 'preferences-save');
+            }}
+          />
         )}
         {enableAiNavigator && (
           <Suspense fallback={null}>

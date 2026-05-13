@@ -33,8 +33,8 @@ const Contributors: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-black/10">
             {CONTRIBUTORS.map((c, idx) => (
-              <tr key={idx} className="hover:bg-primary transition-colors group cursor-default">
-                <td className="px-8 py-8 font-black uppercase text-lg tracking-tighter">{c.name}</td>
+              <tr key={idx} className="facodi-hover-primary-ink transition-colors group cursor-default">
+                <td className="px-8 py-8 font-black uppercase text-lg tracking-tighter group-hover:text-black">{c.name}</td>
                 <td className="px-8 py-8 text-xs font-bold uppercase tracking-widest text-gray-500 group-hover:text-black">{c.role}</td>
                 <td className="px-8 py-8 text-xs font-bold uppercase tracking-widest text-gray-500 group-hover:text-black hidden md:table-cell">{c.location}</td>
                 <td className="px-8 py-8 text-right font-bold uppercase text-xs tracking-widest">{c.impact}</td>
@@ -53,7 +53,7 @@ const Contributors: React.FC = () => {
           href="https://github.com/open2tech"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-black text-white px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-black transition-all inline-flex items-center"
+          className="bg-black text-white px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] facodi-hover-primary-ink transition-all inline-flex items-center"
         >
           Join the GitHub Organization
         </a>

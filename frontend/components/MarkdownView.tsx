@@ -13,7 +13,7 @@ const MarkdownView: React.FC<Props> = ({ content }) => {
     const rawHtml = marked.parse(content, {
       gfm: true,
       breaks: true,
-    });
+    }) as string;
 
     return DOMPurify.sanitize(rawHtml, {
       ALLOWED_URI_REGEXP: /^(https?:|mailto:|tel:|\/)/i,
@@ -24,7 +24,7 @@ const MarkdownView: React.FC<Props> = ({ content }) => {
 
   return (
     <div 
-      className="prose prose-stark max-w-none 
+      className="prose prose-stark facodi-prose-primary-links max-w-none 
         prose-headings:font-black 
         prose-headings:uppercase 
         prose-headings:tracking-tighter 
@@ -33,7 +33,6 @@ const MarkdownView: React.FC<Props> = ({ content }) => {
         prose-p:font-medium prose-p:text-gray-600 prose-p:leading-relaxed prose-p:text-lg
         prose-li:text-gray-600 prose-li:font-medium
         prose-strong:font-black prose-strong:text-black
-        prose-a:text-black prose-a:underline prose-a:decoration-primary prose-a:decoration-4 prose-a:underline-offset-4 hover:prose-a:bg-primary
         prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-brand-muted prose-blockquote:p-8 prose-blockquote:italic
         prose-code:bg-brand-muted prose-code:px-2 prose-code:py-0.5 prose-code:font-bold prose-code:text-black before:content-none after:content-none
         prose-pre:bg-black prose-pre:text-white prose-pre:rounded-none prose-pre:p-8 prose-pre:stark-border

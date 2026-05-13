@@ -1,14 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../services/supabase';
+import { LEGAL_VERSION } from '../../services/legalConfig';
+import { syncLegalAcceptance } from '../../services/consentService';
 
 type Tab = 'signin' | 'signup';
 
 interface Props {
   onClose: () => void;
   t: (key: string) => string;
+  locale: 'pt' | 'en';
+  onNavigateLegal: (document: 'privacy-policy' | 'terms-of-service' | 'cookie-policy') => void;
+  onAcceptedLegal: (marketingOptIn: boolean) => void;
 }
 
-const AuthModal: React.FC<Props> = ({ onClose, t }) => {
+const AuthModal: React.FC<Props> = ({ onClose, t, locale, onNavigateLegal, onAcceptedLegal }) => {
   const [tab, setTab] = useState<Tab>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +21,8 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [acceptLegal, setAcceptLegal] = useState(false);
+  const [acceptMarketing, setAcceptMarketing] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
@@ -80,10 +87,22 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
           setTimeout(onClose, 800);
         }
       } else {
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        if (!acceptLegal) {
+          setError(locale === 'pt' ? 'Precisa aceitar os Termos de Servico e a Politica de Privacidade para criar conta.' : 'You must accept the Terms of Service and Privacy Policy to create an account.');
+          setIsLoading(false);
+          return;
+        }
+        const { data, error: err } = await supabase.auth.signUp({ email, password });
         if (err) {
           setError(err.message.includes('already') ? t('auth.errorEmailInUse') : t('auth.errorGeneric'));
         } else {
+          onAcceptedLegal(acceptMarketing);
+          await syncLegalAcceptance(data.user?.id ?? null, {
+            acceptedAt: new Date().toISOString(),
+            termsVersion: LEGAL_VERSION.termsOfService,
+            privacyVersion: LEGAL_VERSION.privacyPolicy,
+            marketingOptIn: acceptMarketing,
+          });
           setSuccess('Conta criada! Verifique o seu e-mail para confirmar.');
         }
       }
@@ -132,13 +151,13 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
         <div className="flex stark-border-b">
           <button
             onClick={() => { setTab('signin'); reset(); }}
-            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signin' ? 'bg-primary text-black stark-border-r' : 'text-gray-400 hover:bg-brand-muted'}`}
+            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signin' ? 'facodi-primary-surface stark-border-r' : 'text-gray-400 hover:bg-brand-muted'}`}
           >
             {t('nav.login')}
           </button>
           <button
             onClick={() => { setTab('signup'); reset(); }}
-            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signup' ? 'bg-primary text-black' : 'text-gray-400 hover:bg-brand-muted'}`}
+            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'signup' ? 'facodi-primary-surface' : 'text-gray-400 hover:bg-brand-muted'}`}
           >
             {t('auth.signUp')}
           </button>
@@ -171,13 +190,50 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
             />
           </div>
 
+          {tab === 'signup' && (
+            <div className="flex flex-col gap-3">
+              <label className="flex items-start gap-3 text-[11px] text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={acceptLegal}
+                  onChange={(event) => setAcceptLegal(event.target.checked)}
+                  className="mt-0.5 w-4 h-4"
+                />
+                <span>
+                  {locale === 'pt' ? 'Li e concordo com os ' : 'I have read and agree to the '}
+                  <button type="button" className="underline font-bold" onClick={() => onNavigateLegal('terms-of-service')}>
+                    {locale === 'pt' ? 'Termos de Servico' : 'Terms of Service'}
+                  </button>
+                  {locale === 'pt' ? ' e com a ' : ' and the '}
+                  <button type="button" className="underline font-bold" onClick={() => onNavigateLegal('privacy-policy')}>
+                    {locale === 'pt' ? 'Politica de Privacidade' : 'Privacy Policy'}
+                  </button>
+                  .
+                </span>
+              </label>
+              <label className="flex items-start gap-3 text-[11px] text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={acceptMarketing}
+                  onChange={(event) => setAcceptMarketing(event.target.checked)}
+                  className="mt-0.5 w-4 h-4"
+                />
+                <span>
+                  {locale === 'pt'
+                    ? 'Gostaria de receber atualizacoes, newsletters e anuncios de produto.'
+                    : 'I would like to receive updates, newsletters, and product announcements.'}
+                </span>
+              </label>
+            </div>
+          )}
+
           {error && <p role="alert" className="text-[10px] font-bold uppercase text-red-600 stark-border border-red-300 px-3 py-2 bg-red-50">{error}</p>}
           {success && <p role="status" className="text-[10px] font-bold uppercase text-green-700 stark-border border-green-300 px-3 py-2 bg-green-50">{success}</p>}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-primary text-black py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="facodi-primary-surface py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading && <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>}
             {tab === 'signin' ? t('nav.login') : t('auth.signUp')}
@@ -203,6 +259,16 @@ const AuthModal: React.FC<Props> = ({ onClose, t }) => {
             </svg>
             {isOAuthLoading ? 'A ligar Google...' : t('auth.continueWithGoogle')}
           </button>
+
+          {tab === 'signup' && (
+            <button
+              type="button"
+              onClick={() => onNavigateLegal('cookie-policy')}
+              className="text-left text-[10px] underline font-bold text-gray-600"
+            >
+              {locale === 'pt' ? 'Ver Politica de Cookies' : 'View Cookie Policy'}
+            </button>
+          )}
         </form>
       </div>
     </div>

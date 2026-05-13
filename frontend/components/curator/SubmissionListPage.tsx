@@ -74,9 +74,9 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
     <div className="facodi-page">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-2">{t('curator.mySubmissions.title')}</h1>
-          <p className="text-slate-600">
+        <div className="mb-12">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95] mb-4">{t('curator.mySubmissions.title')}</h1>
+          <p className="text-base text-gray-600 dark:text-gray-400 font-medium">
             {locale === 'pt' 
               ? `${total} ${total === 1 ? 'submissão' : 'submissões'}`
               : `${total} ${total === 1 ? 'submission' : 'submissions'}`}
@@ -84,8 +84,8 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
         </div>
 
         {/* Filter */}
-        <div className="stark-border bg-white p-6 mb-8">
-          <label className="facodi-label mb-3">
+        <div className="facodi-card mb-8 p-6">
+          <label className="facodi-label mb-4 block">
             {t('curator.mySubmissions.filter')}
           </label>
           <div className="flex flex-wrap gap-2">
@@ -96,10 +96,10 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                   setFilter(status);
                   setPage(0);
                 }}
-                className={`px-4 py-2 transition-all ${
+                className={`facodi-badge transition-all ${
                   filter === status
-                    ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
-                    : 'stark-border text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-brand-muted'
+                    ? 'facodi-badge-neon'
+                    : 'facodi-badge-secondary hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
                 {status === 'all' 
@@ -112,74 +112,76 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
 
         {/* Submissions List */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-slate-600">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
+          <div className="text-center py-24">
+            <div className="facodi-spinner mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
           </div>
         ) : submissions.length === 0 ? (
-          <div className="stark-border bg-white p-12 text-center">
-            <p className="text-slate-600">{t('curator.mySubmissions.empty')}</p>
+          <div className="facodi-card text-center py-12">
+            <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 inline-block">inbox</span>
+            <p className="text-base font-semibold mt-4">{t('curator.mySubmissions.empty')}</p>
           </div>
         ) : (
           <>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {submissions.map((submission) => (
                 <div
                   key={submission.id}
-                  className={`stark-border bg-white p-6 border-l-4 ${statusColors[submission.status]}`}
+                  className="facodi-card facodi-card-interactive p-6 border-l-4 border-primary"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                      <h3 className="text-lg font-bold mb-2">
                         {submission.suggested_title}
                       </h3>
 
                       {submission.summary && (
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-2">{submission.summary}</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{submission.summary}</p>
                       )}
 
-                      <div className="flex flex-wrap gap-3 text-xs mb-3">
+                      <div className="flex flex-wrap gap-2 text-xs mb-3">
                         {submission.content_type && (
-                          <span className="stark-border bg-brand-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
+                          <span className="facodi-badge facodi-badge-secondary">
                             {submission.content_type}
                           </span>
                         )}
                         {submission.course_id && (
-                          <span className="stark-border bg-brand-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
+                          <span className="facodi-badge facodi-badge-secondary">
                             {locale === 'pt' ? 'Curso' : 'Course'}: {submission.course_id}
                           </span>
                         )}
                         {submission.unit_id && (
-                          <span className="stark-border bg-brand-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
+                          <span className="facodi-badge facodi-badge-secondary">
                             {locale === 'pt' ? 'Unidade' : 'Unit'}: {submission.unit_id}
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-500">
                         {locale === 'pt' ? 'Enviada em' : 'Submitted'}: {' '}
                         {new Date(submission.created_at).toLocaleDateString(locale === 'pt' ? 'pt-PT' : 'en-US')}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <span className={`stark-border inline-block px-3 py-1 text-[9px] font-black uppercase tracking-widest ${statusTextColors[submission.status]}`}>
+                      <span className="facodi-badge facodi-badge-neon inline-block">
                         {t(`curator.mySubmissions.status.${submission.status}`)}
                       </span>
 
                       {submission.review_notes && (
-                        <p className="text-xs text-slate-600 mt-2 max-w-xs">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 max-w-xs">
                           <strong>{locale === 'pt' ? 'Notas' : 'Notes'}:</strong> {submission.review_notes}
                         </p>
                       )}
 
                       {submission.rejection_reason && (
-                        <p className="text-xs text-red-600 mt-2 max-w-xs">
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-3 max-w-xs">
                           <strong>{locale === 'pt' ? 'Motivo' : 'Reason'}:</strong> {submission.rejection_reason}
                         </p>
                       )}
 
                       {submission.reviewed_at && (
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">
                           {locale === 'pt' ? 'Revisada em' : 'Reviewed'}: {' '}
                           {new Date(submission.reviewed_at).toLocaleDateString(locale === 'pt' ? 'pt-PT' : 'en-US')}
                         </p>
@@ -192,7 +194,7 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-8">
+              <div className="flex justify-center gap-2 mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => setPage(Math.max(0, page - 1))}
                   disabled={page === 0}
@@ -205,10 +207,10 @@ export const SubmissionListPage: React.FC<SubmissionListPageProps> = ({ locale =
                   <button
                     key={i}
                     onClick={() => setPage(i)}
-                    className={`px-4 py-2 facodi-btn ${
+                    className={`px-4 py-2 text-sm font-bold transition-all ${
                       page === i
-                        ? 'bg-primary text-black stark-border text-[9px] font-black uppercase tracking-widest'
-                        : 'stark-border hover:bg-brand-muted'
+                        ? 'facodi-badge facodi-badge-neon'
+                        : 'facodi-badge facodi-badge-secondary'
                     }`}
                   >
                     {i + 1}

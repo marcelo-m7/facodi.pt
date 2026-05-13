@@ -26,7 +26,11 @@ type PlaylistVideoRow = {
     id: string;
     name: string;
     slug: string;
-  } | null;
+  } | Array<{
+    id: string;
+    name: string;
+    slug: string;
+  }> | null;
   video?: VideoRow | null;
 };
 
@@ -158,11 +162,12 @@ export async function listPlaylistVideos(playlistId: string): Promise<VideoItem[
     .filter((row) => Boolean(row.video))
     .map((row) => {
       const base = mapVideoRow(row.video as VideoRow);
+      const playlist = Array.isArray(row.playlist) ? row.playlist[0] : row.playlist;
       return {
         ...base,
-        playlistId: row.playlist?.id,
-        playlistName: row.playlist?.name,
-        playlistSlug: row.playlist?.slug,
+        playlistId: playlist?.id,
+        playlistName: playlist?.name,
+        playlistSlug: playlist?.slug,
         position: row.position,
       };
     });
@@ -230,10 +235,14 @@ export async function getPublicVideoById(videoId: string): Promise<VideoItem | n
     .limit(1)
     .maybeSingle();
 
-  if (!playlistError && playlistData?.playlist) {
-    video.playlistId = playlistData.playlist.id;
-    video.playlistName = playlistData.playlist.name;
-    video.playlistSlug = playlistData.playlist.slug;
+  const playlist = Array.isArray(playlistData?.playlist)
+    ? playlistData?.playlist[0]
+    : playlistData?.playlist;
+
+  if (!playlistError && playlist) {
+    video.playlistId = playlist.id;
+    video.playlistName = playlist.name;
+    video.playlistSlug = playlist.slug;
     video.position = playlistData.position;
   }
 

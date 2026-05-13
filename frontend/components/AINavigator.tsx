@@ -61,37 +61,45 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
   return (
     <div className="fixed bottom-12 right-12 z-[100]">
       {isOpen ? (
-        <div className="w-96 h-[500px] bg-white stark-border flex flex-col shadow-[20px_20px_0px_0px_#000000]">
-          <div className="p-6 bg-black text-white flex justify-between items-center">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Curriculum AI Node</h4>
-            <button onClick={() => setIsOpen(false)} className="material-symbols-outlined text-xl hover:text-primary transition-colors">close</button>
+        <div className="w-96 h-[500px] bg-white dark:bg-gray-900 facodi-card flex flex-col shadow-xl dark:shadow-2xl">
+          <div className="p-6 bg-black dark:bg-gray-950 text-white flex justify-between items-center border-b border-gray-700">
+            <h4 className="text-sm font-bold tracking-tight">Curriculum AI Node</h4>
+            <button onClick={() => setIsOpen(false)} className="material-symbols-outlined text-xl hover:text-primary transition-colors" aria-label="Close navigator">
+              close
+            </button>
           </div>
           
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="bg-brand-muted p-4 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="facodi-card facodi-card-elevated p-4 text-sm font-medium">
               Hello. I am the FACODI Navigator. Ask me anything about the LESTI curriculum or your learning path.
             </div>
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-4 text-xs font-medium ${m.role === 'user' ? 'bg-primary stark-border uppercase tracking-wider' : 'bg-white border-l-4 border-black'}`}>
+                <div className={`max-w-[80%] p-4 text-sm font-medium rounded-lg ${
+                  m.role === 'user'
+                    ? 'facodi-primary-surface'
+                    : 'facodi-card border-l-4 border-primary'
+                }`}>
                   {m.text}
                 </div>
               </div>
             ))}
             {isLoading && (
-              <div className="animate-pulse text-[10px] font-black uppercase tracking-widest text-gray-400">Processing Node...</div>
+              <div className="flex justify-center py-4">
+                <div className="facodi-spinner"></div>
+              </div>
             )}
           </div>
 
-          <form onSubmit={handleAsk} className="p-4 border-t border-black/10 flex gap-2">
+          <form onSubmit={handleAsk} className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
             <input 
               type="text" 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="ASK ASSISTANT..."
-              className="flex-1 bg-brand-muted stark-border px-4 py-3 text-[10px] font-bold uppercase outline-none focus:border-primary"
+              placeholder="Ask assistant..."
+              className="facodi-input flex-1 text-sm"
             />
-            <button type="submit" className="bg-black text-white px-6 hover:bg-primary hover:text-black transition-all">
+            <button type="submit" disabled={isLoading} className="facodi-btn facodi-btn-primary px-4">
               <span className="material-symbols-outlined">send</span>
             </button>
           </form>
@@ -99,7 +107,7 @@ const AINavigator: React.FC<AINavigatorProps> = ({ units }) => {
       ) : (
         <button 
           onClick={() => setIsOpen(true)}
-          className="w-16 h-16 bg-black text-white stark-border flex items-center justify-center hover:bg-primary hover:text-black transition-all shadow-[10px_10px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
+          className="w-16 h-16 bg-black text-white stark-border flex items-center justify-center facodi-hover-primary-ink transition-all shadow-[10px_10px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none"
         >
           <span className="material-symbols-outlined text-3xl">smart_toy</span>
         </button>

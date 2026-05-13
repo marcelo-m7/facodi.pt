@@ -78,7 +78,7 @@ const EditorVideoSuggestionPanel: React.FC<Props> = ({ t }) => {
         <button
           type="submit"
           disabled={isLoading}
-          className="self-start bg-primary text-black px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50"
+          className="self-start facodi-primary-surface px-8 py-3 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50"
         >
           {isLoading ? t('videoSuggest.submitting') : t('videoSuggest.submit')}
         </button>

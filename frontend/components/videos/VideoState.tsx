@@ -25,7 +25,7 @@ const VideoState: React.FC<Props> = ({ type, title, message, actionLabel, onActi
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="text-white bg-black px-10 py-4 font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-black transition-all"
+          className="text-white bg-black px-10 py-4 font-black uppercase text-[10px] tracking-widest facodi-hover-primary-ink transition-all"
         >
           {actionLabel}
         </button>

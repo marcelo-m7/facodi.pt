@@ -90,9 +90,9 @@ const VideoDetail: React.FC<Props> = ({ videoId, onBack, onSelectVideo, t }) => 
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] mb-12 hover:text-primary transition-colors group"
+        className="facodi-nav-link mb-12 flex items-center gap-2"
       >
-        <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span className="material-symbols-outlined text-sm">arrow_back</span>
         {t('videos.back')}
       </button>
 
@@ -101,21 +101,21 @@ const VideoDetail: React.FC<Props> = ({ videoId, onBack, onSelectVideo, t }) => 
           <YouTubePlayer youtubeId={video.youtubeId} title={video.title} />
 
           <div className="mb-10">
-            <h1 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter leading-tight mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-6">
               {video.title}
             </h1>
 
             <div className="flex flex-wrap gap-3 mb-6">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-primary text-black px-3 py-1.5">
+              <span className="facodi-badge facodi-badge-neon">
                 YouTube
               </span>
               {video.category?.name && (
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-brand-muted px-3 py-1.5 stark-border">
+                <span className="facodi-badge facodi-badge-secondary">
                   {video.category.name}
                 </span>
               )}
               {video.playlistName && (
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-brand-muted px-3 py-1.5 stark-border">
+                <span className="facodi-badge facodi-badge-secondary">
                   {t('videos.upNext')}: {video.playlistName}
                 </span>
               )}
@@ -128,7 +128,7 @@ const VideoDetail: React.FC<Props> = ({ videoId, onBack, onSelectVideo, t }) => 
               href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 mt-6 bg-black text-white px-5 py-3 text-xs font-black uppercase tracking-wider hover:bg-primary hover:text-black transition-all"
+              className="inline-flex items-center gap-2 mt-6 facodi-btn facodi-btn-primary"
             >
               <span className="material-symbols-outlined text-base">open_in_new</span>
               {t('videos.open')}
@@ -139,7 +139,7 @@ const VideoDetail: React.FC<Props> = ({ videoId, onBack, onSelectVideo, t }) => 
         <aside className="w-full lg:w-[420px] shrink-0 space-y-10">
           {related.length > 0 && (
             <section>
-              <h2 className="text-2xl font-black uppercase tracking-tighter mb-6">{t('videos.related')}</h2>
+              <h2 className="text-xl lg:text-2xl font-black tracking-tight mb-6">{t('videos.related')}</h2>
               <div className="space-y-4">
                 {related.map((item) => (
                   <VideoCard key={item.id} video={item} onSelect={onSelectVideo} />
@@ -150,7 +150,7 @@ const VideoDetail: React.FC<Props> = ({ videoId, onBack, onSelectVideo, t }) => 
 
           {playlistVideos.length > 0 && (
             <section>
-              <h2 className="text-2xl font-black uppercase tracking-tighter mb-6">{t('videos.upNext')}</h2>
+              <h2 className="text-xl lg:text-2xl font-black tracking-tight mb-6">{t('videos.upNext')}</h2>
               <div className="space-y-4">
                 {playlistVideos.map((item) => (
                   <VideoCard key={item.id} video={item} onSelect={onSelectVideo} />

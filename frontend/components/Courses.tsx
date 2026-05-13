@@ -14,10 +14,10 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, is
     <div className="bg-white">
       <section className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
         <div className="max-w-3xl">
-          <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.9] mb-8">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[0.95] mb-8">
             {t('courses.title')}
           </h1>
-          <p className="text-xl lg:text-2xl text-gray-400 font-medium tracking-tight mb-6">
+          <p className="text-lg lg:text-xl text-gray-600 font-medium tracking-tight mb-6">
             {t('courses.lead')}
           </p>
           <p className="text-sm lg:text-base text-gray-500 font-medium leading-relaxed max-w-2xl">
@@ -28,12 +28,12 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, is
 
       <section className="py-16 lg:py-24 border-t border-black/10">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 mb-12 lg:mb-16">
-          <div className="stark-border bg-brand-muted p-8 lg:p-10">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-500 mb-6">Como Explorar Esta Página</h3>
+          <div className="facodi-card p-8 lg:p-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-600 mb-6">Como Explorar Esta Página</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest mb-2">1. Escolha um curso</p>
-                <p className="text-xs text-gray-600 leading-relaxed">Cada cartão resume a estrutura curricular com ECTS, duração e unidades já mapeadas.</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Cada cartão resume a estrutura curricular com ECTS, duração e unidades já mapeadas.</p>
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest mb-2">2. Abra o currículo</p>
@@ -53,13 +53,13 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, is
               <article
                 key={course.id}
                 data-testid="course-card"
-                className="bg-white stark-border p-12 flex flex-col justify-between gap-12 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all"
+                className="facodi-card facodi-card-interactive transition-all flex flex-col justify-between"
               >
                 <div>
                   <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 border border-black/10 px-2 py-1 mb-8 inline-block">
                     {course.id} · {course.institution}
                   </span>
-                  <h2 className="text-3xl font-black uppercase tracking-tighter mb-6">{course.title}</h2>
+                  <h2 className="text-2xl lg:text-3xl font-black tracking-tight mb-6">{course.title}</h2>
                   <p className="text-sm font-medium text-gray-500 leading-relaxed mb-8">
                     {course.description}
                   </p>
@@ -86,7 +86,7 @@ const Courses: React.FC<CoursesProps> = ({ onSelectCourse, t, courses, units, is
                   </div>
                   <button
                     onClick={() => onSelectCourse(course.id)}
-                    className="bg-primary text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all w-fit"
+                    className="facodi-btn facodi-btn-primary w-fit"
                   >
                     {t('courses.viewCurriculum')}
                   </button>

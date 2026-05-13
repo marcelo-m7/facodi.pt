@@ -27,49 +27,49 @@ const PATHS = [
 
 const LearningPaths: React.FC = () => {
   return (
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-      <div className="mb-20">
-        <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-none mb-8">
-          Learning<br/>Paths
+    <div className="facodi-page max-w-[1600px] mx-auto">
+      <div className="mb-16">
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] mb-6">
+          Learning Paths
         </h1>
-        <p className="text-xl lg:text-2xl text-gray-400 font-medium tracking-tight">
+        <p className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 max-w-3xl">
           Specialized curriculum tracks designed for high-impact professional outcomes.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {PATHS.map((path, idx) => (
-          <div key={idx} className="stark-border bg-white p-10 hover:bg-black hover:text-white transition-all group flex flex-col">
-            <div className="flex justify-between items-start mb-12">
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] bg-primary text-black px-3 py-1.5">
+          <div key={idx} className="facodi-card facodi-card-interactive p-8 flex flex-col transition-all duration-240">
+            <div className="flex justify-between items-start mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+              <span className="facodi-badge facodi-badge-neon">
                 Path {idx + 1}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-40 group-hover:opacity-100">
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                 {path.ects} ECTS
               </span>
             </div>
             
-            <h3 className="text-3xl font-black uppercase tracking-tighter mb-6 leading-tight">
+            <h3 className="text-2xl lg:text-3xl font-bold mb-4 leading-tight">
               {path.title}
             </h3>
             
-            <p className="text-sm font-medium opacity-60 mb-10 leading-relaxed">
+            <p className="text-base font-medium text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
               {path.description}
             </p>
 
-            <div className="mt-auto pt-8 border-t border-black/10 group-hover:border-white/20">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-4 text-primary">Core Modules</p>
+            <div className="mt-auto pt-8 border-t border-gray-200 dark:border-gray-700 space-y-4">
+              <p className="facodi-label">Core Modules</p>
               <ul className="space-y-3">
                 {path.units.map(unit => (
-                  <li key={unit} className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
-                    <span className="material-symbols-outlined text-sm text-primary">check_circle</span>
-                    {unit}
+                  <li key={unit} className="flex items-center gap-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="material-symbols-outlined text-base text-primary flex-shrink-0">check_circle</span>
+                    <span>{unit}</span>
                   </li>
                 ))}
               </ul>
             </div>
             
-            <button className="mt-12 w-full py-4 stark-border border-black group-hover:border-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-black transition-all">
+            <button className="mt-12 w-full facodi-btn facodi-btn-primary">
               Enroll in Track
             </button>
           </div>

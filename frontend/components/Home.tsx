@@ -24,7 +24,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black/20 px-3 py-1 mb-8 inline-block">
               {t('home.heroBadge')}
             </span>
-            <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.9] mb-12">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.94] mb-10">
               {t('home.heroTitle')
                 .split('|')
                 .map((line, idx, arr) => (
@@ -34,31 +34,31 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
                   </React.Fragment>
                 ))}
             </h1>
-            <p className="text-lg lg:text-xl text-gray-500 font-medium leading-relaxed max-w-2xl mb-12">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 font-medium leading-relaxed max-w-2xl mb-10">
               {t('home.heroLead')}
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
                 onClick={onExplore}
-                className="bg-primary text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                className="facodi-btn facodi-btn-primary px-8 py-4"
               >
                 {t('home.heroCtaPrimary')}
               </button>
               <button
                 onClick={() => onNavigatePage?.('sobre-open2')}
-                className="bg-white text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:bg-brand-muted transition-all"
+                className="facodi-btn facodi-btn-secondary px-8 py-4"
               >
                 {t('home.heroCtaSecondary')}
               </button>
             </div>
-            <p className="mt-8 text-[9px] font-bold uppercase text-gray-400 tracking-[0.2em]">
+            <p className="mt-8 text-[10px] font-bold uppercase text-gray-500 tracking-[0.2em]">
               <span className="bg-black text-white px-2 py-0.5 mr-2 italic">{t('home.heroPillOpenLabel')}</span>
               {t('home.heroPillOpenDescription')}
             </p>
           </div>
           
           <div className="lg:col-span-5">
-            <div className="bg-brand-muted p-10 stark-border relative">
+            <div className="bg-brand-muted p-10 stark-border relative shadow-[0_10px_24px_rgba(0,0,0,0.1)]">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-10">{t('home.heroCardLabel')}</h4>
               <div className="space-y-12">
                 <div>
@@ -132,9 +132,9 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             { icon: 'check_circle', title: t('home.feature.progress.title'), desc: t('home.feature.progress.description') },
             { icon: 'groups', title: t('home.feature.curatorship.title'), desc: t('home.feature.curatorship.description') },
           ].map((feat, i) => (
-            <div key={i} className="stark-border p-10 hover:bg-primary transition-all group">
+            <div key={i} className="stark-border p-10 facodi-card-interactive transition-all group">
               <span className="material-symbols-outlined text-4xl mb-8 group-hover:scale-110 transition-transform">{feat.icon}</span>
-              <h4 className="text-sm font-black uppercase tracking-tight mb-4">{feat.title}</h4>
+              <h4 className="text-sm font-black tracking-tight mb-4">{feat.title}</h4>
               <p className="text-xs font-medium text-gray-500 group-hover:text-black leading-relaxed">{feat.desc}</p>
             </div>
           ))}
@@ -151,7 +151,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
           </div>
           <button
             onClick={onExplore}
-            className="hidden lg:block stark-border px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+              className="hidden lg:block facodi-btn facodi-btn-secondary px-8 py-3"
           >
             {t('home.viewAllCourses')}
           </button>
@@ -161,7 +161,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
             <button
               key={i}
               onClick={() => onSelectCourse?.(course.id)}
-              className="bg-white stark-border p-12 group hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer text-left"
+              className="bg-white stark-border p-12 group facodi-card-interactive transition-all cursor-pointer text-left"
             >
               <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 border border-black/10 px-2 py-1 mb-8 inline-block">PLANO 2025/2026</span>
               <h3 className="text-3xl font-black uppercase tracking-tighter mb-8 group-hover:text-primary transition-colors">{course.title}</h3>
@@ -178,7 +178,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="bg-primary stark-border px-3 py-1 flex items-center gap-2">
+                  <div className="facodi-primary-surface stark-border px-3 py-1 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">grid_view</span>
                     <span className="text-[10px] font-black">
                       {units.filter(unit => unit.courseId === course.id).length} {t('home.courseCardFootSuffix')}
@@ -225,7 +225,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
           </p>
           <button
             onClick={() => onNavigatePage?.('manifesto')}
-            className="text-[10px] font-black uppercase tracking-[0.3em] underline decoration-primary decoration-4 underline-offset-8 hover:bg-primary transition-all"
+            className="facodi-hover-primary-ink text-[10px] font-black uppercase tracking-[0.3em] underline decoration-primary decoration-4 underline-offset-8 transition-all"
           >
             {t('home.readManifesto')}
           </button>
@@ -244,7 +244,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
               <div className="bg-black text-white px-4 py-3 stark-border text-center">
                 <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.ualg.badge')}</p>
               </div>
-              <div className="bg-primary text-black px-4 py-3 stark-border text-center">
+              <div className="facodi-primary-surface px-4 py-3 stark-border text-center">
                 <p className="text-[10px] font-black uppercase tracking-widest">{t('institutional.education.badge')}</p>
               </div>
             </div>
@@ -292,7 +292,7 @@ const Home: React.FC<HomeProps> = ({ onExplore, onNavigatePage, onSelectCourse, 
           <div className="flex flex-wrap justify-center gap-6">
             <button 
               onClick={onExplore}
-              className="bg-primary text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="facodi-primary-surface px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] stark-border hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               {t('home.ctaPrimary')}
             </button>

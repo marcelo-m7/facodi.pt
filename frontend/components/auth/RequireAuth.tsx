@@ -36,7 +36,7 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children, onOpenAuth }) => {
         {onOpenAuth && (
           <button
             onClick={onOpenAuth}
-            className="bg-primary text-black px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="facodi-primary-surface px-8 py-4 text-[10px] font-black uppercase tracking-widest stark-border hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             Entrar / Criar Conta
           </button>

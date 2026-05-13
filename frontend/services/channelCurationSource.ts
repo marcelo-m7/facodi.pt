@@ -4,6 +4,9 @@
  */
 
 import { supabase } from './supabase';
+import { COURSE_UNITS } from '../data/courses';
+import { PLAYLISTS } from '../data/playlists';
+import { CurricularUnit } from '../types';
 
 // Types
 export interface ChannelIdentity {

@@ -176,16 +176,18 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white stark-border p-8 rounded-lg text-center">
-        <p className="text-slate-600">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
+      <div className="facodi-card text-center py-12">
+        <div className="facodi-spinner mx-auto mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">{locale === 'pt' ? 'Carregando...' : 'Loading...'}</p>
       </div>
     );
   }
 
   if (!submission) {
     return (
-      <div className="bg-white stark-border p-8 rounded-lg text-center">
-        <p className="text-red-600">{locale === 'pt' ? 'Submissão não encontrada' : 'Submission not found'}</p>
+      <div className="facodi-card text-center py-12">
+        <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700 mb-4 inline-block">error</span>
+        <p className="text-base font-semibold text-red-600 dark:text-red-400 mt-4">{locale === 'pt' ? 'Submissão não encontrada' : 'Submission not found'}</p>
       </div>
     );
   }
@@ -193,17 +195,17 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
   const canReview = submission.status !== 'approved' && submission.status !== 'rejected' && submission.status !== 'published';
 
   return (
-    <div className="bg-white stark-border rounded-lg overflow-hidden">
+    <div className="facodi-card overflow-hidden">
       {/* Header */}
-      <div className="bg-slate-50 border-b border-slate-200 p-6 md:p-8">
+      <div className="border-b border-gray-200 dark:border-gray-700 p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">{submission.suggested_title}</h2>
-            <p className="text-slate-600 mt-2">
+            <h2 className="text-2xl md:text-3xl font-bold">{submission.suggested_title}</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
               {submission.author_name} ({submission.author_email})
             </p>
           </div>
-          <span className="inline-block px-4 py-2 rounded-full font-semibold bg-blue-100 text-blue-900 text-sm">
+          <span className="facodi-badge facodi-badge-neon inline-block">
             {t(`curator.mySubmissions.status.${submission.status}`)}
           </span>
         </div>
@@ -212,13 +214,13 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
       {/* Messages */}
       <div className="px-6 md:px-8 pt-6">
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded text-red-900">
-            {error}
+          <div className="facodi-alert facodi-alert-error mb-6">
+            <p className="font-semibold">{error}</p>
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded text-green-900">
-            {success}
+          <div className="facodi-alert facodi-alert-success mb-6">
+            <p className="font-semibold">{success}</p>
           </div>
         )}
       </div>
@@ -337,7 +339,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
                 <button
                   onClick={handleSaveMetadata}
                   disabled={updating}
-                  className="flex-1 bg-primary text-black py-2 font-bold stark-border rounded-lg hover:shadow-lg transition-shadow disabled:opacity-50"
+                  className="flex-1 facodi-primary-surface py-2 font-bold stark-border rounded-lg hover:shadow-lg transition-shadow disabled:opacity-50"
                 >
                   {updating ? (locale === 'pt' ? 'Salvando...' : 'Saving...') : (locale === 'pt' ? 'Salvar' : 'Save')}
                 </button>
@@ -387,7 +389,7 @@ export const SubmissionReviewPanel: React.FC<SubmissionReviewPanelProps> = ({
                     </label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {submission.tags.map((tag) => (
-                        <span key={tag} className="bg-primary text-black px-2 py-1 rounded text-xs font-semibold">
+                        <span key={tag} className="facodi-primary-surface px-2 py-1 rounded text-xs font-semibold">
                           {tag}
                         </span>
                       ))}

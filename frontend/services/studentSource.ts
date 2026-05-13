@@ -88,78 +88,6 @@ export async function enrollInCourse(courseId: string): Promise<CourseEnrollment
 }
 
 /**
- * Get user's enrolled courses with current progress.
- * Returns courses ordered by last_accessed_at DESC (most recent first).
- */
-export async function getMyCourses(): Promise<CourseEnrollment[]> {
-  const { data: session } = await supabase.auth.getSession();
-  const userId = session?.session?.user?.id;
-  if (!userId) {
-    return [];
-  }
-
-  const sb = supabase as any;
-  const { data: progressRows, error } = await sb
-    .from('content_progress')
-    .select('course_id, progress_percentage, last_accessed_at, created_at')
-    .eq('user_id', userId)
-    .not('course_id', 'is', null)
-    .order('last_accessed_at', { ascending: false });
-
-  if (error || !progressRows) {
-    console.error('Error fetching courses from progress:', error);
-    return [];
-  }
-
-  const grouped = new Map<string, { total: number; count: number; lastAccessed: string | null; createdAt: string | null }>();
-  for (const row of progressRows as Array<Record<string, unknown>>) {
-    const courseId = typeof row.course_id === 'string' ? row.course_id : null;
-    if (!courseId) continue;
-
-    const current = grouped.get(courseId) || {
-      total: 0,
-      count: 0,
-      lastAccessed: null,
-      createdAt: null,
-    };
-
-    const progress = typeof row.progress_percentage === 'number' ? row.progress_percentage : 0;
-    const lastAccessed = typeof row.last_accessed_at === 'string' ? row.last_accessed_at : null;
-    const createdAt = typeof row.created_at === 'string' ? row.created_at : null;
-
-    current.total += progress;
-    current.count += 1;
-    if (!current.lastAccessed || (lastAccessed && lastAccessed > current.lastAccessed)) {
-      current.lastAccessed = lastAccessed;
-    }
-    if (!current.createdAt || (createdAt && createdAt < current.createdAt)) {
-      current.createdAt = createdAt;
-    }
-    grouped.set(courseId, current);
-  }
-
-  const enrollments: CourseEnrollment[] = Array.from(grouped.entries()).map(([courseId, acc]) => {
-    const progress = acc.count > 0 ? Math.round(acc.total / acc.count) : 0;
-    return {
-      id: `synthetic:${userId}:${courseId}`,
-      user_id: userId,
-      course_id: courseId,
-      status: progress >= 100 ? 'completed' : 'active',
-      progress_percentage: progress,
-      last_accessed_at: acc.lastAccessed,
-      enrolled_at: acc.createdAt || new Date().toISOString(),
-    };
-  });
-
-  return enrollments.sort((a, b) => {
-    if (!a.last_accessed_at && !b.last_accessed_at) return 0;
-    if (!a.last_accessed_at) return 1;
-    if (!b.last_accessed_at) return -1;
-    return a.last_accessed_at < b.last_accessed_at ? 1 : -1;
-  });
-}
-
-/**
  * Get progress for a specific course by aggregating content_progress records.
  * Returns completion percentage and list of progressed content.
  */
@@ -355,8 +283,7 @@ export async function getContinueWatching(limit: number = 5): Promise<ContentPro
  */
 export async function getStudentDashboard(): Promise<StudentDashboardData> {
   const { data: session } = await supabase.auth.getSession();
-  const userId = session?.session?.user?.id;
-  if (!userId) {
+  if (!session?.session?.user?.id) {
     return {
       enrolledCourses: [],
       totalProgress: 0,
@@ -366,14 +293,21 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
   }
 
   try {
-    const courses = await getMyCourses();
+    // Fetch enrolled courses
+    const { data: courses, error: coursesError } = await supabase
+      .from('course_enrollments')
+      .select('*')
+      .eq('user_id', session.session.user.id)
+      .eq('status', 'active')
+      .order('last_accessed_at', { ascending: false, nullsFirst: false });
+
+    if (coursesError) throw coursesError;
 
     // Fetch continue watching
-    const sb = supabase as any;
-    const { data: continueWatching, error: continueError } = await sb
+    const { data: continueWatching, error: continueError } = await supabase
       .from('content_progress')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', session.session.user.id)
       .eq('content_type', 'video')
       .in('status', ['started', 'in_progress'])
       .order('last_accessed_at', { ascending: false })
@@ -381,52 +315,38 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
 
     if (continueError) throw continueError;
 
-    // Build recent activity from content_progress updates.
+    // Fetch recent activity (last 10 events, last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const { data: activityRows, error: activitiesError } = await sb
-      .from('content_progress')
-      .select('id, user_id, status, created_at, updated_at, course_id, curricular_unit_id, content_id, content_type')
-      .eq('user_id', userId)
+    const { data: activities, error: activitiesError } = await supabase
+      .from('student_activity_events')
+      .select('*')
+      .eq('user_id', session.session.user.id)
       .gte('created_at', sevenDaysAgo.toISOString())
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(10);
 
     if (activitiesError) throw activitiesError;
 
-    const activities: StudentActivityEvent[] = (activityRows || []).map((row: Record<string, unknown>) => ({
-      id: String(row.id || crypto.randomUUID()),
-      user_id: String(row.user_id || userId),
-      event_type: String(row.status || 'content_started') === 'completed' ? 'content_completed' : 'content_started',
-      created_at: String(row.updated_at || row.created_at || new Date().toISOString()),
-      metadata: {
-        course_id: row.course_id,
-        curricular_unit_id: row.curricular_unit_id,
-        content_id: row.content_id,
-        content_type: row.content_type,
-      },
-    }));
-
     // Calculate aggregate progress
-    const { data: allProgress, error: progressError } = await sb
+    const { data: allProgress, error: progressError } = await supabase
       .from('content_progress')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', session.session.user.id);
 
     if (progressError) throw progressError;
 
-    const completedCount = (allProgress || [])
-      .filter((p: Record<string, unknown>) => p.status === 'completed').length;
+    const completedCount = (allProgress || []).filter(p => p.status === 'completed').length;
     const totalProgress = (allProgress || []).length > 0
       ? Math.round((completedCount / (allProgress || []).length) * 100)
       : 0;
 
     return {
-      enrolledCourses: courses || [],
+      enrolledCourses: (courses || []) as CourseEnrollment[],
       totalProgress,
       continueWatching: (continueWatching || []) as ContentProgress[],
-      recentActivity: activities,
+      recentActivity: (activities || []) as StudentActivityEvent[],
     };
   } catch (error) {
     console.error('Error fetching student dashboard:', error);
@@ -453,12 +373,22 @@ export async function getStudentRecommendations(): Promise<{
     return { courseRecommendations: [] };
   }
 
-  const courses = (await getMyCourses())
-    .filter((course) => course.progress_percentage < 100)
-    .sort((a, b) => a.progress_percentage - b.progress_percentage)
-    .slice(0, 5);
+  // Get enrolled courses with progress < 100%
+  const { data: courses, error } = await supabase
+    .from('course_enrollments')
+    .select('*')
+    .eq('user_id', session.session.user.id)
+    .eq('status', 'active')
+    .lt('progress_percentage', 100)
+    .order('progress_percentage', { ascending: true })
+    .limit(5);
+
+  if (error) {
+    console.error('Error fetching recommendations:', error);
+    return { courseRecommendations: [] };
+  }
 
   return {
-    courseRecommendations: courses,
+    courseRecommendations: (courses || []) as CourseEnrollment[],
   };
 }

@@ -131,7 +131,6 @@ export interface FilterState {
   category: Category | 'All';
   difficulty: Difficulty | 'All';
   search: string;
-  onlySaved: boolean;
   courseId: string | 'All';
   year: number | 'All';
   semester: number | 'All';
@@ -251,4 +250,31 @@ export interface PublishResult {
   affectedPlaylists: string[];
   timestamp: string;
   notes?: string;
+}
+
+// ============= Cookie Consent & GDPR Types =============
+
+export type CookieConsentCategory = 'necessary' | 'analytics' | 'marketing' | 'preferences';
+
+export interface CookieConsentPreferences {
+  necessary: true;
+  analytics: boolean;
+  marketing: boolean;
+  preferences: boolean;
+}
+
+export interface ConsentAuditPayload {
+  version: string;
+  timestamp: string;
+  source: string;
+  preferences: CookieConsentPreferences;
+  userId?: string | null;
+}
+
+export interface LegalAcceptanceRecord {
+  acceptedAt: string;
+  termsVersion: string;
+  privacyVersion: string;
+  marketingOptIn: boolean;
+  userId?: string | null;
 }

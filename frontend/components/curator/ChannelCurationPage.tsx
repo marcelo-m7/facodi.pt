@@ -213,9 +213,9 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
     <div className="facodi-page">
       <div className="max-w-6xl mx-auto space-y-8">
         <div>
-          <span className="text-[10px] font-black bg-black text-primary px-3 py-1.5 uppercase tracking-[0.2em] mb-4 inline-block">Curadoria</span>
-          <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter">Pipeline por canal do YouTube</h1>
-          <p className="text-sm text-gray-500 mt-3 max-w-3xl">
+          <span className="facodi-badge facodi-badge-neon mb-6 inline-block">Curadoria</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95] mb-4">Pipeline por canal do YouTube</h1>
+          <p className="text-base text-gray-600 dark:text-gray-400 font-medium max-w-3xl">
             MVP incremental e não destrutivo para importar canal, analisar vídeos com IA, revisar manualmente e publicar no fluxo atual do FACODI.
           </p>
         </div>
@@ -275,23 +275,23 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
           aria-labelledby="confirm-publish-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
         >
-          <div className="bg-white stark-border max-w-sm w-full mx-4 p-6 space-y-4">
-            <h3 id="confirm-publish-title" className="text-[10px] font-black uppercase tracking-widest">
+          <div className="facodi-card max-w-sm w-full mx-4 p-8 space-y-6">
+            <h3 id="confirm-publish-title" className="text-[9px] uppercase font-bold tracking-[0.3em] text-gray-600 dark:text-gray-400">
               Confirmar publicação
             </h3>
-            <p className="text-sm text-gray-700">
+            <p className="text-base font-medium">
               {selectedVideos.length} vídeo(s) serão enviados para revisão no fluxo atual.
               {degradedModeMessage && (
-                <span className="block mt-1 text-amber-700 text-[11px]">
+                <span className="block mt-4 text-amber-700 dark:text-amber-300 text-sm font-medium">
                   ⚠ Modo degradado ativo — dados gerados por fallback local.
                 </span>
               )}
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3 justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
               <button
                 type="button"
                 onClick={() => setConfirmPublish(false)}
-                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest stark-border"
+                className="facodi-btn facodi-btn-secondary"
               >
                 Cancelar
               </button>
@@ -301,7 +301,7 @@ export const ChannelCurationPage: React.FC<ChannelCurationPageProps> = () => {
                   setConfirmPublish(false);
                   handlePublish();
                 }}
-                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-primary text-black stark-border"
+                className="px-4 py-2 text-[10px] font-black uppercase tracking-widest facodi-primary-surface stark-border"
               >
                 Publicar
               </button>
