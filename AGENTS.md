@@ -30,9 +30,12 @@ pnpm exec playwright install
 - Project overview and runtime modes: [README.md](README.md)
 - Contribution/PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Docs map for quick navigation: [README.md#documentacao](README.md#documentacao)
-- Odoo e-learning frontend rules: [.github/instructions/odoo-elearning-frontend.instructions.md](.github/instructions/odoo-elearning-frontend.instructions.md)
-- Odoo mapping rules (`catalogSource.ts`, `types.ts`): [.github/instructions/odoo-elearning.instructions.md](.github/instructions/odoo-elearning.instructions.md)
+- **Supabase architecture & audit**: [SUPABASE_AUDIT_REPORT.md](SUPABASE_AUDIT_REPORT.md)
 - Postman MCP rules: [.github/instructions/postman-mcp.instructions.md](.github/instructions/postman-mcp.instructions.md)
+
+**DEPRECATED INSTRUCTIONS** (archived for reference only, not active):
+- [.github/instructions/odoo-elearning-frontend.instructions.md](.github/instructions/odoo-elearning-frontend.instructions.md) — **Odoo integration NOT implemented** (2026-05-13)
+- [.github/instructions/odoo-elearning.instructions.md](.github/instructions/odoo-elearning.instructions.md) — **Odoo integration NOT implemented** (2026-05-13)
 
 When touching files covered by instruction `applyTo`, follow those instruction files as authoritative.
 

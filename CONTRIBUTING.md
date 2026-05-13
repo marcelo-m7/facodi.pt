@@ -14,7 +14,7 @@ Obrigado por contribuir com a FACODI.
 ```bash
 corepack enable
 pnpm install
-cp .env.example .env.local
+cp .env.example .env
 pnpm dev
 ```
 
@@ -43,8 +43,16 @@ pnpm security:check-rls
 - Use `pnpm` para manter lockfile consistente.
 - Mantenha catalogo centralizado em `services/catalogSource.ts`.
 - Nao coloque detalhes de banco/provedor em componentes.
-- Reutilize o cliente unico em `services/supabase.ts`.
+- **Reutilize o cliente unico em `services/supabase.ts`** — nunca crie novas instancias com `createClient()`.
 - Preserve fallback para `mock` em caso de falha remota.
+
+### Supabase-Specific Rules
+- ✅ Frontend reads use `public` schema only.
+- ✅ Never expose `service_role` or secret keys in client code.
+- ✅ All data access through shared client singleton.
+- ✅ Use RLS policies for row-level access control (not frontend-side auth).
+- ✅ Query `public.profiles` for user data (not `auth.users`).
+- ✅ Edge functions authenticate via Bearer token and enforce rate limiting.
 
 ## Contratos de Dados Obrigatorios
 
