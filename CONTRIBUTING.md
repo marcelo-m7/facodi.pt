@@ -1,37 +1,38 @@
-# Contributing to FACODI Frontend
+# Contributing to FACODI
 
-Obrigado por contribuir com a plataforma.
+Obrigado por contribuir com a FACODI.
 
 ## Fluxo Recomendado
 
-1. Faça fork do repositório.
-2. Crie uma branch de trabalho a partir da branch alvo do projeto.
-3. Instale dependências e valide build local.
-4. Execute validações relevantes para o escopo da mudança.
-5. Abra PR com contexto, evidências e impactos.
+1. Crie uma branch a partir da branch alvo do projeto.
+2. Atualize o ambiente local e valide build.
+3. Execute os testes e checks relacionados ao escopo da mudanca.
+4. Abra PR com contexto, evidencias e risco residual.
 
 ## Setup Local
 
 ```bash
 corepack enable
 pnpm install
-cp .env.local.example .env.local
+cp .env.example .env.local
 pnpm dev
 ```
 
-Validação mínima antes do PR:
+## Matriz de Validacao
+
+Rode sempre antes do PR:
 
 ```bash
 pnpm build
 ```
 
-Quando houver impacto em navegação, páginas, autenticação ou comportamento visual:
+Rode quando houver impacto em UI, navegacao, autenticacao ou fluxos:
 
 ```bash
 pnpm test:e2e
 ```
 
-Quando houver impacto em integração Supabase/políticas:
+Rode quando houver impacto em schema, RLS ou integracao Supabase:
 
 ```bash
 pnpm security:check-rls
@@ -39,37 +40,41 @@ pnpm security:check-rls
 
 ## Regras de Arquitetura
 
-- Use `pnpm` (não `npm`) para manter lockfile consistente.
-- Mantenha lógica de fonte de dados em `services/catalogSource.ts`.
-- Não colocar detalhes de banco/provedor em componentes de UI.
-- Use cliente Supabase único de `services/supabase.ts`.
-- Preserve fallback para dados `mock` quando fonte remota falhar.
+- Use `pnpm` para manter lockfile consistente.
+- Mantenha catalogo centralizado em `services/catalogSource.ts`.
+- Nao coloque detalhes de banco/provedor em componentes.
+- Reutilize o cliente unico em `services/supabase.ts`.
+- Preserve fallback para `mock` em caso de falha remota.
 
-## Contratos de Dados Obrigatórios
+## Contratos de Dados Obrigatorios
 
-- `Course.id` deve permanecer estável e único.
-- `CurricularUnit.courseId` deve apontar para um `Course.id` existente.
-- `Playlist.units` deve continuar como `string[]` de ids válidos.
-- Preserve ordenação determinística das playlists para evitar regressão visual.
+- `Course.id` estavel e unico.
+- `CurricularUnit.courseId` deve apontar para `Course.id` existente.
+- `Playlist.units` deve seguir como `string[]` de ids validos.
+- Ordenacao de playlists deve ser deterministica.
 
-## Ambiente e Segurança
+## Ambiente e Seguranca
 
-- Nunca commitar `.env` ou `.env.local`.
-- Não usar service role key no frontend.
-- Em Supabase, usar apenas chaves publicáveis (`VITE_SUPABASE_PUBLISHABLE_KEY`).
-- Não consultar `auth.users` no frontend; usar `public.profiles`.
+- Nunca commite `.env` ou `.env.local`.
+- Nao use service role key no frontend.
+- Use apenas chave publicavel no cliente (`VITE_SUPABASE_PUBLISHABLE_KEY`).
+- Nao consulte `auth.users` no frontend; use `public.profiles`.
 
-## Pull Request Checklist
+## Checklist de Pull Request
 
-Inclua no PR:
+- Problema e escopo descritos objetivamente.
+- Solucao explicada em termos de impacto funcional.
+- Evidencias de validacao anexadas (build, E2E, RLS quando aplicavel).
+- Capturas de tela para mudancas visuais relevantes.
+- Riscos conhecidos, mitigacao e plano de rollback (quando aplicavel).
 
-- Contexto do problema e escopo.
-- Resumo objetivo da solução.
-- Evidências de validação (`pnpm build`, E2E e/ou RLS quando aplicável).
-- Capturas de tela para alterações visuais relevantes.
-- Riscos conhecidos e plano de rollback (quando aplicável).
+## Convencoes de Documentacao
 
-## Conteúdo e Curadoria
+- Atualize `README.md` quando comandos, setup ou arquitetura mudarem.
+- Atualize `docs/` quando houver mudanca de processo, roadmap ou baseline tecnico.
+- Se alterar guardrails, atualize `AGENTS.md` e instrucoes em `.github/instructions/`.
 
-- Envio de conteúdo audiovisual: https://tube.open2.tech
-- Contato institucional e parcerias: https://open2.tech/contact
+## Canais
+
+- Envio de conteudo audiovisual: https://tube.open2.tech
+- Contato institucional: https://open2.tech/contact

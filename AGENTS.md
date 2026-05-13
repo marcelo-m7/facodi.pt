@@ -6,7 +6,7 @@ Guidance for AI coding agents working in this frontend workspace.
 
 - Stack: React 19 + TypeScript + Vite SPA.
 - Package manager: pnpm (`packageManager` is pinned in [package.json](package.json)).
-- Start from workspace root `frontend/`.
+- Start from repository root (`facodi/`).
 
 Core commands:
 
@@ -29,10 +29,10 @@ pnpm exec playwright install
 
 - Project overview and runtime modes: [README.md](README.md)
 - Contribution/PR expectations: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Docs map for quick navigation: [README.md#índice-de-documentação](README.md#índice-de-documentação)
-- Catalog contract rules: [.github/instructions/catalog-contract-guard.instructions.md](.github/instructions/catalog-contract-guard.instructions.md)
-- Supabase catalog mapping rules: [.github/instructions/supabase-playlist-schema.instructions.md](.github/instructions/supabase-playlist-schema.instructions.md)
-- Auth/user feature rules: [.github/instructions/auth-user.instructions.md](.github/instructions/auth-user.instructions.md)
+- Docs map for quick navigation: [README.md#documentacao](README.md#documentacao)
+- Odoo e-learning frontend rules: [.github/instructions/odoo-elearning-frontend.instructions.md](.github/instructions/odoo-elearning-frontend.instructions.md)
+- Odoo mapping rules (`catalogSource.ts`, `types.ts`): [.github/instructions/odoo-elearning.instructions.md](.github/instructions/odoo-elearning.instructions.md)
+- Postman MCP rules: [.github/instructions/postman-mcp.instructions.md](.github/instructions/postman-mcp.instructions.md)
 
 When touching files covered by instruction `applyTo`, follow those instruction files as authoritative.
 
@@ -67,4 +67,4 @@ When touching files covered by instruction `applyTo`, follow those instruction f
 
 For Supabase integration changes, use:
 
-- [.github/agents/supabase-integration-reviewer.agent.md](.github/agents/supabase-integration-reviewer.agent.md)
+- Default reviewer workflow from skill: [.agents/skills/code-review/SKILL.md](.agents/skills/code-review/SKILL.md)

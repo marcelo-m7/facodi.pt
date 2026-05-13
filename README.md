@@ -1,122 +1,132 @@
-# FACODI Frontend
+# FACODI - Faculdade Comunitaria Digital
 
-Single Page Application em React + TypeScript + Vite para navegação de currículos abertos, trilhas de aprendizagem e experiência de estudo com autenticação e progresso.
+FACODI e uma plataforma educacional aberta para organizar curriculos, unidades curriculares e trilhas de estudo com conteudos publicos.
 
 Projeto mantido por Open2 Technology: https://open2.tech
 
-## Visão Geral
+## Visao Geral
 
-- Stack: React 19 + TypeScript + Vite.
-- Frontend orientado a dados com fallback resiliente (`mock` quando necessário).
-- Catálogo acadêmico com cursos, unidades curriculares e playlists.
-- Fluxos de usuário com autenticação, perfil, favoritos, progresso e histórico.
-- Áreas dedicadas para curadoria, pipeline editorial e administração.
-- Páginas institucionais e blog com conteúdo em Markdown.
-- Testes E2E com Playwright.
+- SPA em React 19 + TypeScript + Vite.
+- Catalogo academico com cursos, unidades curriculares e playlists.
+- Fluxos de autenticacao, perfil, progresso e historico de estudos.
+- Areas dedicadas para curadoria, pipeline editorial e administracao.
+- Conteudo institucional e blog em Markdown.
+- Suite de testes E2E com Playwright.
+
+## Arquitetura Atual
+
+- Frontend: React + TypeScript.
+- Build e dev server: Vite.
+- Dados: modo local (`mock`) ou remoto (`supabase`).
+- Persistencia e auth: Supabase (schema `public` + RLS).
+- Contrato de catalogo centralizado em `services/catalogSource.ts`.
+
+Principio arquitetural: componentes devem ser agnosticos ao provedor de dados. Toda integracao de catalogo entra por `loadCatalogData()`.
 
 ## Modos de Dados
 
-A aplicação usa `VITE_DATA_SOURCE` com dois modos:
+A aplicacao usa `VITE_DATA_SOURCE`:
 
-- `mock`: dados locais em `data/*.ts`.
-- `supabase`: leitura do catálogo no schema `public`.
+- `mock`: dados locais de `data/*.ts`.
+- `supabase`: leitura principal no schema `public`.
 
-No modo supabase, o catálogo é lido principalmente de:
+No modo supabase, o catalogo usa principalmente:
 
 - `public.courses`
 - `public.units`
 - `public.playlists`
-- `public.unit_enrichments`
-- `public.learning_outcomes`
-- `public.resources`
 
-Regra arquitetural: `services/catalogSource.ts` é o único entrypoint de catálogo (`loadCatalogData()`) para manter contrato estável entre fontes.
+## Setup Rapido
 
-## Requisitos
+Requisitos:
 
 - Node.js 20+
 - Corepack habilitado
 - pnpm 10.17.1 (fixado em `packageManager`)
 
-## Setup Rápido
+Execucao local:
 
 ```bash
 corepack enable
 pnpm install
-cp .env.local.example .env.local
+cp .env.example .env.local
 pnpm dev
 ```
 
 ## Scripts
 
-- `pnpm dev`: inicia ambiente local com Vite.
-- `pnpm build`: gera build de produção.
+- `pnpm dev`: inicia ambiente local (porta 3000).
+- `pnpm build`: gera build de producao.
 - `pnpm preview`: sobe preview local da build.
-- `pnpm test:e2e`: executa testes E2E (Playwright).
-- `pnpm security:check-rls`: valida políticas RLS esperadas no Supabase.
+- `pnpm test:e2e`: executa testes end-to-end.
+- `pnpm security:check-rls`: valida RLS no banco alvo.
 
-Em máquinas novas para E2E:
+Em maquinas novas para E2E:
 
 ```bash
 pnpm exec playwright install
 ```
 
-## Variáveis de Ambiente
+## Variaveis de Ambiente
 
-Arquivo base: `.env.local.example`
+Arquivo base: `.env.example`
 
-- `VITE_DATA_SOURCE=mock|supabase`
-- `VITE_SUPABASE_URL` (obrigatório no modo supabase)
-- `VITE_SUPABASE_PUBLISHABLE_KEY` (obrigatório no modo supabase)
-- `VITE_SITE_URL` (opcional)
-- `USER_EMAIL` e `USER_PASSWORD` (opcionais para fluxos E2E autenticados)
+- `SITE_URL`
+- `VITE_SITE_URL`
+- `VITE_DATA_SOURCE` (recomendado: `mock` no primeiro boot)
+- `VITE_SUPABASE_URL` (obrigatorio para `supabase`)
+- `VITE_SUPABASE_PUBLISHABLE_KEY` (obrigatorio para `supabase`)
+- `SUPABASE_DB_URL` (necessario para `pnpm security:check-rls`)
 
-Segurança:
+Seguranca:
 
-- Não commitar `.env` ou `.env.local`.
+- Nunca commitar `.env` ou `.env.local`.
 - Nunca usar service role key no frontend.
-- Nunca consultar `auth.users` diretamente no frontend; usar `public.profiles`.
+- Nunca consultar `auth.users` no frontend; usar `public.profiles`.
 
-## Estrutura da Pasta
+## Estrutura do Repositorio
 
-- `App.tsx`: shell da aplicação, roteamento e bootstrap.
-- `components/`: páginas e blocos de UI (home, catálogo, auth, usuário, admin, curadoria, pipeline, estudante).
-- `contexts/`: estado global de autenticação e curadoria.
-- `hooks/`: hooks de progresso, dashboard e cursos do aluno.
-- `services/`: integração com Supabase e fontes de dados.
-- `data/`: dados locais para modo `mock`.
-- `content/`: conteúdo institucional/blog.
-- `tests/e2e/`: cenários end-to-end.
-- `scripts/`: utilitários de segurança e suporte operacional.
+- `App.tsx`: shell da aplicacao, rotas e bootstrap.
+- `components/`: paginas e blocos de UI.
+- `contexts/`: estado global (auth e curadoria).
+- `hooks/`: logica de progresso, dashboard e cursos.
+- `services/`: acesso a dados e integracoes.
+- `data/`: fallback local para modo `mock`.
+- `content/`: conteudo institucional/blog.
+- `tests/e2e/`: cenarios Playwright.
+- `scripts/`: validacoes operacionais.
+- `supabase/functions/`: edge functions do projeto.
 
-## Contratos Críticos
+## Qualidade e Acessibilidade
 
-- `Course.id` deve permanecer estável e único.
-- `CurricularUnit.courseId` deve referenciar um `Course.id` válido.
-- `Playlist.units` deve permanecer `string[]` com ids válidos de unidade.
-- Ordenação de playlists deve ser determinística para evitar regressão visual.
+- Navegacao orientada a teclado com `aria-*` em componentes centrais de layout.
+- Testes E2E cobrindo fluxos de estudante, curadoria e detalhe de aula.
+- Guardrails de dados para evitar regressao de contratos de catalogo.
 
-## Fluxos de Contribuição
+## Contratos Criticos
 
-- Leia `CONTRIBUTING.md` antes de abrir PR.
-- Ao alterar integração Supabase, preserve o cliente único em `services/supabase.ts`.
-- Evite lógica de provedor em componentes; mantenha no serviço.
+- `Course.id` deve permanecer estavel e unico.
+- `CurricularUnit.courseId` deve referenciar `Course.id` valido.
+- `Playlist.units` deve permanecer `string[]` com ids validos de unidade.
+- Ordenacao de playlists deve ser deterministica.
 
-## Índice de Documentação
+## Documentacao
 
-- Guia de contribuição: `CONTRIBUTING.md`
-- Guia para agentes e guardrails de implementação: `AGENTS.md`
-- Regras de contrato de catálogo: `.github/instructions/catalog-contract-guard.instructions.md`
-- Regras de integração Supabase para playlists/catálogo: `.github/instructions/supabase-playlist-schema.instructions.md`
-- Regras para auth, sessão e perfil de usuário: `.github/instructions/auth-user.instructions.md`
+- Guia principal do projeto: `docs/FACODI.md`
+- Planejamento e roadmap: `docs/PLAN.md`
+- Guia tecnico de desenvolvimento: `docs/DEVELOPER_GUIDE.md`
+- Baseline de acessibilidade: `docs/ACCESSIBILITY_IMPROVEMENTS.md`
+- Resumo do estado atual: `docs/PHASE_2_SUMMARY.md`
+- Contribuicao: `CONTRIBUTING.md`
+- Guardrails para agentes: `AGENTS.md`
 
-## Links Úteis
+## Instrucoes Tecnicas (AI / Automacao)
 
-- Guia de contribuição: `CONTRIBUTING.md`
-- Envio de conteúdo: https://tube.open2.tech
-- Contato institucional: https://open2.tech/contact
+- `.github/instructions/odoo-elearning-frontend.instructions.md`
+- `.github/instructions/odoo-elearning.instructions.md`
+- `.github/instructions/postman-mcp.instructions.md`
 
-## Licença
+## Licenca
 
 MIT
 
