@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'facodi_development_notice_seen_v1';
+const STORAGE_KEY = 'facodi_development_notice_seen_v2';
 
 export const useDevelopmentNotice = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,12 +9,10 @@ export const useDevelopmentNotice = () => {
   useEffect(() => {
     try {
       const seen = localStorage.getItem(STORAGE_KEY) === '1';
-      setIsOpen(false);
-      if (!seen) {
-        localStorage.setItem(STORAGE_KEY, '1');
-      }
+      setIsOpen(!seen);
     } catch {
-      setIsOpen(false);
+      // If storage is unavailable, still show the notice in this session.
+      setIsOpen(true);
     }
     setIsReady(true);
   }, []);
